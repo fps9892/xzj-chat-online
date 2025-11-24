@@ -11,6 +11,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="base.css" />
+    <link rel="stylesheet" href="emotes.css" />
     <link rel="stylesheet" href="resolutions/mobile.css" />
     <link rel="stylesheet" href="resolutions/tablet.css" />
     <link rel="stylesheet" href="resolutions/desktop.css" />
@@ -144,6 +145,9 @@
 
     <footer class="input-area">
       <div class="input-container">
+        <input type="file" accept="image/*" class="image-input" style="display: none;" />
+        <img src="images/image-load.svg" alt="Upload Image" class="image-btn" title="Enviar imagen" />
+        <button class="emote-btn" title="Emotes">😀</button>
         <input
           type="text"
           class="message-input"
@@ -152,6 +156,24 @@
         />
         <span class="char-counter">0/250</span>
         <img src="images/send.svg" alt="Send" class="send-icon" />
+      </div>
+      <div class="emote-panel" style="display: none;">
+        <div class="emote-grid">
+          <span class="emote-item" data-emote=":)">😊</span>
+          <span class="emote-item" data-emote=":D">😃</span>
+          <span class="emote-item" data-emote=":(">😢</span>
+          <span class="emote-item" data-emote=":P">😛</span>
+          <span class="emote-item" data-emote="xD">😆</span>
+          <span class="emote-item" data-emote="<3">❤️</span>
+          <span class="emote-item" data-emote="kappa">🐸</span>
+          <span class="emote-item" data-emote="poggers">🔥</span>
+          <span class="emote-item" data-emote="sadge">😭</span>
+          <span class="emote-item" data-emote="omegalul">😂</span>
+          <span class="emote-item" data-emote="monkas">😰</span>
+          <span class="emote-item" data-emote="pepehands">😢</span>
+          <span class="emote-item" data-emote="catjam">🐱</span>
+          <span class="emote-item" data-emote="kekw">🤣</span>
+        </div>
       </div>
     </footer>
 

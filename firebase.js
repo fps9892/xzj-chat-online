@@ -67,7 +67,7 @@ async function initializeAuth() {
 initializeAuth();
 
 // Funciones para mensajes
-export function sendMessage(text) {
+export function sendMessage(text, type = 'text', imageData = null) {
     const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
     
     // Validar datos antes de enviar
@@ -78,9 +78,14 @@ export function sendMessage(text) {
         userAvatar: currentUser.avatar || 'images/profileuser.jpg',
         textColor: currentUser.textColor || '#ffffff',
         timestamp: serverTimestamp(),
-        type: 'text',
+        type: type,
         isGuest: currentUser.isGuest || false
     };
+    
+    // Añadir datos de imagen si es tipo imagen
+    if (type === 'image' && imageData) {
+        messageData.imageData = imageData;
+    }
     
     // Verificar que no hay valores undefined
     Object.keys(messageData).forEach(key => {
@@ -233,6 +238,43 @@ export async function updateUserData(updates) {
     }
 }
 
+// Procesar emotes en texto
+export function processEmotes(text) {
+    const emoteMap = {
+        ':)': '😊', ':D': '😃', ':(': '😢', ':P': '😛',
+        'xD': '😆', '<3': '❤️', 'kappa': '🐸', 'poggers': '🔥',
+        'sadge': '😭', 'omegalul': '😂', 'monkas': '😰', 'pepehands': '😢',
+        'catjam': '🐱', 'kekw': '🤣'
+    };
+    
+    let processedText = text;
+    Object.keys(emoteMap).forEach(emote => {
+        const regex = new RegExp(emote.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+        processedText = processedText.replace(regex, emoteMap[emote]);
+    });
+    
+    return processedText;
+}
+
+// Enviar imagen
+export async function sendImage(file) {
+    return new Promise((resolve, reject) => {
+        if (file.size > 2 * 1024 * 1024) {
+            reject(new Error('La imagen debe ser menor a 2MB'));
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = () => {
+            sendMessage('', 'image', reader.result)
+                .then(resolve)
+                .catch(reject);
+        };
+        reader.onerror = () => reject(new Error('Error al leer la imagen'));
+        reader.readAsDataURL(file);
+    });
+}
+
 // Cambiar contraseña
 export async function changePassword(newPassword) {
     try {
@@ -257,6 +299,53 @@ export async function changePassword(newPassword) {
         }
         throw error;
     }
+}
+
+// Sistema de emotes
+const defaultEmotes = {
+    ':)': '😊',
+    ':D': '😃',
+    ':(': '😢',
+    ':P': '😛',
+    ':o': '😮',
+    'xD': '😆',
+    '<3': '❤️',
+    'kappa': '🐸',
+    'poggers': '🔥',
+    'sadge': '😭',
+    'omegalul': '😂',
+    'monkas': '😰',
+    'pepehands': '😢',
+    'catjam': '🐱',
+    'kekw': '🤣'
+};
+
+// Procesar emotes en texto
+export function processEmotes(text) {
+    let processedText = text;
+    Object.keys(defaultEmotes).forEach(emote => {
+        const regex = new RegExp(emote.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+        processedText = processedText.replace(regex, defaultEmotes[emote]);
+    });
+    return processedText;
+}
+
+// Enviar imagen
+export async function sendImage(file) {
+    if (file.size > 1024 * 1024) {
+        throw new Error('La imagen debe ser menor a 1MB');
+    }
+    
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            sendMessage('', 'image', reader.result)
+                .then(resolve)
+                .catch(reject);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
 }
 
 export { currentUser, currentRoom };

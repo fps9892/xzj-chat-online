@@ -7,7 +7,7 @@
           ".write": true,
           ".indexOn": ["timestamp"],
           "$messageId": {
-            ".validate": "newData.hasChildren(['text', 'userId', 'userName', 'userAvatar', 'textColor', 'timestamp']) && newData.child('text').isString() && newData.child('text').val().length <= 250 && newData.child('userId').isString() && newData.child('userName').isString() && newData.child('userAvatar').isString() && newData.child('textColor').isString()"
+".validate": "newData.hasChildren(['userId', 'userName', 'userAvatar', 'textColor', 'timestamp', 'type']) && newData.child('userId').isString() && newData.child('userName').isString() && newData.child('userAvatar').isString() && newData.child('textColor').isString() && newData.child('type').isString() && (newData.child('type').val() == 'text' ? newData.hasChild('text') && newData.child('text').isString() && newData.child('text').val().length <= 250 : true) && (newData.child('type').val() == 'image' ? newData.hasChild('imageData') && newData.child('imageData').isString() : true)"
           }
         },
         "users": {

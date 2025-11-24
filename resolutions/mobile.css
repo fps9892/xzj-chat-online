@@ -131,4 +131,30 @@
         padding: 12px 0;
         font-size: 13px;
     }
+
+    .image-btn {
+        width: 20px;
+        height: 20px;
+    }
+
+    .emote-btn {
+        font-size: 18px;
+    }
+
+    .message-image {
+        max-width: 150px;
+        max-height: 150px;
+    }
+
+    .image-modal {
+        max-width: 95vw;
+        max-height: 85vh;
+    }
+
+    .close-modal {
+        top: -35px;
+        font-size: 25px;
+        width: 35px;
+        height: 35px;
+    }
 }

@@ -1,4 +1,4 @@
-import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword } from './firebase.js';
+import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword, processEmotes, sendImage } from './firebase.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     const messageInput = document.querySelector('.message-input');
@@ -19,6 +19,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const configItems = document.querySelectorAll('.config-item[data-config]');
     const colorPreviewText = document.querySelector('.color-preview-text');
     const colorInput = document.querySelector('.color-input');
+    const imageBtn = document.querySelector('.image-btn');
+    const imageInput = document.querySelector('.image-input');
+    const emoteBtn = document.querySelector('.emote-btn');
+    const emotePanel = document.querySelector('.emote-panel');
+    const emoteItems = document.querySelectorAll('.emote-item');
     
     // Cooldowns (en milisegundos)
     const cooldowns = {
@@ -355,8 +360,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         `}
                     </div>
                     <div class="message-content">
-                        <div class="message-text">${message.text}</div>
-                        ${message.text.length > getCharacterLimit() ? '<span class="see-more">ver más</span>' : ''}
+                        ${message.type === 'image' ? 
+                            `<img src="${message.imageData}" alt="Imagen" class="message-image" onclick="showImageModal('${message.imageData}')" />` :
+                            `<div class="message-text">${processEmotes(message.text)}</div>
+                            ${message.text.length > getCharacterLimit() ? '<span class="see-more">ver más</span>' : ''}`
+                        }
                     </div>
                 </div>
             </div>
@@ -550,6 +558,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // Mostrar imagen en modal
+    window.showImageModal = function(imageSrc) {
+        const modal = createElement(`
+            <div class="image-modal-overlay active">
+                <div class="image-modal">
+                    <img src="${imageSrc}" alt="Imagen" class="modal-image" />
+                    <button class="close-modal">×</button>
+                </div>
+            </div>
+        `);
+        
+        document.body.appendChild(modal);
+        modal.querySelector('.close-modal').addEventListener('click', () => modal.remove());
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.remove();
+        });
+    };
+
     // Inicializar mensajes existentes
     initializeMessages();
 
@@ -570,6 +596,59 @@ document.addEventListener('DOMContentLoaded', function() {
             charCounter.style.color = '#ff4444';
         } else {
             charCounter.style.color = '#888';
+        }
+    });
+
+    // Botón de imagen
+    if (imageBtn && imageInput) {
+        imageBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            imageInput.click();
+        });
+        
+        // Subir imagen
+        imageInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                // Validar tipo de archivo
+                if (!file.type.startsWith('image/')) {
+                    showNotification('Por favor selecciona una imagen válida', 'error');
+                    e.target.value = '';
+                    return;
+                }
+                
+                try {
+                    showNotification('Enviando imagen...', 'warning');
+                    await sendImage(file);
+                    showNotification('Imagen enviada correctamente', 'success');
+                    e.target.value = '';
+                } catch (error) {
+                    showNotification(error.message, 'error');
+                    e.target.value = '';
+                }
+            }
+        });
+    }
+    
+    // Botón de emotes
+    emoteBtn.addEventListener('click', () => {
+        emotePanel.style.display = emotePanel.style.display === 'none' ? 'block' : 'none';
+    });
+    
+    // Seleccionar emote
+    emoteItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const emote = item.dataset.emote;
+            messageInput.value += emote + ' ';
+            messageInput.focus();
+            emotePanel.style.display = 'none';
+        });
+    });
+    
+    // Cerrar panel de emotes al hacer click fuera
+    document.addEventListener('click', (e) => {
+        if (!emoteBtn.contains(e.target) && !emotePanel.contains(e.target)) {
+            emotePanel.style.display = 'none';
         }
     });
 
