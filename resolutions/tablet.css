@@ -115,24 +115,33 @@
         width: 450px;
     }
 
+    .chat-controls {
+        bottom: 95px;
+        right: 15px;
+    }
+
     .image-btn {
-        width: 22px;
-        height: 22px;
+        width: 38px;
+        height: 38px;
+        padding: 7px;
     }
 
     .emote-btn {
-        width: 22px;
-        height: 22px;
+        width: 38px;
+        height: 38px;
+        padding: 7px;
     }
 
     .emote-panel {
+        width: 280px;
+        right: 50px;
         max-height: 110px;
         padding: 9px;
     }
 
     .emote-item {
-        width: 30px;
-        height: 30px;
+        width: 36px;
+        height: 36px;
     }
 
     .message-image {

@@ -205,12 +205,26 @@ body {
   opacity: 0.7;
 }
 
+.chat-controls {
+  position: fixed;
+  bottom: 100px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1000;
+}
+
 .image-btn {
-  width: 24px;
-  height: 24px;
+  width: 40px;
+  height: 40px;
   cursor: pointer;
   filter: invert(1);
   transition: opacity 0.2s;
+  background-color: #000;
+  border: 1px solid #fff;
+  border-radius: 50%;
+  padding: 8px;
 }
 
 .image-btn:hover {
@@ -218,11 +232,15 @@ body {
 }
 
 .emote-btn {
-  width: 24px;
-  height: 24px;
+  width: 40px;
+  height: 40px;
   cursor: pointer;
   filter: invert(1);
   transition: opacity 0.2s;
+  background-color: #000;
+  border: 1px solid #fff;
+  border-radius: 50%;
+  padding: 8px;
 }
 
 .emote-btn:hover {
@@ -231,13 +249,12 @@ body {
 
 .emote-panel {
   position: absolute;
-  bottom: 100%;
-  left: 0;
-  right: 0;
+  bottom: 0;
+  right: 60px;
+  width: 300px;
   background-color: #000;
   border: 1px solid #fff;
   border-radius: 8px;
-  margin-bottom: 10px;
   padding: 10px;
   max-height: 120px;
 }
@@ -264,8 +281,8 @@ body {
 }
 
 .emote-item {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   cursor: pointer;
   border-radius: 4px;
   transition: transform 0.2s;
