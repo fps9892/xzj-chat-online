@@ -38,7 +38,7 @@ if (!localStorage.getItem('currentUser')) {
     window.location.href = 'login.html';
 }
 
-let currentRoom = 'room1';
+let currentRoom = 'general';
 
 // Mantener estado de autenticación
 let authInitialized = false;
