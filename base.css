@@ -244,6 +244,7 @@ body {
   gap: 10px;
   z-index: 99999;
   pointer-events: auto;
+  background-color: #000000;
 }
 
 .image-btn {
