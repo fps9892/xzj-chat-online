@@ -209,6 +209,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 description: 'Usuario invitado',
                 role: 'guest',
                 isGuest: true,
+                textColor: '#ffffff',
+                status: 'online',
                 createdAt: new Date(),
                 lastSeen: new Date()
             };

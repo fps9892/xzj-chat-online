@@ -26,8 +26,11 @@ const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {
     userId: sanitizeUserId('guest_' + Math.random().toString(36).substr(2, 9)),
     username: 'guest',
     avatar: 'images/profileuser.jpg',
-    textColor: '#000000',
-    description: 'Usuario invitado'
+    textColor: '#ffffff',
+    description: 'Usuario invitado',
+    status: 'online',
+    role: 'guest',
+    isGuest: true
 };
 
 // Redirect to login if no user
@@ -40,17 +43,32 @@ let currentRoom = 'room1';
 // Funciones para mensajes
 export function sendMessage(text) {
     const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
-    return push(messagesRef, {
-        text: text,
-        userId: currentUser.userId,
-        userName: currentUser.username,
-        userAvatar: currentUser.avatar,
+    
+    // Validar datos antes de enviar
+    const messageData = {
+        text: text || '',
+        userId: currentUser.userId || 'unknown',
+        userName: currentUser.username || 'Usuario',
+        userAvatar: currentUser.avatar || 'images/profileuser.jpg',
         timestamp: serverTimestamp(),
         type: 'text',
         isGuest: currentUser.isGuest || false
-    }).then(() => {
+    };
+    
+    // Verificar que no hay valores undefined
+    Object.keys(messageData).forEach(key => {
+        if (messageData[key] === undefined || messageData[key] === null) {
+            console.warn(`Campo de mensaje ${key} es undefined`);
+            messageData[key] = key === 'text' ? '' : 'default';
+        }
+    });
+    
+    return push(messagesRef, messageData).then(() => {
         // Limit messages to 5 per room
         limitMessages();
+    }).catch(error => {
+        console.error('Error enviando mensaje:', error);
+        throw error;
     });
 }
 
@@ -91,15 +109,33 @@ export function setUserOnline() {
     const userRef = ref(database, `rooms/${currentRoom}/users/${sanitizedUserId}`);
     const userStatusRef = ref(database, `rooms/${currentRoom}/users/${sanitizedUserId}/status`);
     
-    set(userRef, {
-        name: currentUser.username,
-        avatar: currentUser.avatar,
+    // Asegurar que todos los campos requeridos tengan valores válidos
+    const userData = {
+        name: currentUser.username || 'Usuario',
+        avatar: currentUser.avatar || 'images/profileuser.jpg',
         status: 'online',
         lastSeen: serverTimestamp(),
         role: currentUser.role || 'user',
-        textColor: currentUser.textColor,
-        description: currentUser.description
+        textColor: currentUser.textColor || '#ffffff',
+        description: currentUser.description || 'Sin descripción'
+    };
+    
+    // Verificar que no hay valores undefined
+    Object.keys(userData).forEach(key => {
+        if (userData[key] === undefined || userData[key] === null) {
+            console.warn(`Campo ${key} es undefined, usando valor por defecto`);
+            switch(key) {
+                case 'name': userData[key] = 'Usuario'; break;
+                case 'avatar': userData[key] = 'images/profileuser.jpg'; break;
+                case 'textColor': userData[key] = '#ffffff'; break;
+                case 'description': userData[key] = 'Sin descripción'; break;
+                case 'role': userData[key] = 'user'; break;
+                default: userData[key] = '';
+            }
+        }
     });
+    
+    set(userRef, userData);
     
     if (currentUser.isGuest) {
         onDisconnect(userRef).remove();
@@ -133,19 +169,35 @@ export function changeRoom(roomName) {
 // Actualizar datos de usuario en Firestore
 export async function updateUserData(updates) {
     try {
+        // Filtrar valores undefined/null de las actualizaciones
+        const cleanUpdates = {};
+        Object.keys(updates).forEach(key => {
+            if (updates[key] !== undefined && updates[key] !== null) {
+                cleanUpdates[key] = updates[key];
+            }
+        });
+        
+        if (Object.keys(cleanUpdates).length === 0) {
+            console.warn('No hay actualizaciones válidas para procesar');
+            return false;
+        }
+        
         if (currentUser.isGuest) {
-            await updateDoc(doc(db, 'guests', currentUser.userId), updates);
+            await updateDoc(doc(db, 'guests', currentUser.userId), cleanUpdates);
         } else {
             // Buscar documento por userId
             const userDoc = await getDoc(doc(db, 'users', currentUser.firebaseUid || currentUser.userId));
             if (userDoc.exists()) {
-                await updateDoc(doc(db, 'users', userDoc.id), updates);
+                await updateDoc(doc(db, 'users', userDoc.id), cleanUpdates);
             }
         }
         
         // Actualizar localStorage
-        Object.assign(currentUser, updates);
+        Object.assign(currentUser, cleanUpdates);
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        
+        // Actualizar estado en tiempo real
+        setUserOnline();
         
         return true;
     } catch (error) {

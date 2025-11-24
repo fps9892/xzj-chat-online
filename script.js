@@ -430,14 +430,31 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Inicializar Firebase
-    updateUserHeader();
-    setUserOnline();
-    loadMessages();
-    loadUsers();
+    // Validar usuario antes de inicializar
+    function validateCurrentUser() {
+        if (!currentUser.textColor) currentUser.textColor = '#ffffff';
+        if (!currentUser.description) currentUser.description = 'Sin descripción';
+        if (!currentUser.avatar) currentUser.avatar = 'images/profileuser.jpg';
+        if (!currentUser.role) currentUser.role = currentUser.isGuest ? 'guest' : 'user';
+        if (!currentUser.status) currentUser.status = 'online';
+        
+        // Actualizar localStorage con datos corregidos
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    }
     
-    // Limpiar skeletons después de 2 segundos
-    setTimeout(clearSkeletons, 2000);
+    // Inicializar Firebase
+    validateCurrentUser();
+    updateUserHeader();
+    
+    // Inicializar con delay para evitar problemas de carga
+    setTimeout(() => {
+        setUserOnline();
+        loadMessages();
+        loadUsers();
+    }, 500);
+    
+    // Limpiar skeletons después de 3 segundos
+    setTimeout(clearSkeletons, 3000);
     
     // Manejar cerrar sesión
     const logoutBtn = document.querySelector('.config-item:nth-last-child(2) button');
