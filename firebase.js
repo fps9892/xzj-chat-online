@@ -98,8 +98,8 @@ export function sendMessage(text, type = 'text', imageData = null) {
         isGuest: currentUser.isGuest || false
     };
     
-    // Añadir datos de imagen si es tipo imagen
-    if (type === 'image' && imageData) {
+    // Añadir datos de imagen si es tipo imagen o emote
+    if ((type === 'image' || type === 'emote') && imageData) {
         messageData.imageData = imageData;
     }
     

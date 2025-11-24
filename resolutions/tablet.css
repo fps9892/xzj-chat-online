@@ -116,8 +116,13 @@
     }
 
     .chat-controls {
-        bottom: 95px;
+        bottom: 15px;
         right: 15px;
+    }
+
+    .standalone-emote {
+        width: 56px;
+        height: 56px;
     }
 
     .image-btn {

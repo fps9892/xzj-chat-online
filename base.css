@@ -205,14 +205,18 @@ body {
   opacity: 0.7;
 }
 
+.chat-area {
+  position: relative;
+}
+
 .chat-controls {
-  position: fixed;
-  bottom: 100px;
+  position: absolute;
+  bottom: 20px;
   right: 20px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  z-index: 1000;
+  z-index: 100;
 }
 
 .image-btn {
@@ -927,4 +931,23 @@ body {
 
 .close-modal:hover {
   color: #ff4444;
+}
+
+.emote-message-container {
+  margin-bottom: 10px;
+  display: flex;
+}
+
+.emote-message-container.sent {
+  justify-content: flex-end;
+}
+
+.emote-message-container.received {
+  justify-content: flex-start;
+}
+
+.standalone-emote {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
 }

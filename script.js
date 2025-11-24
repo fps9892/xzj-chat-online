@@ -345,30 +345,36 @@ document.addEventListener('DOMContentLoaded', function() {
         // Mostrar (invitado) si es usuario invitado
         const displayName = message.isGuest ? `${message.userName} (invitado)` : message.userName;
         
-        const messageEl = createElement(`
-            <div class="message-container">
-                <div class="message ${isOwn ? 'sent' : 'received'}">
-                    <div class="message-header">
-                        ${isOwn ? `
-                            <span class="message-time">${time}</span>
-                            <span class="message-username" style="color: ${message.textColor || currentUser.textColor || '#ffffff'}">${displayName}</span>
-                            <img src="${message.userAvatar}" alt="User" class="message-avatar">
-                        ` : `
-                            <img src="${message.userAvatar}" alt="User" class="message-avatar">
-                            <span class="message-username" style="color: ${message.textColor || '#ffffff'}">${displayName}</span>
-                            <span class="message-time">${time}</span>
-                        `}
-                    </div>
-                    <div class="message-content">
-                        ${message.type === 'image' ? 
-                            `<img src="${message.imageData}" alt="Imagen" class="message-image" onclick="showImageModal('${message.imageData}')" />` :
-                            `<div class="message-text">${processEmotes(message.text)}</div>
-                            ${message.text.length > getCharacterLimit() ? '<span class="see-more">ver más</span>' : ''}`
-                        }
+        const messageEl = message.type === 'emote' ? 
+            createElement(`
+                <div class="emote-message-container ${isOwn ? 'sent' : 'received'}">
+                    <img src="${message.imageData}" alt="Emote" class="standalone-emote" />
+                </div>
+            `) :
+            createElement(`
+                <div class="message-container">
+                    <div class="message ${isOwn ? 'sent' : 'received'}">
+                        <div class="message-header">
+                            ${isOwn ? `
+                                <span class="message-time">${time}</span>
+                                <span class="message-username" style="color: ${message.textColor || currentUser.textColor || '#ffffff'}">${displayName}</span>
+                                <img src="${message.userAvatar}" alt="User" class="message-avatar">
+                            ` : `
+                                <img src="${message.userAvatar}" alt="User" class="message-avatar">
+                                <span class="message-username" style="color: ${message.textColor || '#ffffff'}">${displayName}</span>
+                                <span class="message-time">${time}</span>
+                            `}
+                        </div>
+                        <div class="message-content">
+                            ${message.type === 'image' ? 
+                                `<img src="${message.imageData}" alt="Imagen" class="message-image" onclick="showImageModal('${message.imageData}')" />` :
+                                `<div class="message-text">${processEmotes(message.text)}</div>
+                                ${message.text.length > getCharacterLimit() ? '<span class="see-more">ver más</span>' : ''}`
+                            }
+                        </div>
                     </div>
                 </div>
-            </div>
-        `);
+            `);
         
         // Añadir funcionalidad ver más
         const seeMore = messageEl.querySelector('.see-more');
@@ -638,9 +644,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Seleccionar emote
     emoteItems.forEach(item => {
         item.addEventListener('click', () => {
-            const emote = item.dataset.emote;
-            messageInput.value += emote + ' ';
-            messageInput.focus();
+            const emoteSrc = item.src;
+            sendMessage('', 'emote', emoteSrc);
             emotePanel.style.display = 'none';
         });
     });
