@@ -1,4 +1,4 @@
-import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword, processEmotes, sendImage } from './firebase.js';
+import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword, sendImage } from './firebase.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     const messageInput = document.querySelector('.message-input');
@@ -368,7 +368,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="message-content">
                             ${message.type === 'image' ? 
                                 `<img src="${message.imageData}" alt="Imagen" class="message-image" onclick="showImageModal('${message.imageData}')" />` :
-                                `<div class="message-text">${processEmotes(message.text)}</div>
+                                `<div class="message-text">${message.text}</div>
                                 ${message.text.length > getCharacterLimit() ? '<span class="see-more">ver más</span>' : ''}`
                             }
                         </div>
