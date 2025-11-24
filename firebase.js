@@ -169,7 +169,8 @@ export function setUserOnline() {
         textColor: currentUser.textColor || '#ffffff',
         description: currentUser.description || 'Sin descripción',
         isGuest: currentUser.isGuest || false,
-        createdAt: currentUser.createdAt || new Date().toISOString()
+        createdAt: currentUser.createdAt || new Date().toISOString(),
+        role: currentUser.role || 'user'
     };
     
     // Verificar que no hay valores undefined
@@ -353,11 +354,25 @@ export async function checkAdminStatus(userId) {
     }
 }
 
-// Actualizar rol del usuario
+// Actualizar rol del usuario y obtener datos de Firestore
 export async function updateUserRole() {
     if (!currentUser.isGuest && currentUser.firebaseUid) {
         const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
         currentUser.role = isAdmin ? 'admin' : 'user';
+        
+        // Obtener createdAt desde Firestore
+        try {
+            const userDoc = await getDoc(doc(db, 'users', currentUser.firebaseUid));
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                if (userData.createdAt) {
+                    currentUser.createdAt = userData.createdAt;
+                }
+            }
+        } catch (error) {
+            console.error('Error getting user data:', error);
+        }
+        
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
     }
 }
