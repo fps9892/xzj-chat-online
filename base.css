@@ -553,6 +553,8 @@ body {
 }
 
 .user-panel-header {
+  background-color: #002206;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -591,6 +593,7 @@ body {
 }
 
 .user-panel-content {
+  background-color: #000000;
   font-family: monospace;
   padding: 20px;
   max-height: 400px;

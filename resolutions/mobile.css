@@ -3,27 +3,27 @@
   .loading-content {
     gap: 25px;
   }
-  
+
   .loading-logo {
     width: 100px;
     height: 100px;
   }
-  
+
   .neon-loader {
     width: 50px;
     height: 50px;
     border-width: 2px;
   }
-  
+
   .neon-loader::before {
     border-width: 1px;
   }
-  
+
   .loading-text {
     font-size: 16px;
     letter-spacing: 1.5px;
   }
-  
+
   .loading-progress {
     width: 180px;
     height: 3px;
@@ -226,4 +226,46 @@
     width: 35px;
     height: 35px;
   }
+
+  .room-item {
+    font-size: 10px; /* Ajusta este valor según sea necesario */
+  }
+
+  .header-username {
+    display: none;
+  }
+}
+
+/* Nickname and timestamp above emotes */
+.message-emote {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.message-emote .message-header {
+  font-size: 10px;
+  color: #aaa;
+  margin-bottom: 2px;
+  font-family: "Inter", sans-serif;
+}
+
+/* Copy message option */
+.message-text {
+  position: relative;
+}
+
+.message-text:active::after {
+  content: "Copiar mensaje";
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: #fff;
+  font-size: 10px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 10;
 }
