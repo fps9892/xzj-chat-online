@@ -269,35 +269,33 @@ body {
   position: absolute;
   bottom: 60px;
   right: 0;
-  width: 400px;
-  height: 60px;
+  width: 280px;
+  height: 200px;
   background-color: #000;
   border: 1px solid #fff;
   border-radius: 8px;
   padding: 8px;
   z-index: 100001;
+  overflow-y: auto;
 }
 
 .emote-grid {
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  height: 100%;
-  align-items: center;
-  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  padding: 4px;
 }
 
-.emote-grid::-webkit-scrollbar {
-  height: 6px;
+.emote-panel::-webkit-scrollbar {
+  width: 6px;
 }
 
-.emote-grid::-webkit-scrollbar-track {
+.emote-panel::-webkit-scrollbar-track {
   background: #333;
   border-radius: 3px;
 }
 
-.emote-grid::-webkit-scrollbar-thumb {
+.emote-panel::-webkit-scrollbar-thumb {
   background: #00ff00;
   border-radius: 3px;
 }

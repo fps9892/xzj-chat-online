@@ -156,11 +156,16 @@
     }
 
     .emote-panel {
-        width: 280px;
-        height: 50px;
+        width: 220px;
+        height: 180px;
         right: 0;
         bottom: 45px;
         padding: 6px;
+    }
+
+    .emote-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
     }
 
     .emote-item {
