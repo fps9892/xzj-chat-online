@@ -155,6 +155,11 @@
     padding: 6px;
   }
 
+  .image-btn,
+  .emote-btn {
+    background-color: #000; /* Set black background */
+  }
+
   .emote-panel {
     width: 220px;
     height: 180px;

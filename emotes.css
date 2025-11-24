@@ -54,3 +54,8 @@
 .chat-controls .icon {
   background: none; /* Remove white background */
 }
+
+.image-btn,
+.emote-btn {
+  background-color: #000; /* Set black background */
+}
