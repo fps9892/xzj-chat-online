@@ -1,6 +1,86 @@
 import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping } from './firebase.js';
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Elementos de la pantalla de carga
+    const loadingScreen = document.getElementById('loadingScreen');
+    const progressBar = document.querySelector('.progress-bar');
+    const loadingText = document.querySelector('.loading-text');
+    
+    // Textos de carga
+    const loadingTexts = [
+        'Inicializando...',
+        'Conectando...',
+        'Cargando datos...',
+        'Preparando interfaz...',
+        'Casi listo...'
+    ];
+    
+    let currentTextIndex = 0;
+    let loadingProgress = 0;
+    
+    // Función para actualizar el texto de carga
+    function updateLoadingText() {
+        if (currentTextIndex < loadingTexts.length) {
+            loadingText.textContent = loadingTexts[currentTextIndex];
+            currentTextIndex++;
+        }
+    }
+    
+    // Función para simular progreso de carga
+    function simulateLoading() {
+        const interval = setInterval(() => {
+            loadingProgress += Math.random() * 15 + 5;
+            
+            if (loadingProgress >= 100) {
+                loadingProgress = 100;
+                clearInterval(interval);
+                
+                // Ocultar pantalla de carga después de completar
+                setTimeout(() => {
+                    loadingScreen.classList.add('hidden');
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                    }, 500);
+                }, 800);
+            }
+            
+            progressBar.style.width = loadingProgress + '%';
+        }, 200);
+    }
+    
+    // Cambiar texto cada 800ms
+    const textInterval = setInterval(() => {
+        updateLoadingText();
+        if (currentTextIndex >= loadingTexts.length) {
+            clearInterval(textInterval);
+        }
+    }, 800);
+    
+    // Iniciar simulación de carga
+    setTimeout(() => {
+        simulateLoading();
+    }, 1000);
+    
+    // Efectos adicionales de carga
+    function addLoadingEffects() {
+        const logo = document.querySelector('.loading-logo');
+        const loader = document.querySelector('.neon-loader');
+        
+        // Efecto de rotación aleatoria del logo
+        setInterval(() => {
+            const randomRotation = Math.random() * 10 - 5; // -5 a 5 grados
+            logo.style.transform = `rotate(${randomRotation}deg)`;
+        }, 2000);
+        
+        // Cambio de velocidad del loader
+        let speed = 1.2;
+        setInterval(() => {
+            speed = Math.random() * 0.8 + 0.8; // 0.8 a 1.6 segundos
+            loader.style.animationDuration = speed + 's';
+        }, 3000);
+    }
+    
+    addLoadingEffects();
     const messageInput = document.querySelector('.message-input');
     const charCounter = document.querySelector('.char-counter');
     const sendIcon = document.querySelector('.send-icon');
@@ -519,19 +599,24 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
     }
     
-    // Inicializar Firebase
-    validateCurrentUser();
-    updateUserHeader();
+    // Inicializar Firebase después de la carga
+    function initializeApp() {
+        validateCurrentUser();
+        updateUserHeader();
+        
+        // Inicializar con delay para evitar problemas de carga
+        setTimeout(() => {
+            setUserOnline();
+            loadMessages();
+            loadUsers();
+        }, 500);
+        
+        // Limpiar skeletons después de 3 segundos
+        setTimeout(clearSkeletons, 3000);
+    }
     
-    // Inicializar con delay para evitar problemas de carga
-    setTimeout(() => {
-        setUserOnline();
-        loadMessages();
-        loadUsers();
-    }, 500);
-    
-    // Limpiar skeletons después de 3 segundos
-    setTimeout(clearSkeletons, 3000);
+    // Esperar a que termine la carga para inicializar
+    setTimeout(initializeApp, 4500);
     
     // Manejar cerrar sesión
     const logoutBtn = document.querySelector('.config-item:nth-last-child(2) button');

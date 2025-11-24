@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat Interface</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="base.css" />
+    <link rel="stylesheet" href="emotes.css" />
+    <link rel="stylesheet" href="resolutions/mobile.css" />
+    <link rel="stylesheet" href="resolutions/tablet.css" />
+    <link rel="stylesheet" href="resolutions/desktop.css" />
+  </head>
+  <body>
+    <!-- Pantalla de Carga Profesional -->
+    <div class="loading-screen" id="loadingScreen">
+      <div class="loading-content">
+        <div class="logo-container">
+          <img src="images/logo.svg" alt="Logo" class="loading-logo">
+        </div>
+        <div class="neon-loader"></div>
+        <div class="loading-text">Cargando...</div>
+        <div class="loading-progress">
+          <div class="progress-bar"></div>
+        </div>
+      </div>
+    </div>
+    <header class="header">
+      <div class="user-info">
+        <img src="images/profileuser.jpg" alt="Profile" class="profile-image" />
+        <span class="username">username</span>
+      </div>
+
+      <div class="room-selector">
+        <img src="images/arrows-rooms.svg" alt="Arrows" class="arrows-icon" />
+        <img
+          src="images/rooms-public-icon.svg"
+          alt="Rooms"
+          class="rooms-icon"
+        />
+        <div class="rooms-dropdown">
+          <div class="room-item" data-room="room1">room1</div>
+          <div class="room-item" data-room="room2">room2</div>
+          <div class="room-item" data-room="room3">room3</div>
+          <div class="room-item" data-room="room4">room4</div>
+        </div>
+      </div>
+
+      <div class="mobile-users-indicator">
+        <img
+          src="images/users-connected.svg"
+          alt="Users"
+          class="users-connected-icon"
+        />
+        <span class="mobile-user-count">4</span>
+        <div class="mobile-users-dropdown">
+          <div class="mobile-user-item">
+            <div class="mobile-user-avatar">
+              <img src="images/profileuser.jpg" alt="User1" />
+              <span class="mobile-online-indicator"></span>
+            </div>
+            <span class="mobile-user-name">user1</span>
+          </div>
+          <div class="mobile-user-item">
+            <div class="mobile-user-avatar">
+              <img src="images/profileuser.jpg" alt="User2" />
+              <span class="mobile-online-indicator"></span>
+            </div>
+            <span class="mobile-user-name">user2</span>
+          </div>
+          <div class="mobile-user-item">
+            <div class="mobile-user-avatar">
+              <img src="images/profileuser.jpg" alt="User3" />
+              <span class="mobile-online-indicator"></span>
+            </div>
+            <span class="mobile-user-name">user3</span>
+          </div>
+          <div class="mobile-user-item">
+            <div class="mobile-user-avatar">
+              <img src="images/profileuser.jpg" alt="User4" />
+              <span class="mobile-online-indicator"></span>
+            </div>
+            <span class="mobile-user-name">user4</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="main-content">
+      <div class="room-header">
+        <span class="current-room-name">room1</span>
+      </div>
+      <main class="chat-area">
+        <!-- Skeleton de mensajes -->
+        <div class="skeleton-message received">
+          <div class="skeleton-header">
+            <div class="skeleton skeleton-avatar"></div>
+            <div class="skeleton skeleton-username"></div>
+            <div class="skeleton skeleton-time"></div>
+          </div>
+          <div class="skeleton skeleton-content">
+            <div class="skeleton skeleton-text"></div>
+            <div class="skeleton skeleton-text"></div>
+          </div>
+        </div>
+        <div class="skeleton-message sent">
+          <div class="skeleton-header">
+            <div class="skeleton skeleton-time"></div>
+            <div class="skeleton skeleton-username"></div>
+            <div class="skeleton skeleton-avatar"></div>
+          </div>
+          <div class="skeleton skeleton-content">
+            <div class="skeleton skeleton-text"></div>
+          </div>
+        </div>
+        <div class="skeleton-message received">
+          <div class="skeleton-header">
+            <div class="skeleton skeleton-avatar"></div>
+            <div class="skeleton skeleton-username"></div>
+            <div class="skeleton skeleton-time"></div>
+          </div>
+          <div class="skeleton skeleton-content">
+            <div class="skeleton skeleton-text"></div>
+            <div class="skeleton skeleton-text"></div>
+          </div>
+        </div>
+      </main>
+
+      <aside class="users-sidebar">
+        <div class="users-header">
+          <h3>Conectados <span class="user-count">4</span></h3>
+        </div>
+        <div class="users-list">
+          <div class="skeleton-user">
+            <div class="skeleton skeleton-user-avatar"></div>
+            <div class="skeleton skeleton-user-name"></div>
+          </div>
+          <div class="skeleton-user">
+            <div class="skeleton skeleton-user-avatar"></div>
+            <div class="skeleton skeleton-user-name"></div>
+          </div>
+          <div class="skeleton-user">
+            <div class="skeleton skeleton-user-avatar"></div>
+            <div class="skeleton skeleton-user-name"></div>
+          </div>
+          <div class="skeleton-user">
+            <div class="skeleton skeleton-user-avatar"></div>
+            <div class="skeleton skeleton-user-name"></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="typing-indicator" style="display: none">
+      usuario está escribiendo...
+    </div>
+    <footer class="input-area">
+      <div class="input-container">
+        <input
+          type="text"
+          class="message-input"
+          placeholder="Escribe tu mensaje..."
+          maxlength="250"
+        />
+        <span class="char-counter">0/250</span>
+        <img src="images/send.svg" alt="Send" class="send-icon" />
+      </div>
+    </footer>
+
+    <!-- Controles flotantes independientes -->
+    <div class="chat-controls">
+      <input
+        type="file"
+        accept="image/*"
+        class="image-input"
+        style="display: none"
+      />
+      <img
+        src="images/image-load.svg"
+        alt="Upload Image"
+        class="image-btn"
+        title="Enviar imagen"
+      />
+      <img
+        src="images/emote.svg"
+        alt="Emotes"
+        class="emote-btn"
+        title="Emotes"
+      />
+      <div class="emote-panel">
+        <div class="emote-grid">
+          <img
+            src="images/emotes/emote1.png"
+            alt=":)"
+            class="emote-item"
+            data-emote=":)"
+          />
+          <img
+            src="images/emotes/emote2.png"
+            alt=":D"
+            class="emote-item"
+            data-emote=":D"
+          />
+          <img
+            src="images/emotes/emote3.png"
+            alt=":("
+            class="emote-item"
+            data-emote=":("
+          />
+          <img
+            src="images/emotes/emote4.png"
+            alt=":P"
+            class="emote-item"
+            data-emote=":P"
+          />
+          <img
+            src="images/emotes/emote5.png"
+            alt="xD"
+            class="emote-item"
+            data-emote="xD"
+          />
+          <img
+            src="images/emotes/emote6.png"
+            alt="<3"
+            class="emote-item"
+            data-emote="<3"
+          />
+          <img
+            src="images/emotes/emote7.png"
+            alt="kappa"
+            class="emote-item"
+            data-emote="kappa"
+          />
+          <img
+            src="images/emotes/emote8.png"
+            alt="poggers"
+            class="emote-item"
+            data-emote="poggers"
+          />
+          <img
+            src="images/emotes/emote9.png"
+            alt="sadge"
+            class="emote-item"
+            data-emote="sadge"
+          />
+          <img
+            src="images/emotes/emote10.png"
+            alt="omegalul"
+            class="emote-item"
+            data-emote="omegalul"
+          />
+          <img
+            src="images/emotes/emote11.png"
+            alt="monkas"
+            class="emote-item"
+            data-emote="monkas"
+          />
+          <img
+            src="images/emotes/emote12.png"
+            alt="pepehands"
+            class="emote-item"
+            data-emote="pepehands"
+          />
+          <img
+            src="images/emotes/emote13.png"
+            alt="catjam"
+            class="emote-item"
+            data-emote="catjam"
+          />
+          <img
+            src="images/emotes/emote14.png"
+            alt="kekw"
+            class="emote-item"
+            data-emote="kekw"
+          />
+          <img
+            src="images/emotes/emote15.png"
+            alt="pepe"
+            class="emote-item"
+            data-emote="pepe"
+          />
+          <img
+            src="images/emotes/emote16.png"
+            alt="pog"
+            class="emote-item"
+            data-emote="pog"
+          />
+          <img
+            src="images/emotes/emote17.png"
+            alt="ez"
+            class="emote-item"
+            data-emote="ez"
+          />
+          <img
+            src="images/emotes/emote18.png"
+            alt="lul"
+            class="emote-item"
+            data-emote="lul"
+          />
+          <img
+            src="images/emotes/emote19.png"
+            alt="5head"
+            class="emote-item"
+            data-emote="5head"
+          />
+          <img
+            src="images/emotes/emote20.png"
+            alt="pepega"
+            class="emote-item"
+            data-emote="pepega"
+          />
+          <img
+            src="images/emotes/emote21.png"
+            alt="omg"
+            class="emote-item"
+            data-emote="omg"
+          />
+          <img
+            src="images/emotes/emote22.png"
+            alt="wow"
+            class="emote-item"
+            data-emote="wow"
+          />
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+    <!-- Panel de Usuario -->
+    <div class="user-panel-overlay">
+      <div class="user-panel">
+        <div class="user-panel-header">
+          <div class="user-panel-tabs">
+            <div class="user-panel-tab active" data-tab="config">
+              Configuración
+            </div>
+            <div class="user-panel-tab" data-tab="rules">Reglas</div>
+          </div>
+          <img src="images/close.svg" alt="Close" class="close-panel" />
+        </div>
+        <div class="user-panel-content">
+          <div class="config-section">
+            <div class="config-item" data-config="name">
+              <span>Cambiar nombre</span>
+              <button>Editar</button>
+              <div class="config-input">
+                <input type="text" placeholder="Nuevo nombre" maxlength="20" />
+                <div class="input-buttons">
+                  <button class="accept-btn">Aceptar</button>
+                  <button class="cancel-btn">Cancelar</button>
+                </div>
+              </div>
+            </div>
+            <div class="config-item" data-config="photo">
+              <span>Cambiar foto de perfil</span>
+              <button>Subir</button>
+              <div class="config-input">
+                <input type="file" accept="image/*" class="file-input" />
+                <div class="input-buttons">
+                  <button class="accept-btn">Aceptar</button>
+                  <button class="cancel-btn">Cancelar</button>
+                </div>
+              </div>
+            </div>
+            <div class="config-item" data-config="color">
+              <span>Cambiar color</span>
+              <button>Personalizar</button>
+              <div class="color-picker-panel">
+                <div class="color-preview">
+                  <span>Vista previa:</span>
+                  <span class="color-preview-text">username</span>
+                </div>
+                <input type="color" class="color-input" value="#ffffff" />
+                <div class="input-buttons">
+                  <button class="accept-btn">Aceptar</button>
+                  <button class="cancel-btn">Cancelar</button>
+                </div>
+              </div>
+            </div>
+            <div class="config-item" data-config="description">
+              <span>Descripción de perfil</span>
+              <button>Editar</button>
+              <div class="config-input">
+                <input
+                  type="text"
+                  placeholder="Nueva descripción"
+                  maxlength="100"
+                />
+                <div class="input-buttons">
+                  <button class="accept-btn">Aceptar</button>
+                  <button class="cancel-btn">Cancelar</button>
+                </div>
+              </div>
+            </div>
+            <div class="config-item">
+              <span>Cambiar fondo</span>
+              <button>Seleccionar</button>
+            </div>
+            <div class="config-item" data-config="password">
+              <span>Cambiar contraseña</span>
+              <button>Cambiar</button>
+              <div class="config-input">
+                <input
+                  type="password"
+                  placeholder="Nueva contraseña"
+                  maxlength="50"
+                />
+                <div class="input-buttons">
+                  <button class="accept-btn">Aceptar</button>
+                  <button class="cancel-btn">Cancelar</button>
+                </div>
+              </div>
+            </div>
+            <div class="config-item">
+              <span>Cerrar sesión</span>
+              <button>Salir</button>
+            </div>
+            <div class="config-item danger">
+              <span>Borrar cuenta</span>
+              <button>Eliminar</button>
+            </div>
+          </div>
+
+          <div class="rules-section">
+            <div class="rules-content">
+              <h3>Reglas del Chat</h3>
+              <p>
+                Bienvenido a nuestro espacio digital. Aquí las reglas son
+                simples pero fundamentales:
+              </p>
+              <br />
+              <p>1. Respeta a todos los usuarios sin excepción</p>
+              <p>2. No spam ni contenido inapropiado</p>
+              <p>3. Mantén las conversaciones relevantes al tema</p>
+              <p>4. No compartir información personal</p>
+              <p>5. Reporta cualquier comportamiento inadecuado</p>
+              <br />
+              <p>
+                El incumplimiento de estas reglas puede resultar en suspensión
+                temporal o permanente de tu cuenta.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

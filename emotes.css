@@ -1,61 +1,107 @@
 /* Estilos optimizados para emotes */
 .emote-panel {
   position: fixed;
-  bottom: 150px;
-  right: 20px;
-  width: 280px;
-  height: 200px;
-  border: 1px solid #fff;
-  border-radius: 8px;
-  padding: 8px;
+  bottom: 145px;
+  right: 15px;
+  width: 300px;
+  height: 220px;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(2px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 12px;
   z-index: 100001;
   overflow-y: auto;
-  display: none;
+  opacity: 0;
+  transform: translateY(20px) scale(0.9);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
 }
 
 .emote-panel.active {
-  display: block;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
 }
 
 .emote-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-  padding: 4px;
+  gap: 10px;
+  padding: 6px;
 }
 
 .emote-item {
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   cursor: pointer;
-  border-radius: 4px;
-  transition: transform 0.2s;
+  border-radius: 6px;
+  transition: all 0.2s ease;
   flex-shrink: 0;
+  opacity: 0;
+  transform: scale(0.8);
+  animation: emoteAppear 0.3s ease forwards;
+}
+
+.emote-item:nth-child(n) {
+  animation-delay: calc(var(--i, 0) * 0.02s);
 }
 
 .emote-item:hover {
-  transform: scale(1.1);
+  transform: scale(1.15);
+  filter: brightness(1.2);
+}
+
+@keyframes emoteAppear {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .emote-panel::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 .emote-panel::-webkit-scrollbar-track {
-  background: #333;
-  border-radius: 3px;
+  background: rgba(51, 51, 51, 0.5);
+  border-radius: 4px;
 }
 
 .emote-panel::-webkit-scrollbar-thumb {
-  background: #00ff00;
-  border-radius: 3px;
+  background: rgba(0, 255, 0, 0.7);
+  border-radius: 4px;
+  transition: background 0.2s;
 }
 
-.chat-controls .icon {
-  background: none; /* Remove white background */
+.emote-panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 0, 0.9);
 }
 
-.image-btn,
-.emote-btn {
-  background-color: #000; /* Set black background */
+/* Animación de entrada del panel */
+@keyframes panelSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Animación de salida del panel */
+@keyframes panelSlideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+  }
+}
+
+.emote-panel.closing {
+  animation: panelSlideOut 0.2s ease forwards;
 }

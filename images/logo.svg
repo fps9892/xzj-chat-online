@@ -1,0 +1,35 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="neonGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00ff00;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#00cc00;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#009900;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Círculo exterior -->
+  <circle cx="60" cy="60" r="55" fill="none" stroke="url(#neonGlow)" stroke-width="2" filter="url(#glow)" opacity="0.6"/>
+  
+  <!-- Hexágono central -->
+  <polygon points="60,20 85,35 85,65 60,80 35,65 35,35" fill="none" stroke="url(#neonGlow)" stroke-width="3" filter="url(#glow)"/>
+  
+  <!-- Líneas internas -->
+  <line x1="60" y1="30" x2="60" y2="70" stroke="url(#neonGlow)" stroke-width="2" filter="url(#glow)"/>
+  <line x1="40" y1="50" x2="80" y2="50" stroke="url(#neonGlow)" stroke-width="2" filter="url(#glow)"/>
+  
+  <!-- Puntos de conexión -->
+  <circle cx="60" cy="30" r="3" fill="url(#neonGlow)" filter="url(#glow)"/>
+  <circle cx="60" cy="70" r="3" fill="url(#neonGlow)" filter="url(#glow)"/>
+  <circle cx="40" cy="50" r="3" fill="url(#neonGlow)" filter="url(#glow)"/>
+  <circle cx="80" cy="50" r="3" fill="url(#neonGlow)" filter="url(#glow)"/>
+  
+  <!-- Centro -->
+  <circle cx="60" cy="60" r="8" fill="url(#neonGlow)" filter="url(#glow)"/>
+</svg>

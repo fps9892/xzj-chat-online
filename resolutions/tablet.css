@@ -1,4 +1,27 @@
 @media (min-width: 768px) and (max-width: 1023px) {
+  /* Loading Screen Tablet */
+  .loading-content {
+    gap: 28px;
+  }
+  
+  .loading-logo {
+    width: 110px;
+    height: 110px;
+  }
+  
+  .neon-loader {
+    width: 55px;
+    height: 55px;
+  }
+  
+  .loading-text {
+    font-size: 17px;
+  }
+  
+  .loading-progress {
+    width: 190px;
+  }
+
   .mobile-users-indicator {
     display: flex;
     align-items: center;
@@ -139,7 +162,7 @@
 
   .image-btn,
   .emote-btn {
-    background-color: #000; /* Set black background */
+    background-color: #00000000;
   }
 
   .emote-panel {

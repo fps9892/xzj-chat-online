@@ -1,4 +1,29 @@
 @media (min-width: 1024px) {
+  /* Loading Screen Desktop */
+  .loading-content {
+    gap: 35px;
+  }
+  
+  .loading-logo {
+    width: 130px;
+    height: 130px;
+  }
+  
+  .neon-loader {
+    width: 65px;
+    height: 65px;
+  }
+  
+  .loading-text {
+    font-size: 20px;
+    letter-spacing: 3px;
+  }
+  
+  .loading-progress {
+    width: 220px;
+    height: 5px;
+  }
+
   .mobile-users-indicator {
     display: none;
   }
@@ -128,6 +153,6 @@
 
   .image-btn,
   .emote-btn {
-    background-color: #000; /* Set black background */
+    background-color: #00000000; /* Set black background */
   }
 }

@@ -13,6 +13,246 @@ body {
   flex-direction: column;
 }
 
+/* Pantalla de Carga Profesional */
+.loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #000000 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.loading-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  text-align: center;
+}
+
+.logo-container {
+  position: relative;
+  animation: logoFloat 3s ease-in-out infinite;
+}
+
+.loading-logo {
+  width: 120px;
+  height: 120px;
+  filter: drop-shadow(0 0 20px #00ff00);
+  animation: logoGlow 2s ease-in-out infinite alternate;
+}
+
+.neon-loader {
+  width: 60px;
+  height: 60px;
+  border: 3px solid transparent;
+  border-top: 3px solid #00ff00;
+  border-right: 3px solid #00ff00;
+  border-radius: 50%;
+  animation: neonSpin 1.2s linear infinite;
+  position: relative;
+  box-shadow: 0 0 20px #00ff00, inset 0 0 20px #00ff00;
+}
+
+.neon-loader::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  right: -6px;
+  bottom: -6px;
+  border: 2px solid transparent;
+  border-top: 2px solid #00cc00;
+  border-radius: 50%;
+  animation: neonSpin 2s linear infinite reverse;
+}
+
+.loading-text {
+  font-family: "Orbitron", monospace;
+  font-size: 18px;
+  font-weight: 600;
+  color: #00ff00;
+  text-shadow: 0 0 10px #00ff00;
+  letter-spacing: 2px;
+  animation: textPulse 1.5s ease-in-out infinite;
+}
+
+.loading-progress {
+  width: 200px;
+  height: 4px;
+  background-color: #111;
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: inset 0 0 5px #00ff00;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #00ff00, #00cc00, #00ff00);
+  background-size: 200% 100%;
+  border-radius: 2px;
+  animation: progressFlow 2s ease-in-out infinite,
+    progressGlow 1.5s ease-in-out infinite;
+  box-shadow: 0 0 10px #00ff00;
+}
+
+@keyframes logoFloat {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes logoGlow {
+  0% {
+    filter: drop-shadow(0 0 20px #00ff00);
+  }
+  100% {
+    filter: drop-shadow(0 0 30px #00ff00) drop-shadow(0 0 40px #00ff00);
+  }
+}
+
+@keyframes neonSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes textPulse {
+  0%,
+  100% {
+    opacity: 1;
+    text-shadow: 0 0 10px #00ff00;
+  }
+  50% {
+    opacity: 0.7;
+    text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00;
+  }
+}
+
+@keyframes progressFlow {
+  0% {
+    width: 0%;
+  }
+  50% {
+    width: 70%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+@keyframes progressGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 10px #00ff00;
+  }
+  50% {
+    box-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00;
+  }
+}
+
+/* Efectos adicionales para la carga */
+.loading-screen::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    circle at center,
+    transparent 0%,
+    rgba(0, 255, 0, 0.03) 50%,
+    transparent 100%
+  );
+  animation: backgroundPulse 4s ease-in-out infinite;
+}
+
+@keyframes backgroundPulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Mejoras en los skeleton messages */
+.skeleton-message {
+  opacity: 0;
+  animation: skeletonFadeIn 0.5s ease-in-out forwards;
+}
+
+.skeleton-message:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.skeleton-message:nth-child(2) {
+  animation-delay: 0.3s;
+}
+.skeleton-message:nth-child(3) {
+  animation-delay: 0.5s;
+}
+
+@keyframes skeletonFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mejoras en skeleton users */
+.skeleton-user {
+  opacity: 0;
+  animation: skeletonSlideIn 0.4s ease-out forwards;
+}
+
+.skeleton-user:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.skeleton-user:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.skeleton-user:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.skeleton-user:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+@keyframes skeletonSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 .header {
   background-color: #000;
   border-bottom: 1px solid #fff;
@@ -165,13 +405,11 @@ body {
 
 .typing-indicator {
   position: fixed;
-  bottom: 85px;
-  left: 20px;
-  right: 20px;
-  background-color: #000;
-  border: 1px solid #00ff00;
+  bottom: 75px;
+  left: 5px;
+  right: 5px;
+  background-color: #00000000;
   border-radius: 8px;
-  padding: 8px 12px;
   font-size: 12px;
   color: #00ff00;
   font-family: monospace;
@@ -180,17 +418,6 @@ body {
   display: flex;
   align-items: center;
   z-index: 1001;
-}
-
-@keyframes blink {
-  0%,
-  50% {
-    opacity: 1;
-  }
-  51%,
-  100% {
-    opacity: 0.3;
-  }
 }
 
 .input-container {
@@ -237,47 +464,55 @@ body {
 
 .chat-controls {
   position: fixed;
-  bottom: 100px;
-  right: 20px;
+  bottom: 90px;
+  right: 15px;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  z-index: 99999;
+  flex-direction: row;
+  gap: 12px;
+  z-index: 9999;
   pointer-events: auto;
 }
 
 .image-btn {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   cursor: pointer;
   filter: invert(1);
-  transition: opacity 0.2s;
-  background: none;
+  transition: all 0.3s ease;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
-  padding: 8px;
+  padding: 10px;
   z-index: 100000;
   position: relative;
 }
 
 .image-btn:hover {
-  opacity: 0.7;
+  opacity: 0.8;
+  transform: scale(1.1);
+  background: rgba(224, 0, 253, 0.9);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 .emote-btn {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   cursor: pointer;
   filter: invert(1);
-  transition: opacity 0.2s;
-  background: none;
+  transition: all 0.3s ease;
+  background: rgba(0, 0, 0, 0);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
-  padding: 8px;
+  padding: 10px;
   z-index: 100000;
   position: relative;
 }
 
 .emote-btn:hover {
-  opacity: 0.7;
+  opacity: 0.8;
+  transform: scale(1.1);
+  background: rgba(224, 0, 253, 0.9);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 .message-image {
@@ -678,17 +913,23 @@ body {
 }
 
 .skeleton {
-  background: linear-gradient(90deg, #333 25%, #555 50%, #333 75%);
+  background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
   background-size: 200% 100%;
-  animation: skeleton-loading 1.5s infinite;
+  animation: skeleton-loading 2s ease-in-out infinite;
+  border-radius: 4px;
 }
 
 @keyframes skeleton-loading {
   0% {
     background-position: 200% 0;
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.8;
   }
   100% {
     background-position: -200% 0;
+    opacity: 0.6;
   }
 }
 
@@ -936,4 +1177,33 @@ body {
   width: 64px;
   height: 64px;
   border-radius: 8px;
+}
+
+/* Mejoras adicionales para los controles de chat */
+.chat-controls {
+  backdrop-filter: blur(1px);
+}
+
+/* Animación sutil para los botones */
+@keyframes buttonPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.image-btn:active,
+.emote-btn:active {
+  animation: buttonPulse 0.2s ease;
+}
+
+/* Mejora del área de input para mejor integración */
+.input-area {
+  backdrop-filter: blur(2px);
+  background-color: rgba(0, 0, 0, 0.95);
 }
