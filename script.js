@@ -668,8 +668,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Botón de emotes
-    emoteBtn.addEventListener('click', () => {
-        emotePanel.style.display = emotePanel.style.display === 'none' ? 'block' : 'none';
+    emoteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        emotePanel.classList.toggle('active');
     });
     
     // Seleccionar emote
@@ -684,7 +685,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }).catch(error => {
                     console.error('Error sending emote:', error);
                 });
-                emotePanel.style.display = 'none';
+                emotePanel.classList.remove('active');
             });
         });
     }
@@ -694,7 +695,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Cerrar panel de emotes al hacer click fuera
     document.addEventListener('click', (e) => {
         if (!emoteBtn.contains(e.target) && !emotePanel.contains(e.target)) {
-            emotePanel.style.display = 'none';
+            emotePanel.classList.remove('active');
         }
     });
 

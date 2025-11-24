@@ -141,6 +141,8 @@
         width: 250px;
         height: 190px;
         padding: 7px;
+        bottom: 145px;
+        right: 15px;
     }
 
     .emote-grid {

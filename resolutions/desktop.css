@@ -118,4 +118,11 @@
         background: #333;
         border-radius: 3px;
     }
+
+    .emote-panel {
+        bottom: 150px;
+        right: 20px;
+        width: 280px;
+        height: 200px;
+    }
 }
