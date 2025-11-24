@@ -50,3 +50,7 @@
   background: #00ff00;
   border-radius: 3px;
 }
+
+.chat-controls .icon {
+  background: none; /* Remove white background */
+}
