@@ -1,0 +1,97 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/admins/$("firebaseUid:" + request.auth.uid));
+    }
+    
+    function hasValidUserData() {
+      return request.resource.data.keys().hasAll(['name', 'avatar', 'status', 'textColor', 'description', 'role']) &&
+             request.resource.data.name is string &&
+             request.resource.data.avatar is string &&
+             request.resource.data.status is string &&
+             request.resource.data.textColor is string &&
+             request.resource.data.description is string &&
+             request.resource.data.role is string;
+    }
+    
+    function hasValidMessageData() {
+      return request.resource.data.keys().hasAll(['text', 'userId', 'userName', 'userAvatar', 'textColor', 'timestamp', 'type', 'role']) &&
+             request.resource.data.text is string &&
+             request.resource.data.text.size() <= 250 &&
+             request.resource.data.userId is string &&
+             request.resource.data.userName is string &&
+             request.resource.data.userAvatar is string &&
+             request.resource.data.textColor is string &&
+             request.resource.data.type in ['text', 'image', 'emote'] &&
+             request.resource.data.role is string;
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId) && hasValidUserData();
+      allow update: if isOwner(userId) && hasValidUserData();
+      allow delete: if isAdmin();
+    }
+    
+    // Guests collection
+    match /guests/{guestId} {
+      allow read, write: if true; // Guests can be anonymous
+    }
+    
+    // Admins collection
+    match /admins/{adminId} {
+      allow read, write: if true;
+      
+      function hasValidAdminData() {
+        return request.resource.data.keys().hasAll(['addedAt', 'addedBy', 'email', 'uid']) &&
+               request.resource.data.addedAt is timestamp &&
+               request.resource.data.addedBy is string &&
+               request.resource.data.email is string &&
+               request.resource.data.uid is string;
+      }
+      
+      allow create: if hasValidAdminData();
+      allow update: if hasValidAdminData();
+    }
+    
+    // Rooms collection
+    match /rooms/{roomId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAdmin();
+      
+      // Messages subcollection
+      match /messages/{messageId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated() && hasValidMessageData();
+        allow update: if isOwner(resource.data.userId) || isAdmin();
+        allow delete: if isOwner(resource.data.userId) || isAdmin();
+      }
+      
+      // Users subcollection
+      match /users/{userId} {
+        allow read: if isAuthenticated();
+        allow write: if isOwner(userId) && hasValidUserData();
+      }
+      
+      // Typing indicators
+      match /typing/{userId} {
+        allow read: if isAuthenticated();
+        allow write: if isOwner(userId);
+      }
+    }
+  }
+}
