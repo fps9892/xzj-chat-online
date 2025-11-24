@@ -16,31 +16,7 @@ const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 const db = getFirestore(app);
 
-// Mantener estado de autenticación
-let authInitialized = false;
-async function initializeAuth() {
-    if (authInitialized) return;
-    
-    try {
-        const { getAuth, onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-        const auth = getAuth();
-        
-        onAuthStateChanged(auth, (user) => {
-            if (user && currentUser.firebaseUid === user.uid) {
-                console.log('Usuario autenticado:', user.uid);
-            }
-        });
-        
-        authInitialized = true;
-    } catch (error) {
-        console.error('Error initializing auth:', error);
-    }
-}
 
-// Inicializar autenticación si no es invitado
-if (!currentUser.isGuest) {
-    initializeAuth();
-}
 
 // Limpiar userId para evitar caracteres no permitidos
 function sanitizeUserId(userId) {
@@ -65,6 +41,30 @@ if (!localStorage.getItem('currentUser')) {
 }
 
 let currentRoom = 'room1';
+
+// Mantener estado de autenticación
+let authInitialized = false;
+async function initializeAuth() {
+    if (authInitialized || currentUser.isGuest) return;
+    
+    try {
+        const { getAuth, onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+        const auth = getAuth();
+        
+        onAuthStateChanged(auth, (user) => {
+            if (user && currentUser.firebaseUid === user.uid) {
+                console.log('Usuario autenticado:', user.uid);
+            }
+        });
+        
+        authInitialized = true;
+    } catch (error) {
+        console.error('Error initializing auth:', error);
+    }
+}
+
+// Inicializar autenticación
+initializeAuth();
 
 // Funciones para mensajes
 export function sendMessage(text) {
