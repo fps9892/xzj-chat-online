@@ -136,8 +136,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else if (configType === 'photo') {
                         const file = inputField.files[0];
                         if (file) {
-                            updates.avatar = await uploadAvatar(file, currentUser.userId);
-                            document.querySelector('.profile-image').src = updates.avatar;
+                            try {
+                                updates.avatar = await fileToBase64(file);
+                                document.querySelector('.profile-image').src = updates.avatar;
+                            } catch (error) {
+                                showNotification(error.message, 'error');
+                                return;
+                            }
                         }
                     }
                     
@@ -200,6 +205,21 @@ document.addEventListener('DOMContentLoaded', function() {
             notification.classList.remove('show');
             setTimeout(() => notification.remove(), 300);
         }, 3000);
+    }
+    
+    // Convertir imagen a base64
+    function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            if (file.size > 1024 * 1024) { // 1MB
+                reject(new Error('La imagen debe ser menor a 1MB'));
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
     }
 
     // Funcionalidad "ver más" para mensajes largos
@@ -303,11 +323,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="message-header">
                         ${isOwn ? `
                             <span class="message-time">${time}</span>
-                            <span class="message-username">${displayName}</span>
+                            <span class="message-username" style="color: ${message.textColor || currentUser.textColor || '#ffffff'}">${displayName}</span>
                             <img src="${message.userAvatar}" alt="User" class="message-avatar">
                         ` : `
                             <img src="${message.userAvatar}" alt="User" class="message-avatar">
-                            <span class="message-username">${displayName}</span>
+                            <span class="message-username" style="color: ${message.textColor || '#ffffff'}">${displayName}</span>
                             <span class="message-time">${time}</span>
                         `}
                     </div>
@@ -385,8 +405,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         <p class="user-role">${user.role === 'admin' ? 'Administrador' : user.role === 'moderator' ? 'Moderador' : 'Usuario'}</p>
                         <div class="profile-info">
                             <p><strong>Descripción:</strong> ${user.description || 'Sin descripción'}</p>
-                            <p><strong>Cuenta creada:</strong> ${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'No disponible'}</p>
-                            <p><strong>Última conexión:</strong> ${user.lastSeen ? new Date(user.lastSeen).toLocaleString() : 'Ahora'}</p>
+                            <p><strong>Cuenta creada:</strong> ${user.createdAt ? new Date(user.createdAt).toLocaleDateString('es-ES') : 'No disponible'}</p>
+                            <p><strong>Última conexión:</strong> ${user.lastSeen ? new Date(user.lastSeen).toLocaleString('es-ES') : 'Ahora'}</p>
                         </div>
                     </div>
                 </div>
@@ -474,10 +494,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (configText.includes('Cambiar fondo')) {
             btn.addEventListener('click', function() {
                 showNotification('Funcionalidad de fondo próximamente', 'warning');
-            });
-        } else if (configText.includes('Cambiar foto')) {
-            btn.addEventListener('click', function() {
-                showNotification('Funcionalidad de foto próximamente', 'warning');
             });
         } else if (configText.includes('Borrar cuenta')) {
             btn.addEventListener('click', function() {

@@ -181,7 +181,7 @@
                 </div>
               </div>
             </div>
-            <div class="config-item">
+            <div class="config-item" data-config="photo">
               <span>Cambiar foto de perfil</span>
               <button>Subir</button>
               <div class="config-input">
@@ -250,24 +250,7 @@
               <button>Eliminar</button>
             </div>
           </div>
-          <div class="profile-info">
-            <p>
-              <strong>Descripción:</strong> ${user.description || 'Sin
-              descripción'}
-            </p>
-            <p>
-              <strong>Cuenta creada:</strong> ${user.createdAt ? new
-              Date(user.createdAt).toLocaleDateString() : 'No disponible'}
-            </p>
-            <p>
-              <strong>Última conexión:</strong> ${user.lastSeen ? new
-              Date(user.lastSeen).toLocaleString() : 'Ahora'}
-            </p>
-            <p>
-              <strong>Rango:</strong> ${user.role === 'admin' ? 'Administrador'
-              : user.role === 'moderator' ? 'Moderador' : 'Usuario'}
-            </p>
-          </div>
+
           <div class="rules-section">
             <div class="rules-content">
               <h3>Reglas del Chat</h3>

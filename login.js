@@ -71,11 +71,19 @@ document.addEventListener('DOMContentLoaded', function() {
         return querySnapshot.empty;
     }
 
-    // Upload avatar
-    async function uploadAvatar(file, userId) {
-        const avatarRef = storageRef(storage, `avatars/${userId}`);
-        await uploadBytes(avatarRef, file);
-        return await getDownloadURL(avatarRef);
+    // Convert file to base64
+    function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            if (file.size > 1024 * 1024) { // 1MB
+                reject(new Error('La imagen debe ser menor a 1MB'));
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
     }
 
 
@@ -145,22 +153,29 @@ document.addEventListener('DOMContentLoaded', function() {
             let avatarUrl = 'images/profileuser.jpg';
 
             if (avatarFile) {
-                avatarUrl = await uploadAvatar(avatarFile, userCredential.user.uid);
+                try {
+                    avatarUrl = await fileToBase64(avatarFile);
+                } catch (error) {
+                    showNotification(error.message, 'error');
+                    return;
+                }
             }
 
             const userId = generateUserId();
+            const now = new Date();
             const userData = {
                 userId: userId,
                 username: username,
                 email: email,
                 avatar: avatarUrl,
                 description: description || 'Usuario registrado',
-                createdAt: new Date(),
-                lastSeen: new Date(),
-                role: 'user', // Default role
+                createdAt: now.toISOString(),
+                lastSeen: now.toISOString(),
+                role: 'user',
                 isGuest: false,
                 textColor: '#ffffff',
-                background: 'default'
+                background: 'default',
+                firebaseUid: userCredential.user.uid
             };
             
             await setDoc(doc(db, 'users', userCredential.user.uid), userData);
@@ -202,6 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             const userId = generateUserId();
+            const now = new Date();
             const guestUser = {
                 userId: userId,
                 username: nickname,
@@ -211,8 +227,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 isGuest: true,
                 textColor: '#ffffff',
                 status: 'online',
-                createdAt: new Date(),
-                lastSeen: new Date()
+                createdAt: now.toISOString(),
+                lastSeen: now.toISOString()
             };
 
             // Guardar en Firestore para usuarios invitados también
@@ -240,18 +256,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 const userId = generateUserId();
                 const username = user.displayName ? user.displayName.substring(0, 10) : 'GoogleUser';
                 
+                const now = new Date();
                 userData = {
                     userId: userId,
                     username: username,
                     email: user.email,
                     avatar: user.photoURL || 'images/profileuser.jpg',
                     description: 'Usuario de Google',
-                    createdAt: new Date(),
-                    lastSeen: new Date(),
+                    createdAt: now.toISOString(),
+                    lastSeen: now.toISOString(),
                     role: 'user',
                     isGuest: false,
                     textColor: '#ffffff',
-                    background: 'default'
+                    background: 'default',
+                    firebaseUid: user.uid
                 };
                 
                 await setDoc(doc(db, 'users', user.uid), userData);
@@ -281,18 +299,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 const userId = generateUserId();
                 const username = user.displayName ? user.displayName.substring(0, 10) : 'FacebookUser';
                 
+                const now = new Date();
                 userData = {
                     userId: userId,
                     username: username,
                     email: user.email,
                     avatar: user.photoURL || 'images/profileuser.jpg',
                     description: 'Usuario de Facebook',
-                    createdAt: new Date(),
-                    lastSeen: new Date(),
+                    createdAt: now.toISOString(),
+                    lastSeen: now.toISOString(),
                     role: 'user',
                     isGuest: false,
                     textColor: '#ffffff',
-                    background: 'default'
+                    background: 'default',
+                    firebaseUid: user.uid
                 };
                 
                 await setDoc(doc(db, 'users', user.uid), userData);

@@ -50,6 +50,7 @@ export function sendMessage(text) {
         userId: currentUser.userId || 'unknown',
         userName: currentUser.username || 'Usuario',
         userAvatar: currentUser.avatar || 'images/profileuser.jpg',
+        textColor: currentUser.textColor || '#ffffff',
         timestamp: serverTimestamp(),
         type: 'text',
         isGuest: currentUser.isGuest || false
