@@ -96,7 +96,8 @@ export function sendMessage(text, type = 'text', imageData = null) {
         textColor: currentUser.textColor || '#ffffff',
         timestamp: serverTimestamp(),
         type: type,
-        isGuest: currentUser.isGuest || false
+        isGuest: currentUser.isGuest || false,
+        role: currentUser.role || 'user'
     };
     
     // Añadir datos de imagen si es tipo imagen o emote
