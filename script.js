@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const emoteBtn = document.querySelector('.emote-btn');
     const emotePanel = document.querySelector('.emote-panel');
     const emoteItems = document.querySelectorAll('.emote-item');
+    const typingIndicator = document.querySelector('.typing-indicator');
     
     // Cooldowns (en milisegundos)
     const cooldowns = {
@@ -593,7 +594,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Contador de caracteres
+    // Contador de caracteres y indicador de escritura
+    let typingTimeout;
     messageInput.addEventListener('input', function() {
         const currentLength = this.value.length;
         charCounter.textContent = `${currentLength}/250`;
@@ -602,6 +604,19 @@ document.addEventListener('DOMContentLoaded', function() {
             charCounter.style.color = '#ff4444';
         } else {
             charCounter.style.color = '#888';
+        }
+        
+        // Mostrar indicador de escritura
+        if (currentLength > 0) {
+            typingIndicator.textContent = `${currentUser.username} está escribiendo...`;
+            typingIndicator.style.display = 'block';
+            
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                typingIndicator.style.display = 'none';
+            }, 2000);
+        } else {
+            typingIndicator.style.display = 'none';
         }
     });
 
