@@ -121,7 +121,18 @@
     }
 
     .emote-btn {
-        font-size: 19px;
+        width: 22px;
+        height: 22px;
+    }
+
+    .emote-panel {
+        max-height: 110px;
+        padding: 9px;
+    }
+
+    .emote-item {
+        width: 30px;
+        height: 30px;
     }
 
     .message-image {

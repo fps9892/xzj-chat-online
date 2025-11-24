@@ -16,8 +16,6 @@ const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 const db = getFirestore(app);
 
-
-
 // Limpiar userId para evitar caracteres no permitidos
 function sanitizeUserId(userId) {
     return userId.replace(/[^a-zA-Z0-9_-]/g, '');
@@ -65,6 +63,24 @@ async function initializeAuth() {
 
 // Inicializar autenticación
 initializeAuth();
+
+// Procesar emotes en texto
+export function processEmotes(text) {
+    const emoteMap = {
+        ':)': '😊', ':D': '😃', ':(': '😢', ':P': '😛',
+        'xD': '😆', '<3': '❤️', 'kappa': '🐸', 'poggers': '🔥',
+        'sadge': '😭', 'omegalul': '😂', 'monkas': '😰', 'pepehands': '😢',
+        'catjam': '🐱', 'kekw': '🤣'
+    };
+    
+    let processedText = text;
+    Object.keys(emoteMap).forEach(emote => {
+        const regex = new RegExp(emote.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+        processedText = processedText.replace(regex, emoteMap[emote]);
+    });
+    
+    return processedText;
+}
 
 // Funciones para mensajes
 export function sendMessage(text, type = 'text', imageData = null) {
@@ -238,24 +254,6 @@ export async function updateUserData(updates) {
     }
 }
 
-// Procesar emotes en texto
-export function processEmotes(text) {
-    const emoteMap = {
-        ':)': '😊', ':D': '😃', ':(': '😢', ':P': '😛',
-        'xD': '😆', '<3': '❤️', 'kappa': '🐸', 'poggers': '🔥',
-        'sadge': '😭', 'omegalul': '😂', 'monkas': '😰', 'pepehands': '😢',
-        'catjam': '🐱', 'kekw': '🤣'
-    };
-    
-    let processedText = text;
-    Object.keys(emoteMap).forEach(emote => {
-        const regex = new RegExp(emote.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-        processedText = processedText.replace(regex, emoteMap[emote]);
-    });
-    
-    return processedText;
-}
-
 // Enviar imagen
 export async function sendImage(file) {
     return new Promise((resolve, reject) => {
@@ -299,53 +297,6 @@ export async function changePassword(newPassword) {
         }
         throw error;
     }
-}
-
-// Sistema de emotes
-const defaultEmotes = {
-    ':)': '😊',
-    ':D': '😃',
-    ':(': '😢',
-    ':P': '😛',
-    ':o': '😮',
-    'xD': '😆',
-    '<3': '❤️',
-    'kappa': '🐸',
-    'poggers': '🔥',
-    'sadge': '😭',
-    'omegalul': '😂',
-    'monkas': '😰',
-    'pepehands': '😢',
-    'catjam': '🐱',
-    'kekw': '🤣'
-};
-
-// Procesar emotes en texto
-export function processEmotes(text) {
-    let processedText = text;
-    Object.keys(defaultEmotes).forEach(emote => {
-        const regex = new RegExp(emote.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-        processedText = processedText.replace(regex, defaultEmotes[emote]);
-    });
-    return processedText;
-}
-
-// Enviar imagen
-export async function sendImage(file) {
-    if (file.size > 1024 * 1024) {
-        throw new Error('La imagen debe ser menor a 1MB');
-    }
-    
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-            sendMessage('', 'image', reader.result)
-                .then(resolve)
-                .catch(reject);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
 }
 
 export { currentUser, currentRoom };

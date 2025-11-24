@@ -218,16 +218,62 @@ body {
 }
 
 .emote-btn {
-  background: none;
-  border: none;
-  font-size: 20px;
+  width: 24px;
+  height: 24px;
   cursor: pointer;
-  padding: 2px;
+  filter: invert(1);
   transition: opacity 0.2s;
 }
 
 .emote-btn:hover {
   opacity: 0.7;
+}
+
+.emote-panel {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  background-color: #000;
+  border: 1px solid #fff;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  padding: 10px;
+  max-height: 120px;
+}
+
+.emote-grid {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 5px 0;
+}
+
+.emote-grid::-webkit-scrollbar {
+  height: 6px;
+}
+
+.emote-grid::-webkit-scrollbar-track {
+  background: #333;
+  border-radius: 3px;
+}
+
+.emote-grid::-webkit-scrollbar-thumb {
+  background: #00ff00;
+  border-radius: 3px;
+}
+
+.emote-item {
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.emote-item:hover {
+  transform: scale(1.1);
 }
 
 .message-image {
