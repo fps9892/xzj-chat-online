@@ -172,8 +172,14 @@ body {
 }
 
 @keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0.3; }
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0.3;
+  }
 }
 
 .input-container {
@@ -266,9 +272,10 @@ body {
 }
 
 .emote-panel {
-  position: absolute;
-  bottom: 60px;
-  right: 0;
+  position: fixed;
+  top: 50%;
+  left: -50%;
+  transform: translate(-50%, -50%);
   width: 280px;
   height: 200px;
   background-color: #000;
@@ -718,8 +725,12 @@ body {
 }
 
 @keyframes skeleton-loading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .skeleton-message {
@@ -836,7 +847,7 @@ body {
 }
 
 .user-profile-header h3 {
-  font-family: 'Orbitron', monospace;
+  font-family: "Orbitron", monospace;
   font-size: 16px;
 }
 
@@ -864,7 +875,7 @@ body {
 }
 
 .user-profile-content h4 {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 18px;
   margin-bottom: 5px;
 }
@@ -874,7 +885,7 @@ body {
   font-size: 12px;
   font-weight: bold;
   margin-bottom: 20px;
-  font-family: 'Orbitron', monospace;
+  font-family: "Orbitron", monospace;
 }
 
 .profile-info {
