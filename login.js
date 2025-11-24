@@ -141,12 +141,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         try {
-            // Check username availability
-            if (!(await isUsernameAvailable(username))) {
-                showNotification('El nombre de usuario ya está en uso', 'error');
-                return;
-            }
-
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             let avatarUrl = 'images/profileuser.jpg';
 
@@ -163,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 description: description || 'Usuario registrado',
                 createdAt: new Date(),
                 lastSeen: new Date(),
-                role: 'user',
+                role: 'user', // Default role
                 isGuest: false,
                 textColor: '#ffffff',
                 background: 'default'

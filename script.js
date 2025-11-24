@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         if (acceptBtn) {
-            acceptBtn.addEventListener('click', function() {
+            acceptBtn.addEventListener('click', async function() {
                 const inputField = item.querySelector('input');
                 if (inputField && inputField.value.trim()) {
                     lastChanges[configType] = Date.now();
@@ -340,7 +340,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function createUserElement(user) {
-        const displayName = user.role === 'guest' ? `${user.name} (invitado)` : user.name;
+        const displayName = user.role === 'admin' ? `${user.name} (Administrador)` : user.name;
         const userEl = createElement(`
             <div class="user-item" data-user-id="${user.id}">
                 <div class="user-avatar">
@@ -372,7 +372,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function showUserProfile(user) {
-        // Create user profile modal
         const modal = createElement(`
             <div class="user-profile-overlay active">
                 <div class="user-profile-panel">
@@ -397,15 +396,9 @@ document.addEventListener('DOMContentLoaded', function() {
         `);
         
         document.body.appendChild(modal);
-        
-        modal.querySelector('.close-profile').addEventListener('click', () => {
-            modal.remove();
-        });
-        
+        modal.querySelector('.close-profile').addEventListener('click', () => modal.remove());
         modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.remove();
-            }
+            if (e.target === modal) modal.remove();
         });
     }
     

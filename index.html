@@ -156,100 +156,133 @@
     </footer>
 
     <script type="module" src="script.js"></script>
-      <!-- Panel de Usuario -->
+    <!-- Panel de Usuario -->
     <div class="user-panel-overlay">
-        <div class="user-panel">
-            <div class="user-panel-header">
-                <div class="user-panel-tabs">
-                    <div class="user-panel-tab active" data-tab="config">Configuración</div>
-                    <div class="user-panel-tab" data-tab="rules">Reglas</div>
-                </div>
-                <img src="images/close.svg" alt="Close" class="close-panel">
+      <div class="user-panel">
+        <div class="user-panel-header">
+          <div class="user-panel-tabs">
+            <div class="user-panel-tab active" data-tab="config">
+              Configuración
             </div>
-            <div class="user-panel-content">
-                <div class="config-section">
-                    <div class="config-item" data-config="name">
-                        <span>Cambiar nombre</span>
-                        <button>Editar</button>
-                        <div class="config-input">
-                            <input type="text" placeholder="Nuevo nombre" maxlength="20">
-                            <div class="input-buttons">
-                                <button class="accept-btn">Aceptar</button>
-                                <button class="cancel-btn">Cancelar</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="config-item">
-                        <span>Cambiar foto de perfil</span>
-                        <button>Subir</button>
-                    </div>
-                    <div class="config-item" data-config="color">
-                        <span>Cambiar color</span>
-                        <button>Personalizar</button>
-                        <div class="color-picker-panel">
-                            <div class="color-preview">
-                                <span>Vista previa:</span>
-                                <span class="color-preview-text">username</span>
-                            </div>
-                            <input type="color" class="color-input" value="#ffffff">
-                            <div class="input-buttons">
-                                <button class="accept-btn">Aceptar</button>
-                                <button class="cancel-btn">Cancelar</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="config-item" data-config="description">
-                        <span>Descripción de perfil</span>
-                        <button>Editar</button>
-                        <div class="config-input">
-                            <input type="text" placeholder="Nueva descripción" maxlength="100">
-                            <div class="input-buttons">
-                                <button class="accept-btn">Aceptar</button>
-                                <button class="cancel-btn">Cancelar</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="config-item">
-                        <span>Cambiar fondo</span>
-                        <button>Seleccionar</button>
-                    </div>
-                    <div class="config-item" data-config="password">
-                        <span>Cambiar contraseña</span>
-                        <button>Cambiar</button>
-                        <div class="config-input">
-                            <input type="password" placeholder="Nueva contraseña" maxlength="50">
-                            <div class="input-buttons">
-                                <button class="accept-btn">Aceptar</button>
-                                <button class="cancel-btn">Cancelar</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="config-item">
-                        <span>Cerrar sesión</span>
-                        <button>Salir</button>
-                    </div>
-                    <div class="config-item danger">
-                        <span>Borrar cuenta</span>
-                        <button>Eliminar</button>
-                    </div>
-                </div>
-                <div class="rules-section">
-                    <div class="rules-content">
-                        <h3>Reglas del Chat</h3>
-                        <p>Bienvenido a nuestro espacio digital. Aquí las reglas son simples pero fundamentales:</p>
-                        <br>
-                        <p>1. Respeta a todos los usuarios sin excepción</p>
-                        <p>2. No spam ni contenido inapropiado</p>
-                        <p>3. Mantén las conversaciones relevantes al tema</p>
-                        <p>4. No compartir información personal</p>
-                        <p>5. Reporta cualquier comportamiento inadecuado</p>
-                        <br>
-                        <p>El incumplimiento de estas reglas puede resultar en suspensión temporal o permanente de tu cuenta.</p>
-                    </div>
-                </div>
-            </div>
+            <div class="user-panel-tab" data-tab="rules">Reglas</div>
+          </div>
+          <img src="images/close.svg" alt="Close" class="close-panel" />
         </div>
+        <div class="user-panel-content">
+          <div class="config-section">
+            <div class="config-item" data-config="name">
+              <span>Cambiar nombre</span>
+              <button>Editar</button>
+              <div class="config-input">
+                <input type="text" placeholder="Nuevo nombre" maxlength="20" />
+                <div class="input-buttons">
+                  <button class="accept-btn">Aceptar</button>
+                  <button class="cancel-btn">Cancelar</button>
+                </div>
+              </div>
+            </div>
+            <div class="config-item">
+              <span>Cambiar foto de perfil</span>
+              <button>Subir</button>
+            </div>
+            <div class="config-item" data-config="color">
+              <span>Cambiar color</span>
+              <button>Personalizar</button>
+              <div class="color-picker-panel">
+                <div class="color-preview">
+                  <span>Vista previa:</span>
+                  <span class="color-preview-text">username</span>
+                </div>
+                <input type="color" class="color-input" value="#ffffff" />
+                <div class="input-buttons">
+                  <button class="accept-btn">Aceptar</button>
+                  <button class="cancel-btn">Cancelar</button>
+                </div>
+              </div>
+            </div>
+            <div class="config-item" data-config="description">
+              <span>Descripción de perfil</span>
+              <button>Editar</button>
+              <div class="config-input">
+                <input
+                  type="text"
+                  placeholder="Nueva descripción"
+                  maxlength="100"
+                />
+                <div class="input-buttons">
+                  <button class="accept-btn">Aceptar</button>
+                  <button class="cancel-btn">Cancelar</button>
+                </div>
+              </div>
+            </div>
+            <div class="config-item">
+              <span>Cambiar fondo</span>
+              <button>Seleccionar</button>
+            </div>
+            <div class="config-item" data-config="password">
+              <span>Cambiar contraseña</span>
+              <button>Cambiar</button>
+              <div class="config-input">
+                <input
+                  type="password"
+                  placeholder="Nueva contraseña"
+                  maxlength="50"
+                />
+                <div class="input-buttons">
+                  <button class="accept-btn">Aceptar</button>
+                  <button class="cancel-btn">Cancelar</button>
+                </div>
+              </div>
+            </div>
+            <div class="config-item">
+              <span>Cerrar sesión</span>
+              <button>Salir</button>
+            </div>
+            <div class="config-item danger">
+              <span>Borrar cuenta</span>
+              <button>Eliminar</button>
+            </div>
+          </div>
+          <div class="profile-info">
+            <p>
+              <strong>Descripción:</strong> ${user.description || 'Sin
+              descripción'}
+            </p>
+            <p>
+              <strong>Cuenta creada:</strong> ${user.createdAt ? new
+              Date(user.createdAt).toLocaleDateString() : 'No disponible'}
+            </p>
+            <p>
+              <strong>Última conexión:</strong> ${user.lastSeen ? new
+              Date(user.lastSeen).toLocaleString() : 'Ahora'}
+            </p>
+            <p>
+              <strong>Rango:</strong> ${user.role === 'admin' ? 'Administrador'
+              : user.role === 'moderator' ? 'Moderador' : 'Usuario'}
+            </p>
+          </div>
+          <div class="rules-section">
+            <div class="rules-content">
+              <h3>Reglas del Chat</h3>
+              <p>
+                Bienvenido a nuestro espacio digital. Aquí las reglas son
+                simples pero fundamentales:
+              </p>
+              <br />
+              <p>1. Respeta a todos los usuarios sin excepción</p>
+              <p>2. No spam ni contenido inapropiado</p>
+              <p>3. Mantén las conversaciones relevantes al tema</p>
+              <p>4. No compartir información personal</p>
+              <p>5. Reporta cualquier comportamiento inadecuado</p>
+              <br />
+              <p>
+                El incumplimiento de estas reglas puede resultar en suspensión
+                temporal o permanente de tu cuenta.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-
-</body>
+  </body>
 </html>
