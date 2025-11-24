@@ -953,7 +953,13 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
+}
+
+.skeleton-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .skeleton-avatar {
@@ -963,21 +969,22 @@ body {
 }
 
 .skeleton-username {
-  width: 60px;
+  width: 70px;
   height: 12px;
   border-radius: 6px;
 }
 
 .skeleton-time {
-  width: 40px;
-  height: 11px;
-  border-radius: 6px;
+  width: 45px;
+  height: 10px;
+  border-radius: 5px;
 }
 
 .skeleton-content {
   padding: 12px 16px;
   border-radius: 18px;
-  max-width: 70%;
+  max-width: 75%;
+  min-height: 50px;
 }
 
 .skeleton-message.received .skeleton-content {
@@ -991,12 +998,23 @@ body {
 .skeleton-text {
   height: 14px;
   border-radius: 7px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .skeleton-text:last-child {
   margin-bottom: 0;
-  width: 70%;
+}
+
+.skeleton-text.long {
+  width: 85%;
+}
+
+.skeleton-text.medium {
+  width: 65%;
+}
+
+.skeleton-text.short {
+  width: 45%;
 }
 
 .skeleton-user {
@@ -1209,4 +1227,39 @@ body {
 .input-area {
   backdrop-filter: blur(2px);
   background-color: rgba(0, 0, 0, 0.95);
+}
+
+/* Ocultar username en móvil */
+@media (max-width: 767px) {
+  .desktop-only {
+    display: none;
+  }
+}
+
+/* Estilos para elementos clickeables */
+.clickable-username {
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.clickable-username:hover {
+  opacity: 0.8;
+}
+
+.copyable-text {
+  cursor: pointer;
+  user-select: text;
+}
+
+.copyable-text:active {
+  background-color: rgba(0, 255, 0, 0.1);
+}
+
+.skeleton-message.sent .skeleton-header {
+  justify-content: flex-end;
+  flex-direction: row-reverse;
+}
+
+.skeleton-message.received .skeleton-header {
+  justify-content: flex-start;
 }

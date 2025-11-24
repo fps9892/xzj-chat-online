@@ -1,4 +1,4 @@
-import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping } from './firebase.js';
+import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping, deleteMessage } from './firebase.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     // Elementos de la pantalla de carga
@@ -428,28 +428,43 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const messageEl = message.type === 'emote' ? 
             createElement(`
-                <div class="emote-message-container ${isOwn ? 'sent' : 'received'}">
-                    <img src="${message.imageData}" alt="Emote" class="standalone-emote" />
-                </div>
-            `) :
-            createElement(`
-                <div class="message-container">
+                <div class="message-container" data-message-id="${message.id}">
                     <div class="message ${isOwn ? 'sent' : 'received'}">
                         <div class="message-header">
                             ${isOwn ? `
                                 <span class="message-time">${time}</span>
-                                <span class="message-username" style="color: ${message.textColor || currentUser.textColor || '#ffffff'}">${displayName}</span>
+                                <span class="message-username clickable-username" data-user-id="${message.userId}" style="color: ${message.textColor || currentUser.textColor || '#ffffff'}">${displayName}</span>
                                 <img src="${message.userAvatar}" alt="User" class="message-avatar">
                             ` : `
                                 <img src="${message.userAvatar}" alt="User" class="message-avatar">
-                                <span class="message-username" style="color: ${message.textColor || '#ffffff'}">${displayName}</span>
+                                <span class="message-username clickable-username" data-user-id="${message.userId}" style="color: ${message.textColor || '#ffffff'}">${displayName}</span>
+                                <span class="message-time">${time}</span>
+                            `}
+                        </div>
+                        <div class="emote-message-container ${isOwn ? 'sent' : 'received'}">
+                            <img src="${message.imageData}" alt="Emote" class="standalone-emote" />
+                        </div>
+                    </div>
+                </div>
+            `) :
+            createElement(`
+                <div class="message-container" data-message-id="${message.id}">
+                    <div class="message ${isOwn ? 'sent' : 'received'}">
+                        <div class="message-header">
+                            ${isOwn ? `
+                                <span class="message-time">${time}</span>
+                                <span class="message-username clickable-username" data-user-id="${message.userId}" style="color: ${message.textColor || currentUser.textColor || '#ffffff'}">${displayName}</span>
+                                <img src="${message.userAvatar}" alt="User" class="message-avatar">
+                            ` : `
+                                <img src="${message.userAvatar}" alt="User" class="message-avatar">
+                                <span class="message-username clickable-username" data-user-id="${message.userId}" style="color: ${message.textColor || '#ffffff'}">${displayName}</span>
                                 <span class="message-time">${time}</span>
                             `}
                         </div>
                         <div class="message-content">
                             ${message.type === 'image' ? 
                                 `<img src="${message.imageData}" alt="Imagen" class="message-image" onclick="showImageModal('${message.imageData}')" />` :
-                                `<div class="message-text">${message.text}</div>
+                                `<div class="message-text copyable-text">${message.text}</div>
                                 ${message.text.length > getCharacterLimit() ? '<span class="see-more">ver más</span>' : ''}`
                             }
                         </div>
@@ -469,6 +484,97 @@ document.addEventListener('DOMContentLoaded', function() {
                     messageText.classList.add('expanded');
                     this.textContent = 'ver menos';
                 }
+            });
+        }
+        
+        // Añadir funcionalidad de copiar mensaje (mantener presionado)
+        const copyableText = messageEl.querySelector('.copyable-text');
+        if (copyableText) {
+            let pressTimer;
+            
+            const startPress = () => {
+                pressTimer = setTimeout(() => {
+                    navigator.clipboard.writeText(copyableText.textContent).then(() => {
+                        showNotification('Mensaje copiado', 'success');
+                    }).catch(() => {
+                        showNotification('Error al copiar mensaje', 'error');
+                    });
+                }, 500);
+            };
+            
+            const endPress = () => {
+                clearTimeout(pressTimer);
+            };
+            
+            // Para dispositivos táctiles
+            copyableText.addEventListener('touchstart', startPress);
+            copyableText.addEventListener('touchend', endPress);
+            copyableText.addEventListener('touchcancel', endPress);
+            
+            // Para mouse
+            copyableText.addEventListener('mousedown', startPress);
+            copyableText.addEventListener('mouseup', endPress);
+            copyableText.addEventListener('mouseleave', endPress);
+        }
+        
+        // Añadir funcionalidad de borrar mensaje (solo para el propietario)
+        if (isOwn) {
+            const messageContent = messageEl.querySelector('.message-content');
+            let pressTimer;
+            
+            const startDeletePress = () => {
+                pressTimer = setTimeout(() => {
+                    if (confirm('¿Estás seguro de que quieres borrar este mensaje?')) {
+                        deleteMessage(message.id).then(success => {
+                            if (success) {
+                                showNotification('Mensaje eliminado', 'success');
+                            } else {
+                                showNotification('Error al eliminar mensaje', 'error');
+                            }
+                        });
+                    }
+                }, 1000); // 1 segundo para borrar
+            };
+            
+            const endDeletePress = () => {
+                clearTimeout(pressTimer);
+            };
+            
+            // Para dispositivos táctiles
+            messageContent.addEventListener('touchstart', startDeletePress);
+            messageContent.addEventListener('touchend', endDeletePress);
+            messageContent.addEventListener('touchcancel', endDeletePress);
+            
+            // Para mouse (click derecho)
+            messageContent.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                if (confirm('¿Estás seguro de que quieres borrar este mensaje?')) {
+                    deleteMessage(message.id).then(success => {
+                        if (success) {
+                            showNotification('Mensaje eliminado', 'success');
+                        } else {
+                            showNotification('Error al eliminar mensaje', 'error');
+                        }
+                    });
+                }
+            });
+        }
+        
+        // Añadir funcionalidad de click en nickname
+        const clickableUsername = messageEl.querySelector('.clickable-username');
+        if (clickableUsername) {
+            clickableUsername.addEventListener('click', () => {
+                const userId = clickableUsername.dataset.userId;
+                // Buscar datos del usuario y mostrar perfil
+                const userData = {
+                    id: userId,
+                    name: message.userName,
+                    avatar: message.userAvatar,
+                    role: message.isGuest ? 'guest' : 'user',
+                    description: 'Usuario del chat',
+                    textColor: message.textColor
+                };
+                showUserProfile(userData);
             });
         }
         
@@ -765,10 +871,12 @@ document.addEventListener('DOMContentLoaded', function() {
             item.addEventListener('click', () => {
                 console.log('Emote clicked:', item.src);
                 const emoteSrc = item.src;
-                sendMessage('', 'emote', emoteSrc).then(() => {
+                // Enviar emote con el nickname del usuario
+                sendMessage(currentUser.username || 'Usuario', 'emote', emoteSrc).then(() => {
                     console.log('Emote sent successfully');
                 }).catch(error => {
                     console.error('Error sending emote:', error);
+                    showNotification('Error al enviar emote', 'error');
                 });
                 emotePanel.classList.remove('active');
             });

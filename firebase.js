@@ -258,6 +258,87 @@ export async function updateUserData(updates) {
 
 // Enviar imagen
 export async function sendImage(file) {
+    if (!file) throw new Error('No se seleccionó archivo');
+    if (file.size > 5 * 1024 * 1024) throw new Error('La imagen debe ser menor a 5MB');
+    
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            sendMessage('', 'image', reader.result)
+                .then(resolve)
+                .catch(reject);
+        };
+        reader.onerror = () => reject(new Error('Error al leer el archivo'));
+        reader.readAsDataURL(file);
+    });
+}
+
+// Funciones de typing status
+export function setTypingStatus(isTyping) {
+    const sanitizedUserId = sanitizeUserId(currentUser.userId);
+    const typingRef = ref(database, `rooms/${currentRoom}/typing/${sanitizedUserId}`);
+    
+    if (isTyping) {
+        set(typingRef, {
+            userName: currentUser.username || 'Usuario',
+            timestamp: serverTimestamp()
+        });
+    } else {
+        remove(typingRef);
+    }
+}
+
+export function listenToTyping(callback) {
+    const typingRef = ref(database, `rooms/${currentRoom}/typing`);
+    return onValue(typingRef, (snapshot) => {
+        const typingUsers = [];
+        snapshot.forEach((childSnapshot) => {
+            const data = childSnapshot.val();
+            const userId = childSnapshot.key;
+            // No mostrar si es el usuario actual
+            if (userId !== sanitizeUserId(currentUser.userId)) {
+                typingUsers.push(data.userName);
+            }
+        });
+        callback(typingUsers);
+    });
+}
+
+// Función para cambiar contraseña
+export async function changePassword(newPassword) {
+    if (currentUser.isGuest) {
+        throw new Error('Los usuarios invitados no pueden cambiar contraseña');
+    }
+    
+    try {
+        const { getAuth, updatePassword } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+        const auth = getAuth();
+        
+        if (auth.currentUser) {
+            await updatePassword(auth.currentUser, newPassword);
+            return true;
+        } else {
+            throw new Error('Usuario no autenticado');
+        }
+    } catch (error) {
+        console.error('Error changing password:', error);
+        throw error;
+    }
+}
+
+// Función para eliminar mensaje
+export async function deleteMessage(messageId) {
+    try {
+        const messageRef = ref(database, `rooms/${currentRoom}/messages/${messageId}`);
+        await remove(messageRef);
+        return true;
+    } catch (error) {
+        console.error('Error deleting message:', error);
+        return false;
+    }
+}
+
+export { currentUser, currentRoom, database, db };on sendImage(file) {
     return new Promise((resolve, reject) => {
         if (file.size > 2 * 1024 * 1024) {
             reject(new Error('La imagen debe ser menor a 2MB'));

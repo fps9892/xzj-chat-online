@@ -33,7 +33,7 @@
     <header class="header">
       <div class="user-info">
         <img src="images/profileuser.jpg" alt="Profile" class="profile-image" />
-        <span class="username">username</span>
+        <span class="username desktop-only">username</span>
       </div>
 
       <div class="room-selector">
@@ -96,37 +96,69 @@
         <span class="current-room-name">room1</span>
       </div>
       <main class="chat-area">
-        <!-- Skeleton de mensajes -->
+        <!-- Skeleton de mensajes mejorado -->
         <div class="skeleton-message received">
           <div class="skeleton-header">
             <div class="skeleton skeleton-avatar"></div>
-            <div class="skeleton skeleton-username"></div>
-            <div class="skeleton skeleton-time"></div>
+            <div class="skeleton-content-wrapper">
+              <div class="skeleton skeleton-username"></div>
+              <div class="skeleton skeleton-time"></div>
+            </div>
           </div>
           <div class="skeleton skeleton-content">
-            <div class="skeleton skeleton-text"></div>
-            <div class="skeleton skeleton-text"></div>
+            <div class="skeleton skeleton-text long"></div>
+            <div class="skeleton skeleton-text medium"></div>
+            <div class="skeleton skeleton-text short"></div>
           </div>
         </div>
         <div class="skeleton-message sent">
           <div class="skeleton-header">
-            <div class="skeleton skeleton-time"></div>
-            <div class="skeleton skeleton-username"></div>
+            <div class="skeleton-content-wrapper">
+              <div class="skeleton skeleton-time"></div>
+              <div class="skeleton skeleton-username"></div>
+            </div>
             <div class="skeleton skeleton-avatar"></div>
           </div>
           <div class="skeleton skeleton-content">
-            <div class="skeleton skeleton-text"></div>
+            <div class="skeleton skeleton-text medium"></div>
+            <div class="skeleton skeleton-text short"></div>
           </div>
         </div>
         <div class="skeleton-message received">
           <div class="skeleton-header">
             <div class="skeleton skeleton-avatar"></div>
-            <div class="skeleton skeleton-username"></div>
-            <div class="skeleton skeleton-time"></div>
+            <div class="skeleton-content-wrapper">
+              <div class="skeleton skeleton-username"></div>
+              <div class="skeleton skeleton-time"></div>
+            </div>
           </div>
           <div class="skeleton skeleton-content">
-            <div class="skeleton skeleton-text"></div>
-            <div class="skeleton skeleton-text"></div>
+            <div class="skeleton skeleton-text long"></div>
+            <div class="skeleton skeleton-text medium"></div>
+          </div>
+        </div>
+        <div class="skeleton-message sent">
+          <div class="skeleton-header">
+            <div class="skeleton-content-wrapper">
+              <div class="skeleton skeleton-time"></div>
+              <div class="skeleton skeleton-username"></div>
+            </div>
+            <div class="skeleton skeleton-avatar"></div>
+          </div>
+          <div class="skeleton skeleton-content">
+            <div class="skeleton skeleton-text long"></div>
+          </div>
+        </div>
+        <div class="skeleton-message received">
+          <div class="skeleton-header">
+            <div class="skeleton skeleton-avatar"></div>
+            <div class="skeleton-content-wrapper">
+              <div class="skeleton skeleton-username"></div>
+              <div class="skeleton skeleton-time"></div>
+            </div>
+          </div>
+          <div class="skeleton skeleton-content">
+            <div class="skeleton skeleton-text short"></div>
           </div>
         </div>
       </main>

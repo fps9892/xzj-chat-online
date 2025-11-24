@@ -1,0 +1,30 @@
+{
+  "rules": {
+    "rooms": {
+      "$roomId": {
+        "messages": {
+          ".read": true,
+          ".write": true,
+          ".indexOn": ["timestamp"],
+          "$messageId": {
+            ".validate": "newData.hasChildren(['text', 'userId', 'userName', 'userAvatar', 'textColor', 'timestamp', 'type']) && newData.child('text').isString() && newData.child('text').val().length <= 250 && newData.child('userId').isString() && newData.child('userName').isString() && newData.child('userAvatar').isString() && newData.child('textColor').isString() && newData.child('type').isString() && (newData.child('type').val() == 'text' || newData.child('type').val() == 'image' || newData.child('type').val() == 'emote')"
+          }
+        },
+        "users": {
+          ".read": true,
+          ".write": true,
+          "$userId": {
+            ".validate": "newData.hasChildren(['name', 'avatar', 'status', 'textColor', 'description']) && newData.child('name').isString() && newData.child('avatar').isString() && newData.child('status').isString() && newData.child('textColor').isString() && newData.child('description').isString()"
+          }
+        },
+        "typing": {
+          ".read": true,
+          ".write": true,
+          "$userId": {
+            ".validate": "newData.hasChildren(['userName', 'timestamp']) && newData.child('userName').isString()"
+          }
+        }
+      }
+    }
+  }
+}

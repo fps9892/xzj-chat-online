@@ -1,27 +1,12 @@
-// Open user profile on nickname click
-document.querySelectorAll('.chat-nickname').forEach(nickname => {
-  nickname.addEventListener('click', (event) => {
-    const userId = event.target.dataset.userId; // Assuming data-user-id is set
-    openUserProfile(userId);
-  });
-});
+// Este archivo ya no es necesario ya que todas las funcionalidades
+// han sido implementadas en script.js
+// 
+// Funcionalidades implementadas:
+// - Click en nickname para abrir perfil
+// - Copiar mensaje con mantener presionado
+// - Borrar mensaje (solo propietario)
+// - Emotes con nickname del usuario
+// - Username oculto en móvil
+// - Skeleton mejorado
 
-function openUserProfile(userId) {
-  // Logic to open the user profile
-  console.log(`Opening profile for user ID: ${userId}`);
-}
-
-// Copy message on long press
-document.querySelectorAll('.message-text').forEach(message => {
-  let pressTimer;
-  message.addEventListener('mousedown', () => {
-    pressTimer = setTimeout(() => {
-      navigator.clipboard.writeText(message.textContent).then(() => {
-        alert('Mensaje copiado');
-      });
-    }, 500); // Long press duration
-  });
-
-  message.addEventListener('mouseup', () => clearTimeout(pressTimer));
-  message.addEventListener('mouseleave', () => clearTimeout(pressTimer));
-});
+console.log('Chat.js cargado - Funcionalidades movidas a script.js');
