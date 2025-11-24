@@ -1,4 +1,4 @@
-import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser } from './firebase.js';
+import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData } from './firebase.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     const messageInput = document.querySelector('.message-input');
@@ -124,19 +124,33 @@ document.addEventListener('DOMContentLoaded', function() {
                     lastChanges[configType] = Date.now();
                     
                     // Actualizar datos del usuario
+                    let updates = {};
+                    
                     if (configType === 'name') {
-                        currentUser.username = inputField.value.trim();
-                        document.querySelector('.username').textContent = currentUser.isGuest ? `${currentUser.username} (invitado)` : currentUser.username;
+                        updates.username = inputField.value.trim();
+                        document.querySelector('.username').textContent = currentUser.isGuest ? `${updates.username} (invitado)` : updates.username;
                     } else if (configType === 'description') {
-                        currentUser.description = inputField.value.trim();
+                        updates.description = inputField.value.trim();
                     } else if (configType === 'color') {
+                        updates.textColor = inputField.value;
                         document.querySelector('.username').style.color = inputField.value;
+                    } else if (configType === 'password') {
+                        // Password update would need Firebase Auth
+                        showNotification('Cambio de contraseña próximamente', 'warning');
+                        input.classList.remove('active');
+                        button.style.display = 'block';
+                        inputField.value = '';
+                        return;
                     }
                     
-                    // Actualizar localStorage
-                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    // Actualizar en Firestore
+                    const success = await updateUserData(updates);
                     
-                    showNotification(`${getConfigName(configType)} actualizado correctamente`, 'success');
+                    if (success) {
+                        showNotification(`${getConfigName(configType)} actualizado correctamente`, 'success');
+                    } else {
+                        showNotification('Error al actualizar', 'error');
+                    }
                     
                     input.classList.remove('active');
                     button.style.display = 'block';

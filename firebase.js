@@ -1,5 +1,6 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, push, onValue, serverTimestamp, set, onDisconnect, query, limitToLast, remove, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { getFirestore, doc, updateDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
@@ -13,6 +14,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
+const db = getFirestore(app);
 
 // Usuario actual desde localStorage
 const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {
@@ -118,6 +120,30 @@ export function listenToUsers(callback) {
 export function changeRoom(roomName) {
     currentRoom = roomName;
     setUserOnline();
+}
+
+// Actualizar datos de usuario en Firestore
+export async function updateUserData(updates) {
+    try {
+        if (currentUser.isGuest) {
+            await updateDoc(doc(db, 'guests', currentUser.userId), updates);
+        } else {
+            // Buscar documento por userId
+            const userDoc = await getDoc(doc(db, 'users', currentUser.firebaseUid || currentUser.userId));
+            if (userDoc.exists()) {
+                await updateDoc(doc(db, 'users', userDoc.id), updates);
+            }
+        }
+        
+        // Actualizar localStorage
+        Object.assign(currentUser, updates);
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        
+        return true;
+    } catch (error) {
+        console.error('Error updating user data:', error);
+        return false;
+    }
 }
 
 export { currentUser, currentRoom };

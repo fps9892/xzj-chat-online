@@ -1,5 +1,8 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getDatabase, ref, set, get, query, orderByChild, equalTo } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
+import { getDatabase, ref, set } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
@@ -12,7 +15,14 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
 const database = getDatabase(app);
+
+// Providers
+const googleProvider = new GoogleAuthProvider();
+const facebookProvider = new FacebookAuthProvider();
 
 document.addEventListener('DOMContentLoaded', function() {
     const tabs = document.querySelectorAll('.login-tab');
@@ -56,25 +66,125 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Check username availability
     async function isUsernameAvailable(username) {
-        const usersRef = ref(database, 'usernames');
-        const snapshot = await get(usersRef);
-        if (snapshot.exists()) {
-            const usernames = Object.values(snapshot.val());
-            return !usernames.includes(username);
-        }
-        return true;
+        const q = query(collection(db, 'users'), where('username', '==', username));
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.empty;
+    }
+
+    // Upload avatar
+    async function uploadAvatar(file, userId) {
+        const avatarRef = storageRef(storage, `avatars/${userId}`);
+        await uploadBytes(avatarRef, file);
+        return await getDownloadURL(avatarRef);
     }
 
 
 
-    // Login (solo modo invitado)
+    // Login
     document.getElementById('login-submit').addEventListener('click', async function() {
-        showNotification('Usa el modo invitado para acceder al chat', 'warning');
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value;
+
+        if (!username || !password) {
+            showNotification('Por favor completa todos los campos', 'error');
+            return;
+        }
+
+        try {
+            // Find user by username
+            const q = query(collection(db, 'users'), where('username', '==', username));
+            const querySnapshot = await getDocs(q);
+            
+            if (querySnapshot.empty) {
+                showNotification('Usuario no encontrado', 'error');
+                return;
+            }
+
+            const userDoc = querySnapshot.docs[0];
+            const userData = userDoc.data();
+            
+            await signInWithEmailAndPassword(auth, userData.email, password);
+            localStorage.setItem('currentUser', JSON.stringify(userData));
+            window.location.href = 'index.html';
+        } catch (error) {
+            showNotification('Credenciales incorrectas', 'error');
+        }
     });
 
-    // Register (solo modo invitado)
+    // Register
     document.getElementById('register-submit').addEventListener('click', async function() {
-        showNotification('Usa el modo invitado para acceder al chat', 'warning');
+        const username = document.getElementById('reg-username').value.trim();
+        const email = document.getElementById('reg-email').value.trim();
+        const password = document.getElementById('reg-password').value;
+        const confirmPassword = document.getElementById('reg-confirm').value;
+        const description = document.getElementById('reg-description').value.trim();
+        const avatarFile = document.getElementById('reg-avatar').files[0];
+
+        if (!username || !email || !password || !confirmPassword) {
+            showNotification('Por favor completa todos los campos obligatorios', 'error');
+            return;
+        }
+
+        if (username.length > 10) {
+            showNotification('El nombre de usuario no puede tener más de 10 caracteres', 'error');
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            showNotification('Las contraseñas no coinciden', 'error');
+            return;
+        }
+
+        if (password.length < 6) {
+            showNotification('La contraseña debe tener al menos 6 caracteres', 'error');
+            return;
+        }
+
+        try {
+            // Check username availability
+            if (!(await isUsernameAvailable(username))) {
+                showNotification('El nombre de usuario ya está en uso', 'error');
+                return;
+            }
+
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            let avatarUrl = 'images/profileuser.jpg';
+
+            if (avatarFile) {
+                avatarUrl = await uploadAvatar(avatarFile, userCredential.user.uid);
+            }
+
+            const userId = generateUserId();
+            const userData = {
+                userId: userId,
+                username: username,
+                email: email,
+                avatar: avatarUrl,
+                description: description || 'Usuario registrado',
+                createdAt: new Date(),
+                lastSeen: new Date(),
+                role: 'user',
+                isGuest: false,
+                textColor: '#ffffff',
+                background: 'default'
+            };
+            
+            await setDoc(doc(db, 'users', userCredential.user.uid), userData);
+            localStorage.setItem('currentUser', JSON.stringify(userData));
+            showNotification('Cuenta creada exitosamente', 'success');
+            
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1500);
+        } catch (error) {
+            if (error.code === 'auth/email-already-in-use') {
+                showNotification('El email ya está registrado', 'error');
+            } else if (error.code === 'auth/weak-password') {
+                showNotification('La contraseña es muy débil', 'error');
+            } else {
+                showNotification('Error al crear cuenta: ' + error.message, 'error');
+            }
+        }
     });
 
     // Guest login
@@ -109,8 +219,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 lastSeen: new Date()
             };
 
-            // Guardar username para evitar duplicados
-            await set(ref(database, `usernames/${userId}`), nickname);
+            // Guardar en Firestore para usuarios invitados también
+            await setDoc(doc(db, 'guests', userId), guestUser);
             
             localStorage.setItem('currentUser', JSON.stringify(guestUser));
             window.location.href = 'index.html';
@@ -119,12 +229,85 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Social login (deshabilitado)
-    document.getElementById('google-login').addEventListener('click', function() {
-        showNotification('Usa el modo invitado para acceder al chat', 'warning');
+    // Google login
+    document.getElementById('google-login').addEventListener('click', async function() {
+        try {
+            const result = await signInWithPopup(auth, googleProvider);
+            const user = result.user;
+            
+            // Check if user exists
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            
+            let userData;
+            if (!userDoc.exists()) {
+                // Create new user
+                const userId = generateUserId();
+                const username = user.displayName ? user.displayName.substring(0, 10) : 'GoogleUser';
+                
+                userData = {
+                    userId: userId,
+                    username: username,
+                    email: user.email,
+                    avatar: user.photoURL || 'images/profileuser.jpg',
+                    description: 'Usuario de Google',
+                    createdAt: new Date(),
+                    lastSeen: new Date(),
+                    role: 'user',
+                    isGuest: false,
+                    textColor: '#ffffff',
+                    background: 'default'
+                };
+                
+                await setDoc(doc(db, 'users', user.uid), userData);
+            } else {
+                userData = userDoc.data();
+            }
+            
+            localStorage.setItem('currentUser', JSON.stringify(userData));
+            window.location.href = 'index.html';
+        } catch (error) {
+            showNotification('Error con Google: ' + error.message, 'error');
+        }
     });
 
-    document.getElementById('facebook-login').addEventListener('click', function() {
-        showNotification('Usa el modo invitado para acceder al chat', 'warning');
+    // Facebook login
+    document.getElementById('facebook-login').addEventListener('click', async function() {
+        try {
+            const result = await signInWithPopup(auth, facebookProvider);
+            const user = result.user;
+            
+            // Check if user exists
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            
+            let userData;
+            if (!userDoc.exists()) {
+                // Create new user
+                const userId = generateUserId();
+                const username = user.displayName ? user.displayName.substring(0, 10) : 'FacebookUser';
+                
+                userData = {
+                    userId: userId,
+                    username: username,
+                    email: user.email,
+                    avatar: user.photoURL || 'images/profileuser.jpg',
+                    description: 'Usuario de Facebook',
+                    createdAt: new Date(),
+                    lastSeen: new Date(),
+                    role: 'user',
+                    isGuest: false,
+                    textColor: '#ffffff',
+                    background: 'default'
+                };
+                
+                await setDoc(doc(db, 'users', user.uid), userData);
+            } else {
+                userData = userDoc.data();
+            }
+            
+            localStorage.setItem('currentUser', JSON.stringify(userData));
+            window.location.href = 'index.html';
+        } catch (error) {
+            showNotification('Error con Facebook: ' + error.message, 'error');
+        }
     });
 });
