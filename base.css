@@ -164,17 +164,22 @@ body {
 }
 
 .typing-indicator {
+  position: fixed;
+  bottom: 85px;
+  left: 20px;
+  right: 20px;
   background-color: #000;
+  border: 1px solid #00ff00;
   border-radius: 8px;
   padding: 8px 12px;
   font-size: 12px;
   color: #00ff00;
-  margin-bottom: 10px;
   font-family: monospace;
   animation: blink 1.5s infinite;
   min-height: 20px;
   display: flex;
   align-items: center;
+  z-index: 1001;
 }
 
 @keyframes blink {
@@ -278,20 +283,17 @@ body {
 }
 
 .emote-panel {
-  position: absolute;
-  bottom: 60px;
-  
-  /* --- CENTRADO HORIZONTAL --- */
-  left: 50%; /* 1. Mueve el punto de inicio al centro de la pantalla */
-  transform: translateX(-50%); /* 2. Regresa el elemento el 50% de su propio ancho */
-  /* -------------------------- */
-  
-  background: #2a2a2a;
-  border: 1px solid #444;
+  position: fixed;
+  bottom: 100px;
+  left: 20px;
+  width: 280px;
+  height: 200px;
+  background-color: #000;
+  border: 1px solid #fff;
   border-radius: 8px;
-  padding: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  z-index: 1000;
+  padding: 8px;
+  z-index: 100001;
+  overflow-y: auto;
 }
 
 .emote-grid {
