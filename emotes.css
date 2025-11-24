@@ -18,22 +18,19 @@
 
 .emote-panel {
   position: absolute;
-  bottom: 60px;
-
-  /* --- CENTRADO HORIZONTAL --- */
-  left: 50%; /* 1. Mueve el punto de inicio al centro de la pantalla */
-  transform: translateX(
+  top: 50%; /* Centra verticalmente dentro del chat-area */
+  left: 50%; /* Centra horizontalmente */
+  transform: translate(
+    -50%,
     -50%
-  ); /* 2. Regresa el elemento el 50% de su propio ancho */
-  /* -------------------------- */
-
+  ); /* Ajusta el centro basado en el tamaño del panel */
   background: #2a2a2a;
   border: 1px solid #444;
   border-radius: 8px;
   padding: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   z-index: 1000;
-  max-width: 100%; /* Asegura que el panel no exceda el ancho de la pantalla */
+  max-width: 100%; /* Asegura que no exceda el ancho de la pantalla */
   overflow-x: auto; /* Permite desplazamiento horizontal si es necesario */
 }
 
@@ -69,10 +66,7 @@
 /* Responsive */
 @media (max-width: 768px) {
   .emote-panel {
-    left: 5px;
-    right: 5px;
-    max-width: none;
-    bottom: 10px; /* Ajusta la posición para pantallas pequeñas */
+    /* Elimina estilos duplicados, ya que el panel se centra automáticamente */
   }
 
   .emote-grid {
