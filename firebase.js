@@ -89,7 +89,13 @@ export function setUserOnline() {
         role: currentUser.role || 'user'
     });
     
-    onDisconnect(userStatusRef).set('offline');
+    if (currentUser.isGuest) {
+        // Eliminar usuario invitado completamente al desconectarse
+        onDisconnect(userRef).remove();
+        onDisconnect(ref(database, `usernames/${currentUser.userId}`)).remove();
+    } else {
+        onDisconnect(userStatusRef).set('offline');
+    }
 }
 
 export function listenToUsers(callback) {

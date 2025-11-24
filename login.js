@@ -1,7 +1,5 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
+import { getDatabase, ref, set, get, query, orderByChild, equalTo } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
@@ -14,13 +12,7 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
-
-// Providers
-const googleProvider = new GoogleAuthProvider();
-const facebookProvider = new FacebookAuthProvider();
+const database = getDatabase(app);
 
 document.addEventListener('DOMContentLoaded', function() {
     const tabs = document.querySelectorAll('.login-tab');
@@ -64,122 +56,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Check username availability
     async function isUsernameAvailable(username) {
-        const q = query(collection(db, 'users'), where('username', '==', username));
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.empty;
+        const usersRef = ref(database, 'usernames');
+        const snapshot = await get(usersRef);
+        if (snapshot.exists()) {
+            const usernames = Object.values(snapshot.val());
+            return !usernames.includes(username);
+        }
+        return true;
     }
 
-    // Upload avatar
-    async function uploadAvatar(file, userId) {
-        const avatarRef = ref(storage, `avatars/${userId}`);
-        await uploadBytes(avatarRef, file);
-        return await getDownloadURL(avatarRef);
-    }
 
-    // Create user profile
-    async function createUserProfile(user, userData) {
-        const userId = generateUserId();
-        await setDoc(doc(db, 'users', user.uid), {
-            userId: userId,
-            username: userData.username,
-            email: user.email,
-            avatar: userData.avatar || 'images/profileuser.jpg',
-            description: userData.description || '',
-            createdAt: new Date(),
-            lastSeen: new Date(),
-            role: 'user'
-        });
-        return userId;
-    }
 
-    // Login
+    // Login (solo modo invitado)
     document.getElementById('login-submit').addEventListener('click', async function() {
-        const username = document.getElementById('login-username').value.trim();
-        const password = document.getElementById('login-password').value;
-
-        if (!username || !password) {
-            showNotification('Por favor completa todos los campos', 'error');
-            return;
-        }
-
-        try {
-            // Find user by username
-            const q = query(collection(db, 'users'), where('username', '==', username));
-            const querySnapshot = await getDocs(q);
-            
-            if (querySnapshot.empty) {
-                showNotification('Usuario no encontrado', 'error');
-                return;
-            }
-
-            const userDoc = querySnapshot.docs[0];
-            const email = userDoc.data().email;
-            
-            await signInWithEmailAndPassword(auth, email, password);
-            localStorage.setItem('currentUser', JSON.stringify(userDoc.data()));
-            window.location.href = 'index.html';
-        } catch (error) {
-            showNotification('Error al iniciar sesión: ' + error.message, 'error');
-        }
+        showNotification('Usa el modo invitado para acceder al chat', 'warning');
     });
 
-    // Register
+    // Register (solo modo invitado)
     document.getElementById('register-submit').addEventListener('click', async function() {
-        const username = document.getElementById('reg-username').value.trim();
-        const email = document.getElementById('reg-email').value.trim();
-        const password = document.getElementById('reg-password').value;
-        const confirmPassword = document.getElementById('reg-confirm').value;
-        const description = document.getElementById('reg-description').value.trim();
-        const avatarFile = document.getElementById('reg-avatar').files[0];
-
-        if (!username || !email || !password || !confirmPassword) {
-            showNotification('Por favor completa todos los campos obligatorios', 'error');
-            return;
-        }
-
-        if (username.length > 10) {
-            showNotification('El nombre de usuario no puede tener más de 10 caracteres', 'error');
-            return;
-        }
-
-        if (password !== confirmPassword) {
-            showNotification('Las contraseñas no coinciden', 'error');
-            return;
-        }
-
-        try {
-            // Check username availability
-            if (!(await isUsernameAvailable(username))) {
-                showNotification('El nombre de usuario ya está en uso', 'error');
-                return;
-            }
-
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            let avatarUrl = 'images/profileuser.jpg';
-
-            if (avatarFile) {
-                avatarUrl = await uploadAvatar(avatarFile, userCredential.user.uid);
-            }
-
-            const userId = await createUserProfile(userCredential.user, {
-                username,
-                avatar: avatarUrl,
-                description
-            });
-
-            localStorage.setItem('currentUser', JSON.stringify({
-                userId,
-                username,
-                email,
-                avatar: avatarUrl,
-                description,
-                role: 'user'
-            }));
-
-            window.location.href = 'index.html';
-        } catch (error) {
-            showNotification('Error al registrarse: ' + error.message, 'error');
-        }
+        showNotification('Usa el modo invitado para acceder al chat', 'warning');
     });
 
     // Guest login
@@ -202,15 +97,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
+            const userId = generateUserId();
             const guestUser = {
-                userId: generateUserId(),
+                userId: userId,
                 username: nickname,
                 avatar: 'images/profileuser.jpg',
                 description: 'Usuario invitado',
                 role: 'guest',
-                isGuest: true
+                isGuest: true,
+                createdAt: new Date(),
+                lastSeen: new Date()
             };
 
+            // Guardar username para evitar duplicados
+            await set(ref(database, `usernames/${userId}`), nickname);
+            
             localStorage.setItem('currentUser', JSON.stringify(guestUser));
             window.location.href = 'index.html';
         } catch (error) {
@@ -218,68 +119,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Google login
-    document.getElementById('google-login').addEventListener('click', async function() {
-        try {
-            const result = await signInWithPopup(auth, googleProvider);
-            const user = result.user;
-            
-            // Check if user exists
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
-            
-            if (!userDoc.exists()) {
-                // Create new user
-                const userId = await createUserProfile(user, {
-                    username: user.displayName.substring(0, 10),
-                    avatar: user.photoURL || 'images/profileuser.jpg'
-                });
-                
-                localStorage.setItem('currentUser', JSON.stringify({
-                    userId,
-                    username: user.displayName.substring(0, 10),
-                    email: user.email,
-                    avatar: user.photoURL || 'images/profileuser.jpg',
-                    role: 'user'
-                }));
-            } else {
-                localStorage.setItem('currentUser', JSON.stringify(userDoc.data()));
-            }
-            
-            window.location.href = 'index.html';
-        } catch (error) {
-            showNotification('Error con Google: ' + error.message, 'error');
-        }
+    // Social login (deshabilitado)
+    document.getElementById('google-login').addEventListener('click', function() {
+        showNotification('Usa el modo invitado para acceder al chat', 'warning');
     });
 
-    // Facebook login
-    document.getElementById('facebook-login').addEventListener('click', async function() {
-        try {
-            const result = await signInWithPopup(auth, facebookProvider);
-            const user = result.user;
-            
-            // Similar logic to Google login
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
-            
-            if (!userDoc.exists()) {
-                const userId = await createUserProfile(user, {
-                    username: user.displayName.substring(0, 10),
-                    avatar: user.photoURL || 'images/profileuser.jpg'
-                });
-                
-                localStorage.setItem('currentUser', JSON.stringify({
-                    userId,
-                    username: user.displayName.substring(0, 10),
-                    email: user.email,
-                    avatar: user.photoURL || 'images/profileuser.jpg',
-                    role: 'user'
-                }));
-            } else {
-                localStorage.setItem('currentUser', JSON.stringify(userDoc.data()));
-            }
-            
-            window.location.href = 'index.html';
-        } catch (error) {
-            showNotification('Error con Facebook: ' + error.message, 'error');
-        }
+    document.getElementById('facebook-login').addEventListener('click', function() {
+        showNotification('Usa el modo invitado para acceder al chat', 'warning');
     });
 });
