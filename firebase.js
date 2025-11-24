@@ -16,6 +16,32 @@ const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 const db = getFirestore(app);
 
+// Mantener estado de autenticación
+let authInitialized = false;
+async function initializeAuth() {
+    if (authInitialized) return;
+    
+    try {
+        const { getAuth, onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+        const auth = getAuth();
+        
+        onAuthStateChanged(auth, (user) => {
+            if (user && currentUser.firebaseUid === user.uid) {
+                console.log('Usuario autenticado:', user.uid);
+            }
+        });
+        
+        authInitialized = true;
+    } catch (error) {
+        console.error('Error initializing auth:', error);
+    }
+}
+
+// Inicializar autenticación si no es invitado
+if (!currentUser.isGuest) {
+    initializeAuth();
+}
+
 // Limpiar userId para evitar caracteres no permitidos
 function sanitizeUserId(userId) {
     return userId.replace(/[^a-zA-Z0-9_-]/g, '');
@@ -204,6 +230,32 @@ export async function updateUserData(updates) {
     } catch (error) {
         console.error('Error updating user data:', error);
         return false;
+    }
+}
+
+// Cambiar contraseña
+export async function changePassword(newPassword) {
+    try {
+        const { updatePassword, getAuth, signInWithEmailAndPassword } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+        const auth = getAuth();
+        
+        // Si no hay usuario autenticado, intentar autenticar con datos guardados
+        if (!auth.currentUser && currentUser.email) {
+            throw new Error('Debes volver a iniciar sesión para cambiar la contraseña');
+        }
+        
+        if (!auth.currentUser) {
+            throw new Error('Usuario no autenticado');
+        }
+        
+        await updatePassword(auth.currentUser, newPassword);
+        return true;
+    } catch (error) {
+        console.error('Error changing password:', error);
+        if (error.code === 'auth/requires-recent-login') {
+            throw new Error('Debes volver a iniciar sesión para cambiar la contraseña');
+        }
+        throw error;
     }
 }
 

@@ -111,7 +111,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const userDoc = querySnapshot.docs[0];
             const userData = userDoc.data();
             
-            await signInWithEmailAndPassword(auth, userData.email, password);
+            const userCredential = await signInWithEmailAndPassword(auth, userData.email, password);
+            userData.firebaseUid = userCredential.user.uid;
             localStorage.setItem('currentUser', JSON.stringify(userData));
             window.location.href = 'index.html';
         } catch (error) {

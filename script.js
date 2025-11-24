@@ -1,4 +1,4 @@
-import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData } from './firebase.js';
+import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword } from './firebase.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     const messageInput = document.querySelector('.message-input');
@@ -143,6 +143,29 @@ document.addEventListener('DOMContentLoaded', function() {
                                 showNotification(error.message, 'error');
                                 return;
                             }
+                        }
+                    } else if (configType === 'password') {
+                        if (currentUser.isGuest) {
+                            showNotification('Los usuarios invitados no pueden cambiar contraseña', 'error');
+                            return;
+                        }
+                        
+                        const newPassword = inputField.value.trim();
+                        if (newPassword.length < 6) {
+                            showNotification('La contraseña debe tener al menos 6 caracteres', 'error');
+                            return;
+                        }
+                        
+                        try {
+                            await changePassword(newPassword);
+                            showNotification('Contraseña actualizada correctamente', 'success');
+                            input.classList.remove('active');
+                            button.style.display = 'block';
+                            inputField.value = '';
+                            return;
+                        } catch (error) {
+                            showNotification('Error al cambiar contraseña: ' + error.message, 'error');
+                            return;
                         }
                     }
                     
@@ -405,7 +428,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <p class="user-role">${user.role === 'admin' ? 'Administrador' : user.role === 'moderator' ? 'Moderador' : 'Usuario'}</p>
                         <div class="profile-info">
                             <p><strong>Descripción:</strong> ${user.description || 'Sin descripción'}</p>
-                            <p><strong>Cuenta creada:</strong> ${user.createdAt ? new Date(user.createdAt).toLocaleDateString('es-ES') : 'No disponible'}</p>
+                            <p><strong>Cuenta creada hace:</strong> ${user.createdAt ? getTimeAgo(user.createdAt) : 'No disponible'}</p>
                             <p><strong>Última conexión:</strong> ${user.lastSeen ? new Date(user.lastSeen).toLocaleString('es-ES') : 'Ahora'}</p>
                         </div>
                     </div>
@@ -424,6 +447,25 @@ document.addEventListener('DOMContentLoaded', function() {
         const div = document.createElement('div');
         div.innerHTML = html.trim();
         return div.firstChild;
+    }
+    
+    // Calcular tiempo transcurrido
+    function getTimeAgo(dateString) {
+        const now = new Date();
+        const date = new Date(dateString);
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+        const diffMonths = Math.floor(diffDays / 30);
+        const diffYears = Math.floor(diffDays / 365);
+        
+        if (diffYears > 0) return `${diffYears} año${diffYears > 1 ? 's' : ''}`;
+        if (diffMonths > 0) return `${diffMonths} mes${diffMonths > 1 ? 'es' : ''}`;
+        if (diffDays > 0) return `${diffDays} día${diffDays > 1 ? 's' : ''}`;
+        if (diffHours > 0) return `${diffHours} hora${diffHours > 1 ? 's' : ''}`;
+        if (diffMins > 0) return `${diffMins} minuto${diffMins > 1 ? 's' : ''}`;
+        return 'menos de un minuto';
     }
     
     function clearSkeletons() {
