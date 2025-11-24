@@ -84,6 +84,7 @@ export function processEmotes(text) {
 
 // Funciones para mensajes
 export function sendMessage(text, type = 'text', imageData = null) {
+    console.log('Sending message:', { text, type, imageData });
     const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
     
     // Validar datos antes de enviar
@@ -101,6 +102,7 @@ export function sendMessage(text, type = 'text', imageData = null) {
     // Añadir datos de imagen si es tipo imagen o emote
     if ((type === 'image' || type === 'emote') && imageData) {
         messageData.imageData = imageData;
+        console.log('Added imageData to message');
     }
     
     // Verificar que no hay valores undefined

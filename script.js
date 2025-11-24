@@ -657,13 +657,23 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Seleccionar emote
-    emoteItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const emoteSrc = item.src;
-            sendMessage('', 'emote', emoteSrc);
-            emotePanel.style.display = 'none';
+    function setupEmoteListeners() {
+        const emoteItems = document.querySelectorAll('.emote-item');
+        emoteItems.forEach(item => {
+            item.addEventListener('click', () => {
+                console.log('Emote clicked:', item.src);
+                const emoteSrc = item.src;
+                sendMessage('', 'emote', emoteSrc).then(() => {
+                    console.log('Emote sent successfully');
+                }).catch(error => {
+                    console.error('Error sending emote:', error);
+                });
+                emotePanel.style.display = 'none';
+            });
         });
-    });
+    }
+    
+    setupEmoteListeners();
     
     // Cerrar panel de emotes al hacer click fuera
     document.addEventListener('click', (e) => {
