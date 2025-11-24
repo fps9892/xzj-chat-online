@@ -235,7 +235,50 @@ body {
   opacity: 0.7;
 }
 
+.chat-controls {
+  position: fixed;
+  bottom: 100px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 99999;
+  pointer-events: auto;
+}
 
+.image-btn {
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  filter: invert(1);
+  transition: opacity 0.2s;
+  background: none;
+  border-radius: 50%;
+  padding: 8px;
+  z-index: 100000;
+  position: relative;
+}
+
+.image-btn:hover {
+  opacity: 0.7;
+}
+
+.emote-btn {
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  filter: invert(1);
+  transition: opacity 0.2s;
+  background: none;
+  border-radius: 50%;
+  padding: 8px;
+  z-index: 100000;
+  position: relative;
+}
+
+.emote-btn:hover {
+  opacity: 0.7;
+}
 
 .message-image {
   max-width: 200px;
