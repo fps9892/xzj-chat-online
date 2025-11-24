@@ -123,27 +123,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (inputField && inputField.value.trim()) {
                     lastChanges[configType] = Date.now();
                     
-                    // Actualizar datos del usuario
                     let updates = {};
                     
                     if (configType === 'name') {
                         updates.username = inputField.value.trim();
-                        document.querySelector('.username').textContent = currentUser.isGuest ? `${updates.username} (invitado)` : updates.username;
+                        document.querySelector('.username').textContent = updates.username;
                     } else if (configType === 'description') {
                         updates.description = inputField.value.trim();
                     } else if (configType === 'color') {
                         updates.textColor = inputField.value;
                         document.querySelector('.username').style.color = inputField.value;
-                    } else if (configType === 'password') {
-                        // Password update would need Firebase Auth
-                        showNotification('Cambio de contraseña próximamente', 'warning');
-                        input.classList.remove('active');
-                        button.style.display = 'block';
-                        inputField.value = '';
-                        return;
+                    } else if (configType === 'photo') {
+                        const file = inputField.files[0];
+                        if (file) {
+                            updates.avatar = await uploadAvatar(file, currentUser.userId);
+                            document.querySelector('.profile-image').src = updates.avatar;
+                        }
                     }
                     
-                    // Actualizar en Firestore
                     const success = await updateUserData(updates);
                     
                     if (success) {
@@ -154,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     input.classList.remove('active');
                     button.style.display = 'block';
-                    inputField.value = '';
+                    if (inputField.type !== 'file') inputField.value = '';
                 } else {
                     showNotification('Por favor ingresa un valor válido', 'error');
                 }
@@ -185,7 +182,8 @@ document.addEventListener('DOMContentLoaded', function() {
             name: 'Nombre',
             description: 'Descripción',
             password: 'Contraseña',
-            color: 'Color'
+            color: 'Color',
+            photo: 'Foto de perfil'
         };
         return names[configType];
     }

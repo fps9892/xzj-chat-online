@@ -16,11 +16,18 @@ const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 const db = getFirestore(app);
 
+// Limpiar userId para evitar caracteres no permitidos
+function sanitizeUserId(userId) {
+    return userId.replace(/[^a-zA-Z0-9_-]/g, '');
+}
+
 // Usuario actual desde localStorage
 const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {
-    userId: 'guest_' + Math.random().toString(36).substr(2, 9),
+    userId: sanitizeUserId('guest_' + Math.random().toString(36).substr(2, 9)),
     username: 'guest',
-    avatar: 'images/profileuser.jpg'
+    avatar: 'images/profileuser.jpg',
+    textColor: '#000000',
+    description: 'Usuario invitado'
 };
 
 // Redirect to login if no user
@@ -80,21 +87,22 @@ export function listenToMessages(callback) {
 
 // Funciones para usuarios conectados
 export function setUserOnline() {
-    const userRef = ref(database, `rooms/${currentRoom}/users/${currentUser.userId}`);
-    const userStatusRef = ref(database, `rooms/${currentRoom}/users/${currentUser.userId}/status`);
+    const sanitizedUserId = sanitizeUserId(currentUser.userId);
+    const userRef = ref(database, `rooms/${currentRoom}/users/${sanitizedUserId}`);
+    const userStatusRef = ref(database, `rooms/${currentRoom}/users/${sanitizedUserId}/status`);
     
     set(userRef, {
         name: currentUser.username,
         avatar: currentUser.avatar,
         status: 'online',
         lastSeen: serverTimestamp(),
-        role: currentUser.role || 'user'
+        role: currentUser.role || 'user',
+        textColor: currentUser.textColor,
+        description: currentUser.description
     });
     
     if (currentUser.isGuest) {
-        // Eliminar usuario invitado completamente al desconectarse
         onDisconnect(userRef).remove();
-        onDisconnect(ref(database, `usernames/${currentUser.userId}`)).remove();
     } else {
         onDisconnect(userStatusRef).set('offline');
     }
