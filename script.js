@@ -135,9 +135,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Manejar selección de sala
     roomItems.forEach(item => {
         item.addEventListener('click', function() {
-            const roomName = this.getAttribute('data-room');
-            currentRoomName.textContent = roomName;
-            changeRoom(roomName);
+            const roomId = this.getAttribute('data-room');
+            const roomDisplayName = this.textContent;
+            currentRoomName.textContent = roomDisplayName;
+            changeRoom(roomId);
             clearSkeletons();
             loadMessages();
             loadUsers();
@@ -434,10 +435,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             ${isOwn ? `
                                 <span class="message-time">${time}</span>
                                 <span class="message-username clickable-username" data-user-id="${message.userId}" style="color: ${message.textColor || currentUser.textColor || '#ffffff'}">${displayName}</span>
+                                ${message.role === 'admin' ? '<span class="admin-tag">ADMIN</span>' : ''}
                                 <img src="${message.userAvatar}" alt="User" class="message-avatar">
                             ` : `
                                 <img src="${message.userAvatar}" alt="User" class="message-avatar">
                                 <span class="message-username clickable-username" data-user-id="${message.userId}" style="color: ${message.textColor || '#ffffff'}">${displayName}</span>
+                                ${message.role === 'admin' ? '<span class="admin-tag">ADMIN</span>' : ''}
                                 <span class="message-time">${time}</span>
                             `}
                         </div>
@@ -454,10 +457,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             ${isOwn ? `
                                 <span class="message-time">${time}</span>
                                 <span class="message-username clickable-username" data-user-id="${message.userId}" style="color: ${message.textColor || currentUser.textColor || '#ffffff'}">${displayName}</span>
+                                ${message.role === 'admin' ? '<span class="admin-tag">ADMIN</span>' : ''}
                                 <img src="${message.userAvatar}" alt="User" class="message-avatar">
                             ` : `
                                 <img src="${message.userAvatar}" alt="User" class="message-avatar">
                                 <span class="message-username clickable-username" data-user-id="${message.userId}" style="color: ${message.textColor || '#ffffff'}">${displayName}</span>
+                                ${message.role === 'admin' ? '<span class="admin-tag">ADMIN</span>' : ''}
                                 <span class="message-time">${time}</span>
                             `}
                         </div>
@@ -632,7 +637,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         <p class="user-role">${user.role === 'admin' ? 'Administrador' : user.role === 'guest' ? 'Invitado' : 'Usuario'}</p>
                         <div class="profile-info">
                             <p><strong>Descripción:</strong> ${user.description || 'Sin descripción'}</p>
-                            <p><strong>Cuenta creada hace:</strong> ${user.createdAt ? getTimeAgo(user.createdAt) : 'No disponible'}</p>
+                            ${!user.isGuest && user.id ? `<p><strong>ID de cuenta:</strong> ${user.id}</p>` : ''}
+                            <p><strong>Cuenta creada:</strong> ${user.createdAt ? getTimeAgo(user.createdAt) : 'No disponible'}</p>
                             <p><strong>Última conexión:</strong> ${user.lastSeen ? new Date(user.lastSeen).toLocaleString('es-ES') : 'Ahora'}</p>
                         </div>
                     </div>

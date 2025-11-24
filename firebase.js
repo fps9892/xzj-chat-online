@@ -167,7 +167,9 @@ export function setUserOnline() {
         lastSeen: serverTimestamp(),
         role: currentUser.role || 'user',
         textColor: currentUser.textColor || '#ffffff',
-        description: currentUser.description || 'Sin descripción'
+        description: currentUser.description || 'Sin descripción',
+        isGuest: currentUser.isGuest || false,
+        createdAt: currentUser.createdAt || new Date().toISOString()
     };
     
     // Verificar que no hay valores undefined
