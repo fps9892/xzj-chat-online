@@ -621,9 +621,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Escuchar usuarios escribiendo
     listenToTyping((typingUsers) => {
         if (typingUsers.length > 0) {
-            const names = typingUsers.slice(0, 2).join(', ');
-            const extra = typingUsers.length > 2 ? ` y ${typingUsers.length - 2} más` : '';
-            typingIndicator.textContent = `${names}${extra} está${typingUsers.length > 1 ? 'n' : ''} escribiendo...`;
+            let message;
+            if (typingUsers.length === 1) {
+                message = `${typingUsers[0]} está escribiendo...`;
+            } else if (typingUsers.length === 2) {
+                message = `${typingUsers[0]} y ${typingUsers[1]} están escribiendo...`;
+            } else {
+                message = `${typingUsers[0]}, ${typingUsers[1]} y ${typingUsers.length - 2} más están escribiendo...`;
+            }
+            typingIndicator.textContent = message;
             typingIndicator.style.display = 'block';
         } else {
             typingIndicator.style.display = 'none';
