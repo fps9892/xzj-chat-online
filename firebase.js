@@ -301,4 +301,33 @@ export async function changePassword(newPassword) {
     }
 }
 
+// Estado de escritura
+export function setTypingStatus(isTyping) {
+    const typingRef = ref(database, `rooms/${currentRoom}/typing/${currentUser.userId}`);
+    if (isTyping) {
+        set(typingRef, {
+            userName: currentUser.username,
+            timestamp: serverTimestamp()
+        });
+    } else {
+        remove(typingRef);
+    }
+}
+
+export function listenToTyping(callback) {
+    const typingRef = ref(database, `rooms/${currentRoom}/typing`);
+    return onValue(typingRef, (snapshot) => {
+        const typingUsers = [];
+        if (snapshot.exists()) {
+            snapshot.forEach((childSnapshot) => {
+                const userId = childSnapshot.key;
+                if (userId !== currentUser.userId) {
+                    typingUsers.push(childSnapshot.val().userName);
+                }
+            });
+        }
+        callback(typingUsers);
+    });
+}
+
 export { currentUser, currentRoom };

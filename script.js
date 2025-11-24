@@ -1,4 +1,4 @@
-import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword, sendImage } from './firebase.js';
+import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping } from './firebase.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     const messageInput = document.querySelector('.message-input');
@@ -606,15 +606,25 @@ document.addEventListener('DOMContentLoaded', function() {
             charCounter.style.color = '#888';
         }
         
-        // Mostrar indicador de escritura
+        // Estado de escritura compartido
         if (currentLength > 0) {
-            typingIndicator.textContent = `${currentUser.username} está escribiendo...`;
-            typingIndicator.style.display = 'block';
-            
+            setTypingStatus(true);
             clearTimeout(typingTimeout);
             typingTimeout = setTimeout(() => {
-                typingIndicator.style.display = 'none';
+                setTypingStatus(false);
             }, 2000);
+        } else {
+            setTypingStatus(false);
+        }
+    });
+    
+    // Escuchar usuarios escribiendo
+    listenToTyping((typingUsers) => {
+        if (typingUsers.length > 0) {
+            const names = typingUsers.slice(0, 2).join(', ');
+            const extra = typingUsers.length > 2 ? ` y ${typingUsers.length - 2} más` : '';
+            typingIndicator.textContent = `${names}${extra} está${typingUsers.length > 1 ? 'n' : ''} escribiendo...`;
+            typingIndicator.style.display = 'block';
         } else {
             typingIndicator.style.display = 'none';
         }

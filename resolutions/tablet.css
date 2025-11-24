@@ -138,15 +138,16 @@
     }
 
     .emote-panel {
-        width: 280px;
-        right: 50px;
-        max-height: 110px;
-        padding: 9px;
+        width: 350px;
+        height: 55px;
+        right: 0;
+        bottom: 50px;
+        padding: 7px;
     }
 
     .emote-item {
-        width: 36px;
-        height: 36px;
+        width: 41px;
+        height: 41px;
     }
 
     .message-image {
