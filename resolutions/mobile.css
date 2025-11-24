@@ -1,0 +1,134 @@
+@media (max-width: 767px) {
+    .mobile-users-indicator {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 1px solid #fff;
+        border-radius: 6px;
+        padding: 5px 8px;
+        cursor: pointer;
+        background-color: #000;
+    }
+
+    .users-connected-icon {
+        width: 16px;
+        height: 16px;
+        filter: invert(1);
+    }
+
+    .mobile-user-count {
+        color: #00ff00;
+        font-size: 12px;
+        font-weight: bold;
+        font-family: 'Orbitron', monospace;
+    }
+
+    .mobile-users-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 180px;
+        background-color: #000;
+        border: 1px solid #fff;
+        border-radius: 6px;
+        margin-top: 5px;
+        display: none;
+        max-height: 180px;
+        overflow-y: auto;
+    }
+
+    .mobile-users-dropdown.active {
+        display: block;
+    }
+
+    .mobile-user-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-bottom: 1px solid #333;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .mobile-user-item:last-child {
+        border-bottom: none;
+    }
+
+    .mobile-user-item:hover {
+        background-color: #333;
+    }
+
+    .mobile-user-avatar {
+        position: relative;
+        width: 20px;
+        height: 20px;
+    }
+
+    .mobile-user-avatar img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 1px solid #fff;
+    }
+
+    .mobile-online-indicator {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 5px;
+        height: 5px;
+        background-color: #00ff00;
+        border-radius: 50%;
+        border: 1px solid #000;
+    }
+
+    .mobile-user-name {
+        font-size: 11px;
+        color: #fff;
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .mobile-user-item::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 15px;
+        height: 100%;
+        background: linear-gradient(to right, transparent, #000);
+        pointer-events: none;
+    }
+
+    .mobile-user-item .user-avatar {
+        cursor: pointer;
+    }
+
+    .user-panel {
+        width: 90%;
+        max-width: 350px;
+    }
+
+    .user-panel-tabs {
+        gap: 15px;
+    }
+
+    .user-panel-tab {
+        font-size: 12px;
+    }
+
+    .config-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        font-size: 13px;
+    }
+}

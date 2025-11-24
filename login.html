@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - Chat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="login.css" />
+  </head>
+  <body>
+    <div class="login-container">
+      <div class="login-panel">
+        <h1 class="login-title">FYZAR CHAT</h1>
+
+        <div class="login-tabs">
+          <div class="login-tab active" data-tab="login">Iniciar Sesión</div>
+          <div class="login-tab" data-tab="register">Registrarse</div>
+          <div class="login-tab" data-tab="guest">Invitado</div>
+        </div>
+
+        <!-- Login Form -->
+        <div class="login-form active" id="login-form">
+          <input
+            type="text"
+            placeholder="Nombre de usuario"
+            class="login-input"
+            id="login-username"
+          />
+          <input
+            type="password"
+            placeholder="Contraseña"
+            class="login-input"
+            id="login-password"
+          />
+          <button class="login-btn" id="login-submit">Entrar al chat</button>
+
+          <div class="social-login">
+            <button class="social-btn google" id="google-login">
+              <span>Continuar con Google</span>
+            </button>
+            <button class="social-btn facebook" id="facebook-login">
+              <span>Continuar con Facebook</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Register Form -->
+        <div class="login-form" id="register-form">
+          <input
+            type="text"
+            placeholder="Nombre de usuario (máx. 10 caracteres)"
+            class="login-input"
+            id="reg-username"
+            maxlength="10"
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            class="login-input"
+            id="reg-email"
+          />
+          <input
+            type="password"
+            placeholder="Contraseña"
+            class="login-input"
+            id="reg-password"
+          />
+          <input
+            type="password"
+            placeholder="Confirmar contraseña"
+            class="login-input"
+            id="reg-confirm"
+          />
+          <textarea
+            placeholder="Descripción (opcional)"
+            class="login-textarea"
+            id="reg-description"
+            maxlength="100"
+          ></textarea>
+          <input
+            type="file"
+            accept="image/*"
+            class="file-input"
+            id="reg-avatar"
+          />
+          <label for="reg-avatar" class="file-label"
+            >Seleccionar foto de perfil</label
+          >
+          <button class="login-btn" id="register-submit">Crear Cuenta</button>
+        </div>
+
+        <!-- Guest Form -->
+        <div class="login-form" id="guest-form">
+          <input
+            type="text"
+            placeholder="Nickname (máx. 10 caracteres)"
+            class="login-input"
+            id="guest-nickname"
+            maxlength="10"
+          />
+          <button class="login-btn" id="guest-submit">
+            Entrar como Invitado
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="login.js"></script>
+  </body>
+</html>
