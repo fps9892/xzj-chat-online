@@ -338,74 +338,26 @@ export async function deleteMessage(messageId) {
     }
 }
 
-export { currentUser, currentRoom, database, db };on sendImage(file) {
-    return new Promise((resolve, reject) => {
-        if (file.size > 2 * 1024 * 1024) {
-            reject(new Error('La imagen debe ser menor a 2MB'));
-            return;
-        }
-        
-        const reader = new FileReader();
-        reader.onload = () => {
-            sendMessage('', 'image', reader.result)
-                .then(resolve)
-                .catch(reject);
-        };
-        reader.onerror = () => reject(new Error('Error al leer la imagen'));
-        reader.readAsDataURL(file);
-    });
-}
-
-// Cambiar contraseña
-export async function changePassword(newPassword) {
+// Verificar si el usuario es administrador
+export async function checkAdminStatus(userId) {
+    if (!userId || currentUser.isGuest) return false;
+    
     try {
-        const { updatePassword, getAuth, signInWithEmailAndPassword } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-        const auth = getAuth();
-        
-        // Si no hay usuario autenticado, intentar autenticar con datos guardados
-        if (!auth.currentUser && currentUser.email) {
-            throw new Error('Debes volver a iniciar sesión para cambiar la contraseña');
-        }
-        
-        if (!auth.currentUser) {
-            throw new Error('Usuario no autenticado');
-        }
-        
-        await updatePassword(auth.currentUser, newPassword);
-        return true;
+        const adminDoc = await getDoc(doc(db, 'admins', userId));
+        return adminDoc.exists();
     } catch (error) {
-        console.error('Error changing password:', error);
-        if (error.code === 'auth/requires-recent-login') {
-            throw new Error('Debes volver a iniciar sesión para cambiar la contraseña');
-        }
-        throw error;
+        console.error('Error checking admin status:', error);
+        return false;
     }
 }
 
-// Estado de escritura
-export function setTypingStatus(isTyping) {
-    const typingRef = ref(database, `rooms/${currentRoom}/typing/${currentUser.userId}`);
-    if (isTyping) {
-        set(typingRef, {
-            userName: currentUser.username,
-            timestamp: serverTimestamp()
-        });
-    } else {
-        remove(typingRef);
+// Actualizar rol del usuario
+export async function updateUserRole() {
+    if (!currentUser.isGuest && currentUser.firebaseUid) {
+        const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
+        currentUser.role = isAdmin ? 'admin' : 'user';
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
     }
 }
 
-export function listenToTyping(callback) {
-    const typingRef = ref(database, `rooms/${currentRoom}/typing`);
-    return onValue(typingRef, (snapshot) => {
-        const typingUsers = [];
-        if (snapshot.exists()) {
-            snapshot.forEach((childSnapshot) => {
-                typingUsers.push(childSnapshot.val().userName);
-            });
-        }
-        callback(typingUsers);
-    });
-}
-
-export { currentUser, currentRoom };
+export { currentUser, currentRoom, database, db };

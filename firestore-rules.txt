@@ -11,6 +11,12 @@ service cloud.firestore {
       allow read, write: if true;
     }
     
+    // Reglas para administradores
+    match /admins/{userId} {
+      allow read: if true;
+      allow write: if false; // Solo administradores pueden modificar
+    }
+    
     // Reglas para salas (si las usas en Firestore)
     match /rooms/{roomId} {
       allow read, write: if true;

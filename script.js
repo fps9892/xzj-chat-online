@@ -1,4 +1,4 @@
-import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping, deleteMessage } from './firebase.js';
+import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping, deleteMessage, updateUserRole } from './firebase.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     // Elementos de la pantalla de carga
@@ -441,7 +441,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <span class="message-time">${time}</span>
                             `}
                         </div>
-                        <div class="emote-message-container ${isOwn ? 'sent' : 'received'}">
+                        <div class="message-content emote-content">
                             <img src="${message.imageData}" alt="Emote" class="standalone-emote" />
                         </div>
                     </div>
@@ -475,7 +475,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Añadir funcionalidad ver más
         const seeMore = messageEl.querySelector('.see-more');
         const messageText = messageEl.querySelector('.message-text');
-        if (seeMore && messageText) {
+        if (seeMore && messageText && message.text.length > getCharacterLimit()) {
             seeMore.addEventListener('click', function() {
                 if (messageText.classList.contains('expanded')) {
                     messageText.classList.remove('expanded');
@@ -582,7 +582,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function createUserElement(user) {
-        const displayName = user.role === 'admin' ? `${user.name} (Administrador)` : user.name;
+        const displayName = user.role === 'admin' ? `${user.name} (Admin)` : user.name;
         const userEl = createElement(`
             <div class="user-item" data-user-id="${user.id}">
                 <div class="user-avatar">
@@ -598,7 +598,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function createMobileUserElement(user) {
-        const displayName = user.role === 'guest' ? `${user.name} (invitado)` : user.name;
+        let displayName = user.name;
+        if (user.role === 'admin') displayName += ' (Admin)';
+        else if (user.role === 'guest') displayName += ' (invitado)';
+        
         const userEl = createElement(`
             <div class="mobile-user-item" data-user-id="${user.id}">
                 <div class="mobile-user-avatar">
@@ -626,7 +629,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <img src="${user.avatar}" alt="${user.name}">
                         </div>
                         <h4>${user.name}</h4>
-                        <p class="user-role">${user.role === 'admin' ? 'Administrador' : user.role === 'moderator' ? 'Moderador' : 'Usuario'}</p>
+                        <p class="user-role">${user.role === 'admin' ? 'Administrador' : user.role === 'guest' ? 'Invitado' : 'Usuario'}</p>
                         <div class="profile-info">
                             <p><strong>Descripción:</strong> ${user.description || 'Sin descripción'}</p>
                             <p><strong>Cuenta creada hace:</strong> ${user.createdAt ? getTimeAgo(user.createdAt) : 'No disponible'}</p>
@@ -706,8 +709,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Inicializar Firebase después de la carga
-    function initializeApp() {
+    async function initializeApp() {
         validateCurrentUser();
+        await updateUserRole(); // Verificar rol de administrador
         updateUserHeader();
         
         // Inicializar con delay para evitar problemas de carga

@@ -33,6 +33,12 @@
 - Mejor estructura visual para todas las resoluciones
 - Animaciones suaves de aparición
 
+### 7. Sistema de Administradores
+- Colección `admins` en Firestore con IDs de usuarios registrados
+- Verificación automática de rol al inicializar
+- Visualización de "(Admin)" en lista de usuarios
+- Solo usuarios registrados pueden ser administradores
+
 ## Reglas de Firebase
 
 ### Realtime Database
@@ -88,6 +94,12 @@ service cloud.firestore {
       allow read, write: if true;
     }
     
+    // Reglas para administradores
+    match /admins/{userId} {
+      allow read: if true;
+      allow write: if false; // Solo administradores pueden modificar
+    }
+    
     // Reglas para salas (si las usas en Firestore)
     match /rooms/{roomId} {
       allow read, write: if true;
@@ -98,18 +110,29 @@ service cloud.firestore {
 
 ## Archivos Modificados
 
-1. **firebase.js** - Añadidas funciones para eliminar mensajes y manejo completo de emotes
-2. **script.js** - Implementadas todas las nuevas funcionalidades
+1. **firebase.js** - Añadidas funciones para eliminar mensajes, manejo completo de emotes y sistema de administradores
+2. **script.js** - Implementadas todas las nuevas funcionalidades y corrección de header de emotes
 3. **index.html** - Mejorado el skeleton y ocultado username en móvil
 4. **base.css** - Añadidos estilos para nuevas funcionalidades
 5. **chat.js** - Limpiado (funcionalidades movidas a script.js)
+6. **firestore-rules.txt** - Añadida colección de administradores
 
 ## Instrucciones de Despliegue
 
 1. Subir todos los archivos modificados al servidor
 2. Actualizar las reglas de Firebase Realtime Database
 3. Actualizar las reglas de Firestore
-4. Probar todas las funcionalidades en diferentes dispositivos
+4. Crear colección `admins` en Firestore
+5. Añadir documentos con ID de usuario para cada administrador
+6. Probar todas las funcionalidades en diferentes dispositivos
+
+## Configuración de Administradores
+
+Para hacer a un usuario administrador:
+1. Ir a Firestore Database
+2. Crear colección `admins`
+3. Añadir documento con el ID del usuario registrado (firebaseUid)
+4. El contenido del documento puede estar vacío o tener campos adicionales
 
 ## Funcionalidades Técnicas
 
@@ -118,3 +141,4 @@ service cloud.firestore {
 - **Performance**: Skeleton optimizado sin efectos pesados
 - **UX**: Confirmaciones y notificaciones para todas las acciones
 - **Seguridad**: Validación de permisos para borrar mensajes
+- **Administración**: Sistema de roles con verificación en Firestore
