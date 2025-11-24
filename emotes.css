@@ -1,75 +1,92 @@
 /* Estilos para emotes e imágenes */
-.image-btn, .emote-btn {
-    background: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 4px;
-    margin-right: 8px;
-    transition: background-color 0.2s;
+.image-btn,
+.emote-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  margin-right: 8px;
+  transition: background-color 0.2s;
 }
 
-.image-btn:hover, .emote-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+.image-btn:hover,
+.emote-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .emote-panel {
-    position: absolute;
-    bottom: 60px;
-    left: 10px;
-    background: #2a2a2a;
-    border: 1px solid #444;
-    border-radius: 8px;
-    padding: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    z-index: 1000;
+  position: absolute;
+  bottom: 60px;
+
+  /* --- CENTRADO HORIZONTAL --- */
+  left: 50%; /* 1. Mueve el punto de inicio al centro de la pantalla */
+  transform: translateX(
+    -50%
+  ); /* 2. Regresa el elemento el 50% de su propio ancho */
+  /* -------------------------- */
+
+  background: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  max-width: 100%; /* Asegura que el panel no exceda el ancho de la pantalla */
+  overflow-x: auto; /* Permite desplazamiento horizontal si es necesario */
 }
 
 .emote-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 8px;
-    max-width: 280px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  max-width: 280px;
 }
 
 .emote-item {
-    font-size: 24px;
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 4px;
-    text-align: center;
-    transition: background-color 0.2s;
+  font-size: 28px; /* Aumenta el tamaño para mejor visibilidad */
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  text-align: center;
+  transition: background-color 0.2s;
 }
 
 .emote-item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .message-image {
-    cursor: pointer;
-    transition: transform 0.2s;
+  cursor: pointer;
+  transition: transform 0.2s;
 }
 
 .message-image:hover {
-    transform: scale(1.05);
+  transform: scale(1.05);
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-    .emote-panel {
-        left: 5px;
-        right: 5px;
-        max-width: none;
-    }
-    
-    .emote-grid {
-        grid-template-columns: repeat(5, 1fr);
-        max-width: none;
-    }
-    
-    .image-btn, .emote-btn {
-        font-size: 18px;
-        padding: 6px;
-    }
+  .emote-panel {
+    left: 5px;
+    right: 5px;
+    max-width: none;
+    bottom: 10px; /* Ajusta la posición para pantallas pequeñas */
+  }
+
+  .emote-grid {
+    grid-template-columns: repeat(5, 1fr);
+    max-width: none;
+  }
+
+  .image-btn,
+  .emote-btn {
+    font-size: 18px;
+    padding: 6px;
+  }
+
+  .emote-item {
+    font-size: 22px; /* Ajusta el tamaño en pantallas pequeñas */
+  }
 }
