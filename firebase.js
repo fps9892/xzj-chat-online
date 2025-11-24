@@ -320,10 +320,7 @@ export function listenToTyping(callback) {
         const typingUsers = [];
         if (snapshot.exists()) {
             snapshot.forEach((childSnapshot) => {
-                const userId = childSnapshot.key;
-                if (userId !== currentUser.userId) {
-                    typingUsers.push(childSnapshot.val().userName);
-                }
+                typingUsers.push(childSnapshot.val().userName);
             });
         }
         callback(typingUsers);
