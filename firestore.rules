@@ -28,8 +28,6 @@ service cloud.firestore {
     match /moderators/{firebaseUid} {
       allow read: if isAdmin() || isModerator();
       allow write: if isAdmin();
-      // Permitir que un usuario lea su propio estado de moderador
-      allow read: if request.auth.uid == firebaseUid;
     }
     
     // Colección de usuarios baneados - solo admins y moderadores pueden leer/escribir

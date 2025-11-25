@@ -569,6 +569,7 @@ export async function grantModeratorRole(userId) {
             throw new Error(`El usuario con UID ${userId} no existe`);
         }
 
+        // Agregar el usuario a la colección `moderators`
         await setDoc(doc(db, 'moderators', userId), {
             grantedBy: currentUser.firebaseUid,
             grantedAt: new Date().toISOString()
@@ -598,6 +599,7 @@ export async function revokeModerator(userId) {
     }
     
     try {
+        // Eliminar el usuario de la colección `moderators`
         await deleteDoc(doc(db, 'moderators', userId));
         
         // Actualizar rol en el documento del usuario
