@@ -1,6 +1,6 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getDatabase, ref, push, onValue, serverTimestamp, set, onDisconnect, query, limitToLast, remove, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-import { getFirestore, doc, updateDoc, getDoc, setDoc, deleteDoc, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getDatabase, ref, push, onValue, serverTimestamp, set, onDisconnect, query as dbQuery, limitToLast, remove, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { getFirestore, doc, updateDoc, getDoc, setDoc, deleteDoc, collection, query as fsQuery, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
@@ -179,7 +179,7 @@ async function limitMessages() {
 }
 
 export function listenToMessages(callback) {
-    const messagesRef = query(ref(database, `rooms/${currentRoom}/messages`), limitToLast(5));
+    const messagesRef = dbQuery(ref(database, `rooms/${currentRoom}/messages`), limitToLast(5));
     return onValue(messagesRef, (snapshot) => {
         const messages = [];
         snapshot.forEach((childSnapshot) => {
@@ -657,7 +657,7 @@ export async function unpinMessage(messageId) {
 // Obtener mensajes fijados
 export async function getPinnedMessages(roomName = currentRoom) {
     try {
-        const q = query(collection(db, 'pinnedMessages'), where('room', '==', roomName));
+        const q = fsQuery(collection(db, 'pinnedMessages'), where('room', '==', roomName));
         const querySnapshot = await getDocs(q);
         const pinnedMessages = [];
         

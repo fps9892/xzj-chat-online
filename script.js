@@ -1,24 +1,5 @@
-import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages } from './firebase.js';
+import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser } from './firebase.js';
 import './admin-listener.js';
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
-
-const auth = getAuth();
-const db = getFirestore();
-
-
-
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    const adminDoc = await getDoc(doc(db, "admins", user.uid));
-    const role = adminDoc.exists() ? "Administrador" : "Usuario";
-
-    document.querySelector(".user-role").textContent = `[Rol: ${role}]`;
-  } else {
-    // Redirigir al login si no está autenticado
-    window.location.href = "/login.html";
-  }
-});
 
 document.addEventListener('DOMContentLoaded', function() {
     // Elementos de la pantalla de carga
@@ -464,12 +445,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             ${isOwn ? `
                                 <span class="message-time">${time}</span>
                                 <span class="message-username clickable-username" data-user-id="${message.userId}" style="color: ${message.textColor || currentUser.textColor || '#ffffff'}">${displayName}</span>
-                                ${message.role === 'admin' ? '<span class="admin-tag">ADMIN</span>' : ''}
+                                ${roleTag}
                                 <img src="${message.userAvatar}" alt="User" class="message-avatar">
                             ` : `
                                 <img src="${message.userAvatar}" alt="User" class="message-avatar">
                                 <span class="message-username clickable-username" data-user-id="${message.userId}" style="color: ${message.textColor || '#ffffff'}">${displayName}</span>
-                                ${message.role === 'admin' ? '<span class="admin-tag">ADMIN</span>' : ''}
+                                ${roleTag}
                                 <span class="message-time">${time}</span>
                             `}
                         </div>
@@ -486,12 +467,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             ${isOwn ? `
                                 <span class="message-time">${time}</span>
                                 <span class="message-username clickable-username" data-user-id="${message.userId}" style="color: ${message.textColor || currentUser.textColor || '#ffffff'}">${displayName}</span>
-                                ${message.role === 'admin' ? '<span class="admin-tag">ADMIN</span>' : ''}
+                                ${roleTag}
                                 <img src="${message.userAvatar}" alt="User" class="message-avatar">
                             ` : `
                                 <img src="${message.userAvatar}" alt="User" class="message-avatar">
                                 <span class="message-username clickable-username" data-user-id="${message.userId}" style="color: ${message.textColor || '#ffffff'}">${displayName}</span>
-                                ${message.role === 'admin' ? '<span class="admin-tag">ADMIN</span>' : ''}
+                                ${roleTag}
                                 <span class="message-time">${time}</span>
                             `}
                         </div>
