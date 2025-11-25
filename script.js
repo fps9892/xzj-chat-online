@@ -524,7 +524,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function renderMessages(messages) {
         const chatArea = document.querySelector('.chat-area');
-        const wasAtBottom = chatArea.scrollHeight - chatArea.scrollTop <= chatArea.clientHeight + 100;
+        const wasAtBottom = chatArea.scrollHeight - chatArea.scrollTop <= chatArea.clientHeight + 50;
         
         chatArea.innerHTML = '';
         
@@ -548,9 +548,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Scroll automático solo si estaba cerca del final o es un mensaje nuevo
         if (wasAtBottom || messages.length > lastMessageCount) {
-            setTimeout(() => {
+            requestAnimationFrame(() => {
                 chatArea.scrollTop = chatArea.scrollHeight;
-            }, 100);
+            });
         }
         
         lastMessageCount = messages.length;
