@@ -297,6 +297,15 @@
 
     <!-- Panel de Grabación de Audio -->
     <div class="audio-panel" id="audioPanel">
+      <div class="audio-panel-header">
+        <div class="rec-indicator">
+          <span class="rec-dot"></span>
+          <span class="rec-text">REC</span>
+        </div>
+        <button class="close-audio-panel" id="closeAudioPanel">
+          <img src="images/close.svg" alt="Close" class="close-icon" />
+        </button>
+      </div>
       <canvas class="audio-visualizer" id="audioVisualizer" width="300" height="80"></canvas>
       <div class="audio-timer" id="audioTimer">00:00</div>
       <div class="audio-controls">
@@ -306,6 +315,9 @@
         <button class="audio-btn stop" id="stopBtn" title="Detener">
           <img src="images/stop.svg" alt="Stop" class="audio-icon" />
         </button>
+        <button class="audio-btn delete" id="deleteAudioBtn" title="Eliminar">
+          <img src="images/trash.svg" alt="Delete" class="audio-icon" />
+        </button>
         <button class="audio-btn upload" id="uploadAudioBtn" title="Subir audio">
           <img src="images/folder.svg" alt="Upload" class="audio-icon" />
         </button>
@@ -314,6 +326,9 @@
         </button>
       </div>
     </div>
+
+    <!-- Overlay para cerrar panel -->
+    <div class="audio-panel-overlay" id="audioPanelOverlay"></div>
 
     <script type="module" src="main.js"></script>
     <script type="module" src="script.js"></script>

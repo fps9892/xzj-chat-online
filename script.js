@@ -109,14 +109,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const audioTimer = document.getElementById('audioTimer');
     const playBtn = document.getElementById('playBtn');
     const stopBtn = document.getElementById('stopBtn');
+    const deleteAudioBtn = document.getElementById('deleteAudioBtn');
     const sendAudioBtn = document.getElementById('sendAudioBtn');
     const uploadAudioBtn = document.getElementById('uploadAudioBtn');
+    const closeAudioPanel = document.getElementById('closeAudioPanel');
+    const audioPanelOverlay = document.getElementById('audioPanelOverlay');
+    const recIndicator = document.querySelector('.rec-indicator');
     const audioInput = document.querySelector('.audio-input');
     
     let audioRecorder = new AudioRecorder();
     let isRecording = false;
     let timerInterval = null;
     let recordedAudioBlob = null;
+    let recordingStartTime = null;
     const emoteBtn = document.querySelector('.emote-btn');
     const emotePanel = document.querySelector('.emote-panel');
     const emoteItems = document.querySelectorAll('.emote-item');
@@ -1567,21 +1572,43 @@ document.addEventListener('DOMContentLoaded', function() {
     // Audio recording
     micBtn.addEventListener('click', () => {
         audioPanel.classList.add('active');
+        audioPanelOverlay.classList.add('active');
         audioTimer.textContent = '00:00';
         recordedAudioBlob = null;
+        recIndicator.classList.remove('recording');
     });
+    
+    // Cerrar panel
+    const closePanel = () => {
+        if (isRecording) {
+            audioRecorder.cancelRecording();
+            isRecording = false;
+            clearInterval(timerInterval);
+        }
+        audioPanel.classList.remove('active');
+        audioPanelOverlay.classList.remove('active');
+        audioTimer.textContent = '00:00';
+        recordedAudioBlob = null;
+        recIndicator.classList.remove('recording');
+        playBtn.classList.remove('recording');
+    };
+    
+    closeAudioPanel.addEventListener('click', closePanel);
+    audioPanelOverlay.addEventListener('click', closePanel);
     
     playBtn.addEventListener('click', async () => {
         if (!isRecording) {
             const started = await audioRecorder.startRecording(audioVisualizer);
             if (started) {
                 isRecording = true;
+                recordingStartTime = Date.now();
                 playBtn.classList.add('recording');
+                recIndicator.classList.add('recording');
                 
                 timerInterval = setInterval(() => {
-                    const duration = audioRecorder.getRecordingDuration();
-                    audioTimer.textContent = formatTime(duration);
-                }, 1000);
+                    const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+                    audioTimer.textContent = formatTime(elapsed);
+                }, 100);
             } else {
                 showNotification('No se pudo acceder al micrófono', 'error');
             }
@@ -1594,11 +1621,25 @@ document.addEventListener('DOMContentLoaded', function() {
             recordedAudioBlob = await audioRecorder.stopRecording();
             isRecording = false;
             playBtn.classList.remove('recording');
+            recIndicator.classList.remove('recording');
             
             if (recordedAudioBlob) {
                 showNotification('Audio listo para enviar', 'success');
             }
         }
+    });
+    
+    deleteAudioBtn.addEventListener('click', () => {
+        if (isRecording) {
+            audioRecorder.cancelRecording();
+            clearInterval(timerInterval);
+            isRecording = false;
+            playBtn.classList.remove('recording');
+            recIndicator.classList.remove('recording');
+        }
+        audioTimer.textContent = '00:00';
+        recordedAudioBlob = null;
+        showNotification('Audio eliminado', 'info');
     });
     
     sendAudioBtn.addEventListener('click', async () => {
@@ -1607,18 +1648,15 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        const duration = audioRecorder.getRecordingDuration();
+        const duration = Math.floor((Date.now() - recordingStartTime) / 1000);
         
         try {
             const audioBase64 = await blobToBase64(recordedAudioBlob);
             await sendAudio(audioBase64, duration);
             showNotification('Audio enviado', 'success');
             
-            // Limpiar panel
-            audioPanel.classList.remove('active');
-            audioTimer.textContent = '00:00';
-            recordedAudioBlob = null;
-            playBtn.classList.remove('recording');
+            // Limpiar y cerrar panel
+            closePanel();
         } catch (error) {
             showNotification('Error al enviar audio', 'error');
         }
