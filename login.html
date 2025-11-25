@@ -108,13 +108,16 @@
             </div>
             <span class="password-counter">0/6</span>
           </div>
-          <input
-            type="password"
-            placeholder="Confirmar contraseña"
-            class="login-input"
-            id="reg-confirm"
-            required
-          />
+          <div class="password-container">
+            <input
+              type="password"
+              placeholder="Confirmar contraseña"
+              class="login-input"
+              id="reg-confirm"
+              required
+            />
+            <span class="password-match-icon">✓</span>
+          </div>
           <select class="country-select" id="reg-country">
             <option value="">🌍 Selecciona tu país</option>
             <option value="AR">🇦🇷 Argentina</option>
@@ -146,25 +149,39 @@
             id="reg-description"
             maxlength="100"
           ></textarea>
-          <input
-            type="file"
-            accept="image/*"
-            class="file-input"
-            id="reg-avatar"
-          />
-          <label for="reg-avatar" class="file-label"
-            >Seleccionar foto de perfil (opcional)</label
-          >
-          <div class="captcha-container">
-            <div class="captcha-text" id="captcha-text"></div>
+          <div class="preview-row">
+            <div class="preview-container">
+              <div class="avatar-preview">
+                <img src="images/profileuser.jpg" alt="Preview" id="avatar-preview-img">
+              </div>
+              <div class="username-preview" id="username-preview">Usuario</div>
+            </div>
+            <div class="file-upload-wrapper">
+              <input
+                type="file"
+                accept="image/*"
+                class="file-input"
+                id="reg-avatar"
+              />
+              <label for="reg-avatar" class="file-label-inline"
+                >📷 Seleccionar foto</label
+              >
+            </div>
+          </div>
+          <div class="captcha-row">
+            <div class="captcha-code-group">
+              <div class="captcha-text" id="captcha-text"></div>
+              <button type="button" class="captcha-refresh" id="captcha-refresh">
+                <img src="images/reply.svg" alt="Refresh" class="refresh-icon">
+              </button>
+            </div>
             <input
               type="text"
               placeholder="Ingresa el código"
-              class="login-input captcha-input"
+              class="login-input captcha-input-inline"
               id="captcha-input"
               required
             />
-            <button type="button" class="captcha-refresh" id="captcha-refresh">🔄</button>
           </div>
           <button class="login-btn" id="register-submit">Crear Cuenta</button>
         </div>
@@ -179,16 +196,20 @@
             maxlength="10"
             required
           />
-          <div class="captcha-container">
-            <div class="captcha-text" id="captcha-text-guest"></div>
+          <div class="captcha-row">
+            <div class="captcha-code-group">
+              <div class="captcha-text" id="captcha-text-guest"></div>
+              <button type="button" class="captcha-refresh" id="captcha-refresh-guest">
+                <img src="images/reply.svg" alt="Refresh" class="refresh-icon">
+              </button>
+            </div>
             <input
               type="text"
               placeholder="Ingresa el código"
-              class="login-input captcha-input"
+              class="login-input captcha-input-inline"
               id="captcha-input-guest"
               required
             />
-            <button type="button" class="captcha-refresh" id="captcha-refresh-guest">🔄</button>
           </div>
           <button class="login-btn" id="guest-submit">
             Entrar como Invitado

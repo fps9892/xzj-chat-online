@@ -24,6 +24,57 @@ document.addEventListener('DOMContentLoaded', function() {
     const tabs = document.querySelectorAll('.login-tab');
     const forms = document.querySelectorAll('.login-form');
     
+    // Efecto de escritura en el título
+    const titleElement = document.querySelector('.login-title');
+    const phrases = [
+        'FYZAR CHAT',
+        'Conecta ya.',
+        'Salas online.',
+        'Chatea libre.',
+        'Tu espacio.'
+    ];
+    
+    let phraseIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+    
+    function typeWriter() {
+        const currentPhrase = phrases[phraseIndex];
+        let displayText = '';
+        
+        if (isDeleting) {
+            displayText = currentPhrase.substring(0, charIndex - 1);
+        } else {
+            displayText = currentPhrase.substring(0, charIndex + 1);
+        }
+        
+        titleElement.innerHTML = displayText + '<span class="typewriter-cursor"></span>';
+        
+        let typingSpeed = 150;
+        if (isDeleting) {
+            typingSpeed = 75;
+        }
+        
+        if (!isDeleting && charIndex === currentPhrase.length) {
+            typingSpeed = phraseIndex === 0 ? 3000 : 1500;
+            isDeleting = true;
+        } else if (isDeleting && charIndex === 0) {
+            isDeleting = false;
+            phraseIndex = (phraseIndex + 1) % phrases.length;
+            typingSpeed = 500;
+        }
+        
+        if (isDeleting) {
+            charIndex--;
+        } else {
+            charIndex++;
+        }
+        
+        setTimeout(typeWriter, typingSpeed);
+    }
+    
+    typeWriter();
+    
     function showNotification(message, type) {
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
@@ -94,8 +145,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Password strength
     const passwordInput = document.getElementById('reg-password');
+    const confirmInput = document.getElementById('reg-confirm');
     const strengthBar = document.querySelector('.strength-bar');
     const passwordCounter = document.querySelector('.password-counter');
+    const matchIcon = document.querySelector('.password-match-icon');
 
     passwordInput?.addEventListener('input', function() {
         const password = this.value;
@@ -115,6 +168,48 @@ document.addEventListener('DOMContentLoaded', function() {
             const hasSpecial = /[!@#$%^&*]/.test(password);
             const hasUpper = /[A-Z]/.test(password);
             strengthBar.className = (hasNumber && hasSpecial && hasUpper) ? 'strength-bar strong' : 'strength-bar medium';
+        }
+        checkPasswordMatch();
+    });
+
+    confirmInput?.addEventListener('input', checkPasswordMatch);
+
+    function checkPasswordMatch() {
+        const password = passwordInput.value;
+        const confirm = confirmInput.value;
+        
+        if (confirm.length === 0) {
+            matchIcon.className = 'password-match-icon';
+        } else if (password === confirm && password.length >= 6) {
+            matchIcon.className = 'password-match-icon show';
+            matchIcon.textContent = '✓';
+        } else {
+            matchIcon.className = 'password-match-icon error';
+            matchIcon.textContent = '✗';
+        }
+    }
+
+    // Username preview
+    const usernameInput = document.getElementById('reg-username');
+    const usernamePreview = document.getElementById('username-preview');
+
+    usernameInput?.addEventListener('input', function() {
+        const username = this.value.trim();
+        usernamePreview.textContent = username || 'Usuario';
+    });
+
+    // Avatar preview
+    const avatarInput = document.getElementById('reg-avatar');
+    const avatarPreviewImg = document.getElementById('avatar-preview-img');
+
+    avatarInput?.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                avatarPreviewImg.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
         }
     });
 
