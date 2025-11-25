@@ -292,7 +292,7 @@ export function listenToUsers(callback) {
         roomUserListeners.get(currentRoom)();
     }
     
-    const unsubscribe = onValue(usersRef, async (snapshot) => {
+    const unsubscribe = onValue(usersRef, (snapshot) => {
         const users = [];
         const currentUsers = new Map();
         const deviceCounts = { desktop: 0, mobile: 0, tablet: 0 };
@@ -307,34 +307,16 @@ export function listenToUsers(callback) {
                 const deviceType = userData.deviceType || 'desktop';
                 deviceCounts[deviceType]++;
                 
-                // Verificar si es administrador
-                let isAdmin = false;
-                let isModerator = false;
-                if (!userData.isGuest && userData.firebaseUid) {
-                    try {
-                        isAdmin = await checkAdminStatus(userData.firebaseUid);
-                        isModerator = await checkModeratorStatus(userData.firebaseUid);
-                    } catch (error) {
-                        console.warn('Error checking admin/mod status:', error);
-                    }
-                }
-                
-                // Actualizar rol si es admin o moderador
+                // Actualizar rol basado en datos existentes
                 let userRole = userData.role || 'Usuario';
-                if (isAdmin) {
-                    userRole = 'Administrador';
-                } else if (isModerator) {
-                    userRole = 'Moderador';
-                } else if (userData.isGuest) {
+                if (userData.isGuest) {
                     userRole = 'guest';
                 }
                 
                 users.push({
                     id: userId,
                     ...userData,
-                    role: userRole,
-                    isAdmin: isAdmin,
-                    isModerator: isModerator
+                    role: userRole
                 });
                 
                 // Notificar si es un nuevo usuario (solo si no es el primer carga)
