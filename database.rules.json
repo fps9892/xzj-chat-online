@@ -8,19 +8,23 @@
           ".indexOn": ["timestamp"],
           "$messageId": {
             ".read": true,
-            ".write": true
+            ".write": true,
+            ".validate": "newData.hasChildren(['text', 'userId', 'userName', 'userAvatar', 'timestamp', 'type'])"
           }
         },
         "users": {
+          ".indexOn": ["status", "lastSeen"],
           "$userId": {
             ".read": true,
-            ".write": true
+            ".write": true,
+            ".validate": "newData.hasChildren(['name', 'avatar', 'status'])"
           }
         },
         "typing": {
           "$userId": {
             ".read": true,
-            ".write": true
+            ".write": true,
+            ".validate": "newData.hasChildren(['userName', 'timestamp'])"
           }
         }
       }

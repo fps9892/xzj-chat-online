@@ -1,0 +1,208 @@
+═══════════════════════════════════════════════════════════════════
+  REGLAS DE FIREBASE - COPIAR Y PEGAR DIRECTAMENTE
+═══════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────┐
+│  1️⃣  FIRESTORE DATABASE RULES                                   │
+│  Ubicación: Firebase Console → Firestore Database → Rules      │
+└─────────────────────────────────────────────────────────────────┘
+
+COPIAR DESDE AQUÍ ↓
+─────────────────────────────────────────────────────────────────
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isAdmin() {
+      return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    
+    function isModerator() {
+      return request.auth != null && exists(/databases/$(database)/documents/moderators/$(request.auth.uid));
+    }
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    match /admins/{firebaseUid} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /moderators/{firebaseUid} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /banned/{firebaseUid} {
+      allow read: if true;
+      allow write: if isAdmin() || isModerator();
+    }
+    
+    match /users/{firebaseUid} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (request.auth.uid == firebaseUid || isAdmin());
+      allow delete: if isAdmin();
+    }
+    
+    match /guests/{guestId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    
+    match /pinnedMessages/{messageId} {
+      allow read: if true;
+      allow write: if isAdmin() || isModerator();
+    }
+    
+    match /rooms/{roomId} {
+      allow read: if true;
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
+
+─────────────────────────────────────────────────────────────────
+COPIAR HASTA AQUÍ ↑
+
+
+┌─────────────────────────────────────────────────────────────────┐
+│  2️⃣  REALTIME DATABASE RULES                                    │
+│  Ubicación: Firebase Console → Realtime Database → Rules       │
+└─────────────────────────────────────────────────────────────────┘
+
+COPIAR DESDE AQUÍ ↓
+─────────────────────────────────────────────────────────────────
+
+{
+  "rules": {
+    "rooms": {
+      "$roomId": {
+        ".read": true,
+        ".write": true,
+        "messages": {
+          ".indexOn": ["timestamp"],
+          "$messageId": {
+            ".read": true,
+            ".write": true,
+            ".validate": "newData.hasChildren(['text', 'userId', 'userName', 'userAvatar', 'timestamp', 'type'])"
+          }
+        },
+        "users": {
+          ".indexOn": ["status", "lastSeen"],
+          "$userId": {
+            ".read": true,
+            ".write": true,
+            ".validate": "newData.hasChildren(['name', 'avatar', 'status'])"
+          }
+        },
+        "typing": {
+          "$userId": {
+            ".read": true,
+            ".write": true,
+            ".validate": "newData.hasChildren(['userName', 'timestamp'])"
+          }
+        }
+      }
+    },
+    "deviceCounts": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}
+
+─────────────────────────────────────────────────────────────────
+COPIAR HASTA AQUÍ ↑
+
+
+═══════════════════════════════════════════════════════════════════
+  INSTRUCCIONES PASO A PASO
+═══════════════════════════════════════════════════════════════════
+
+PASO 1: APLICAR REGLAS DE FIRESTORE
+────────────────────────────────────
+1. Ve a: https://console.firebase.google.com/
+2. Selecciona tu proyecto: fyzar-80936
+3. Click en "Firestore Database" en el menú lateral
+4. Click en la pestaña "Rules" (Reglas)
+5. BORRA TODO el contenido actual
+6. COPIA las reglas de Firestore de arriba (sección 1)
+7. PEGA en el editor
+8. Click en "Publicar" (Publish)
+9. Espera confirmación ✅
+
+
+PASO 2: APLICAR REGLAS DE REALTIME DATABASE
+────────────────────────────────────────────
+1. En el menú lateral, click en "Realtime Database"
+2. Click en la pestaña "Rules" (Reglas)
+3. BORRA TODO el contenido actual
+4. COPIA las reglas de Realtime Database de arriba (sección 2)
+5. PEGA en el editor
+6. Click en "Publicar" (Publish)
+7. Espera confirmación ✅
+
+
+PASO 3: VERIFICAR
+─────────────────
+1. Ambas reglas deben mostrar "Publicado" con fecha actual
+2. No debe haber errores de sintaxis
+3. Si hay errores, verifica que copiaste TODO el contenido
+
+
+═══════════════════════════════════════════════════════════════════
+  NOTAS IMPORTANTES
+═══════════════════════════════════════════════════════════════════
+
+⚠️  IMPORTANTE: Debes copiar TODO el contenido entre las líneas
+    "COPIAR DESDE AQUÍ" y "COPIAR HASTA AQUÍ"
+
+⚠️  NO copies las líneas de guiones (─────)
+
+⚠️  Asegúrate de NO dejar espacios al inicio o final
+
+⚠️  Las reglas deben publicarse en el orden indicado:
+    1. Primero Firestore
+    2. Después Realtime Database
+
+✅  Después de aplicar las reglas, ejecuta:
+    http://localhost:8000/init-general-room.html
+    para crear la Sala General
+
+✅  Usa test-console.html para verificar que todo funciona
+
+
+═══════════════════════════════════════════════════════════════════
+  ¿PROBLEMAS?
+═══════════════════════════════════════════════════════════════════
+
+Error: "Syntax error"
+→ Verifica que copiaste TODO el contenido correctamente
+→ No debe haber caracteres extra al inicio o final
+
+Error: "Permission denied"
+→ Espera 1-2 minutos después de publicar las reglas
+→ Recarga la página de tu aplicación
+
+Error: "Invalid rules"
+→ Asegúrate de estar en la sección correcta (Firestore vs Realtime)
+→ Verifica que no falten llaves { } o corchetes [ ]
+
+
+═══════════════════════════════════════════════════════════════════
+
+Archivo creado: $(date)
+Proyecto: fyzar-80936
+Versión: 1.0
+
+═══════════════════════════════════════════════════════════════════

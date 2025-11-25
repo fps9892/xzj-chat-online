@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Console - Verificación de Errores</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0e27;
+            color: #00ff88;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff;
+        }
+        .test-section {
+            background: #16213e;
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .test-section h2 {
+            color: #00ffff;
+            margin-bottom: 15px;
+        }
+        .test-item {
+            padding: 10px;
+            margin: 10px 0;
+            background: #0a0e27;
+            border-left: 4px solid #888;
+            border-radius: 5px;
+        }
+        .test-item.success {
+            border-left-color: #00ff88;
+        }
+        .test-item.error {
+            border-left-color: #ff4444;
+        }
+        .test-item.warning {
+            border-left-color: #ffaa00;
+        }
+        button {
+            background: #00ff88;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #00cc6a;
+        }
+        .console-output {
+            background: #000;
+            color: #00ff88;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .console-output .log {
+            margin: 5px 0;
+        }
+        .console-output .error {
+            color: #ff4444;
+        }
+        .console-output .success {
+            color: #00ff88;
+        }
+        .console-output .info {
+            color: #00ffff;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status-badge.ok {
+            background: #00ff88;
+            color: #000;
+        }
+        .status-badge.fail {
+            background: #ff4444;
+            color: #fff;
+        }
+        .status-badge.pending {
+            background: #ffaa00;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 CONSOLA DE VERIFICACIÓN DE ERRORES</h1>
+
+        <div class="test-section">
+            <h2>📋 Tests Automáticos</h2>
+            <button onclick="runAllTests()">▶️ Ejecutar Todos los Tests</button>
+            <button onclick="clearConsole()">🗑️ Limpiar Consola</button>
+            <div id="test-results" class="console-output"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔧 Herramientas de Diagnóstico</h2>
+            <button onclick="checkFiles()">📁 Verificar Archivos</button>
+            <button onclick="checkFirebase()">🔥 Verificar Firebase</button>
+            <button onclick="checkUser()">👤 Verificar Usuario</button>
+            <button onclick="checkDatabase()">💾 Verificar Base de Datos</button>
+            <button onclick="checkRooms()">🏠 Verificar Salas</button>
+        </div>
+
+        <div class="test-section">
+            <h2>🚀 Acciones Rápidas</h2>
+            <button onclick="initGeneral()">🏗️ Crear Sala General</button>
+            <button onclick="clearStorage()">🧹 Limpiar Storage</button>
+            <button onclick="goToLogin()">🔐 Ir a Login</button>
+            <button onclick="goToChat()">💬 Ir al Chat</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getDatabase, ref, get, set } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
+            authDomain: "fyzar-80936.firebaseapp.com",
+            databaseURL: "https://fyzar-80936-default-rtdb.firebaseio.com",
+            projectId: "fyzar-80936",
+            storageBucket: "fyzar-80936.firebasestorage.app",
+            messagingSenderId: "718553577005",
+            appId: "1:718553577005:web:74b5b9e790232edf6e2aa4"
+        };
+
+        let app, db, database;
+        
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            database = getDatabase(app);
+            log('✅ Firebase inicializado correctamente', 'success');
+        } catch (error) {
+            log('❌ Error inicializando Firebase: ' + error.message, 'error');
+        }
+
+        function log(message, type = 'log') {
+            const output = document.getElementById('test-results');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log ${type}`;
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            output.appendChild(logEntry);
+            output.scrollTop = output.scrollHeight;
+            console.log(message);
+        }
+
+        window.clearConsole = function() {
+            document.getElementById('test-results').innerHTML = '';
+            log('🧹 Consola limpiada', 'info');
+        }
+
+        window.runAllTests = async function() {
+            clearConsole();
+            log('🚀 Iniciando tests automáticos...', 'info');
+            await checkFiles();
+            await checkFirebase();
+            await checkUser();
+            await checkDatabase();
+            await checkRooms();
+            log('✅ Tests completados', 'success');
+        }
+
+        window.checkFiles = async function() {
+            log('📁 Verificando archivos...', 'info');
+            
+            const files = [
+                'index.html',
+                'login.html',
+                'script.js',
+                'firebase.js',
+                'login.js',
+                'admin-listener.js',
+                'user-profile-service.js',
+                'base.css',
+                'login.css'
+            ];
+
+            for (const file of files) {
+                try {
+                    const response = await fetch(file, { method: 'HEAD' });
+                    if (response.ok) {
+                        log(`  ✓ ${file} existe`, 'success');
+                    } else {
+                        log(`  ✗ ${file} no encontrado`, 'error');
+                    }
+                } catch (error) {
+                    log(`  ✗ ${file} error: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        window.checkFirebase = async function() {
+            log('🔥 Verificando conexión a Firebase...', 'info');
+            
+            try {
+                if (app) {
+                    log('  ✓ Firebase App inicializada', 'success');
+                    log('  ✓ Firestore conectado', 'success');
+                    log('  ✓ Realtime Database conectado', 'success');
+                } else {
+                    log('  ✗ Firebase no inicializado', 'error');
+                }
+            } catch (error) {
+                log('  ✗ Error: ' + error.message, 'error');
+            }
+        }
+
+        window.checkUser = function() {
+            log('👤 Verificando usuario actual...', 'info');
+            
+            try {
+                const currentUser = localStorage.getItem('currentUser');
+                if (currentUser) {
+                    const user = JSON.parse(currentUser);
+                    log('  ✓ Usuario encontrado en localStorage', 'success');
+                    log(`  → Username: ${user.username}`, 'info');
+                    log(`  → UserID: ${user.userId}`, 'info');
+                    log(`  → Es invitado: ${user.isGuest ? 'Sí' : 'No'}`, 'info');
+                    log(`  → Rol: ${user.role || 'Usuario'}`, 'info');
+                    if (user.firebaseUid) {
+                        log(`  → Firebase UID: ${user.firebaseUid}`, 'info');
+                    }
+                } else {
+                    log('  ⚠️ No hay usuario en localStorage', 'warning');
+                    log('  → Debes iniciar sesión primero', 'info');
+                }
+            } catch (error) {
+                log('  ✗ Error leyendo usuario: ' + error.message, 'error');
+            }
+        }
+
+        window.checkDatabase = async function() {
+            log('💾 Verificando estructura de base de datos...', 'info');
+            
+            try {
+                // Verificar Realtime Database
+                const roomsRef = ref(database, 'rooms/general');
+                const snapshot = await get(roomsRef);
+                
+                if (snapshot.exists()) {
+                    log('  ✓ Sala General existe en Realtime DB', 'success');
+                    const data = snapshot.val();
+                    log(`  → Nombre: ${data.name || 'Sin nombre'}`, 'info');
+                    
+                    // Verificar mensajes
+                    const messagesRef = ref(database, 'rooms/general/messages');
+                    const messagesSnap = await get(messagesRef);
+                    if (messagesSnap.exists()) {
+                        const messageCount = Object.keys(messagesSnap.val()).length;
+                        log(`  ✓ ${messageCount} mensajes en la sala`, 'success');
+                    } else {
+                        log('  ⚠️ No hay mensajes en la sala', 'warning');
+                    }
+                    
+                    // Verificar usuarios
+                    const usersRef = ref(database, 'rooms/general/users');
+                    const usersSnap = await get(usersRef);
+                    if (usersSnap.exists()) {
+                        const userCount = Object.keys(usersSnap.val()).length;
+                        log(`  ✓ ${userCount} usuarios en la sala`, 'success');
+                    } else {
+                        log('  ⚠️ No hay usuarios en la sala', 'warning');
+                    }
+                } else {
+                    log('  ✗ Sala General NO existe en Realtime DB', 'error');
+                    log('  → Usa el botón "Crear Sala General"', 'info');
+                }
+            } catch (error) {
+                log('  ✗ Error verificando database: ' + error.message, 'error');
+            }
+        }
+
+        window.checkRooms = async function() {
+            log('🏠 Verificando salas en Firestore...', 'info');
+            
+            try {
+                const roomsSnapshot = await getDocs(collection(db, 'rooms'));
+                
+                if (roomsSnapshot.empty) {
+                    log('  ✗ No hay salas en Firestore', 'error');
+                    log('  → Usa el botón "Crear Sala General"', 'info');
+                } else {
+                    log(`  ✓ ${roomsSnapshot.size} sala(s) encontrada(s)`, 'success');
+                    roomsSnapshot.forEach(doc => {
+                        const data = doc.data();
+                        log(`  → ${doc.id}: ${data.name}`, 'info');
+                    });
+                }
+            } catch (error) {
+                log('  ✗ Error verificando salas: ' + error.message, 'error');
+            }
+        }
+
+        window.initGeneral = async function() {
+            log('🏗️ Creando Sala General...', 'info');
+            
+            try {
+                // Crear en Firestore
+                await setDoc(doc(db, "rooms", "general"), {
+                    name: "Sala General",
+                    createdBy: "system",
+                    createdAt: new Date().toISOString(),
+                    isActive: true,
+                    isDefault: true
+                });
+                log('  ✓ Sala General creada en Firestore', 'success');
+
+                // Crear en Realtime Database
+                await set(ref(database, 'rooms/general'), {
+                    name: "Sala General",
+                    createdBy: "system",
+                    createdAt: new Date().toISOString()
+                });
+                log('  ✓ Sala General creada en Realtime Database', 'success');
+                
+                log('✅ Sala General inicializada correctamente', 'success');
+            } catch (error) {
+                log('❌ Error creando Sala General: ' + error.message, 'error');
+            }
+        }
+
+        window.clearStorage = function() {
+            log('🧹 Limpiando localStorage y sessionStorage...', 'info');
+            localStorage.clear();
+            sessionStorage.clear();
+            log('✅ Storage limpiado', 'success');
+        }
+
+        window.goToLogin = function() {
+            window.location.href = 'login.html';
+        }
+
+        window.goToChat = function() {
+            window.location.href = 'index.html';
+        }
+
+        // Auto-ejecutar verificación básica al cargar
+        setTimeout(() => {
+            log('🔍 Verificación automática iniciada...', 'info');
+            checkFirebase();
+            checkUser();
+        }, 500);
+    </script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicializar Sala General</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a2e;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            padding: 30px;
+            background: #16213e;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,255,255,0.3);
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 16px;
+            background: #00ff88;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background: #00cc6a;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            background: rgba(0,255,136,0.2);
+            border: 1px solid #00ff88;
+        }
+        .error {
+            background: rgba(255,68,68,0.2);
+            border: 1px solid #ff4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Inicializar Base de Datos</h1>
+        <p>Haz clic para crear la Sala General y configurar tu administrador</p>
+        <button onclick="initializeDatabase()">Inicializar Ahora</button>
+        <div id="status"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getDatabase, ref, set } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
+            authDomain: "fyzar-80936.firebaseapp.com",
+            databaseURL: "https://fyzar-80936-default-rtdb.firebaseio.com",
+            projectId: "fyzar-80936",
+            storageBucket: "fyzar-80936.firebasestorage.app",
+            messagingSenderId: "718553577005",
+            appId: "1:718553577005:web:74b5b9e790232edf6e2aa4"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const database = getDatabase(app);
+
+        window.initializeDatabase = async function() {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = '<p>⏳ Inicializando...</p>';
+
+            try {
+                // 1. Crear Sala General en Firestore
+                await setDoc(doc(db, "rooms", "general"), {
+                    name: "Sala General",
+                    createdBy: "system",
+                    createdAt: new Date().toISOString(),
+                    isActive: true,
+                    isDefault: true
+                });
+                console.log("✅ Sala General creada en Firestore");
+
+                // 2. Crear estructura de Sala General en Realtime Database
+                await set(ref(database, 'rooms/general'), {
+                    name: "Sala General",
+                    createdBy: "system",
+                    createdAt: new Date().toISOString()
+                });
+                console.log("✅ Sala General creada en Realtime Database");
+
+                // 3. Configurar administrador (reemplaza con tu UID de Firebase)
+                const adminUid = "wv8Z7GkeBpVpIcyC7QYx2Fp3Bx72";
+                await setDoc(doc(db, "admins", adminUid), {
+                    grantedAt: new Date().toISOString(),
+                    grantedBy: "system",
+                    isSystemAdmin: true
+                });
+                console.log("✅ Administrador configurado");
+
+                statusDiv.innerHTML = `
+                    <div class="status success">
+                        <h3>✅ ¡Inicialización Exitosa!</h3>
+                        <p>✓ Sala General creada</p>
+                        <p>✓ Administrador configurado</p>
+                        <p>✓ Base de datos lista</p>
+                        <br>
+                        <a href="login.html" style="color: #00ff88;">Ir al Login →</a>
+                    </div>
+                `;
+            } catch (error) {
+                console.error("❌ Error:", error);
+                statusDiv.innerHTML = `
+                    <div class="status error">
+                        <h3>❌ Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,67 +1,71 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    
     // Función para verificar si el usuario es administrador
     function isAdmin() {
-      return exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+      return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
     
     // Función para verificar si el usuario es moderador
     function isModerator() {
-      return exists(/databases/$(database)/documents/moderators/$(request.auth.uid));
+      return request.auth != null && exists(/databases/$(database)/documents/moderators/$(request.auth.uid));
     }
     
-    // Función para verificar si el usuario está baneado
-    function isBanned() {
-      return exists(/databases/$(database)/documents/banned/$(request.auth.uid));
+    // Función para verificar si el usuario está autenticado
+    function isAuthenticated() {
+      return request.auth != null;
     }
     
-    // Reglas para usuarios
-    match /users/{userId} {
+    // Colección de administradores - Solo lectura pública, escritura para admins
+    match /admins/{firebaseUid} {
       allow read: if true;
-      allow create: if true;
-      allow update: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Colección de moderadores - Solo lectura pública, escritura para admins
+    match /moderators/{firebaseUid} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Colección de usuarios baneados - Lectura pública, escritura para admins/mods
+    match /banned/{firebaseUid} {
+      allow read: if true;
+      allow write: if isAdmin() || isModerator();
+    }
+    
+    // Colección de usuarios - Lectura pública, escritura propia o admin
+    match /users/{firebaseUid} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (request.auth.uid == firebaseUid || isAdmin());
       allow delete: if isAdmin();
     }
     
-    // Reglas para invitados
+    // Colección de invitados
     match /guests/{guestId} {
       allow read: if true;
       allow write: if true;
     }
     
-    // Reglas para salas
-    match /rooms/{roomId} {
-      allow read: if true;
-      allow create: if true;
-      allow update: if request.auth != null && isAdmin();
-      allow delete: if request.auth != null && isAdmin() && roomId != 'general';
-    }
-    
-    // Reglas para administradores
-    match /admins/{userId} {
-      allow read: if true;
-      allow write: if true;
-    }
-    
-    // Reglas para moderadores
-    match /moderators/{userId} {
-      allow read: if true;
-      allow create: if request.auth != null && isAdmin();
-      allow delete: if request.auth != null && isAdmin();
-    }
-    
-    // Reglas para usuarios baneados
-    match /banned/{userId} {
-      allow read: if true;
-      allow create: if request.auth != null && (isAdmin() || isModerator());
-      allow delete: if request.auth != null && isAdmin();
-    }
-    
-    // Reglas para mensajes fijados
+    // Colección de mensajes fijados - Lectura pública, escritura para admins/mods
     match /pinnedMessages/{messageId} {
       allow read: if true;
-      allow write: if request.auth != null && (isAdmin() || isModerator());
+      allow write: if isAdmin() || isModerator();
+    }
+    
+    // Colección de salas/rooms - Lectura pública, escritura para admins
+    match /rooms/{roomId} {
+      allow read: if true;
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Cualquier otra colección - acceso completo
+    match /{document=**} {
+      allow read, write: if true;
     }
   }
 }
