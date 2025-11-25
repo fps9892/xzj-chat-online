@@ -1,0 +1,398 @@
+/* Efectos adicionales para el chat */
+
+/* Efecto de ondas al hacer click en el chat */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(0, 255, 0, 0.4);
+  transform: scale(0);
+  animation: rippleEffect 0.6s ease-out;
+  pointer-events: none;
+}
+
+@keyframes rippleEffect {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* Efecto de brillo en mensajes nuevos */
+@keyframes newMessageGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 20px 10px rgba(0, 255, 0, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 255, 0, 0);
+  }
+}
+
+.message-container.new-message .message-content {
+  animation: newMessageGlow 1s ease-out;
+}
+
+/* Efecto de shake para notificaciones importantes */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.notification.shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Efecto de typing más elaborado */
+.typing-indicator::after {
+  content: '...';
+  animation: typingAnimation 1.5s infinite;
+}
+
+@keyframes typingAnimation {
+  0% { content: '.'; }
+  33% { content: '..'; }
+  66% { content: '...'; }
+}
+
+/* Efecto de hover en avatares */
+.message-avatar {
+  transition: all 0.3s ease;
+}
+
+.message-avatar:hover {
+  transform: scale(1.2) rotate(5deg);
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+}
+
+/* Efecto de pulso en el contador de caracteres cuando se acerca al límite */
+.char-counter.warning {
+  color: #ffaa00 !important;
+  animation: pulse 1s infinite;
+}
+
+.char-counter.danger {
+  color: #ff4444 !important;
+  animation: pulse 0.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+/* Efecto de scroll suave con indicador de nuevos mensajes */
+.new-messages-indicator {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #00ff00, #00cc00);
+  color: #000;
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 999;
+  box-shadow: 0 4px 15px rgba(0, 255, 0, 0.5);
+  animation: bounceIn 0.5s ease;
+  font-family: 'Orbitron', monospace;
+}
+
+@keyframes bounceIn {
+  0% { transform: translateX(-50%) translateY(50px) scale(0); }
+  50% { transform: translateX(-50%) translateY(-10px) scale(1.1); }
+  100% { transform: translateX(-50%) translateY(0) scale(1); }
+}
+
+.new-messages-indicator:hover {
+  transform: translateX(-50%) scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 255, 0, 0.7);
+}
+
+/* Efecto de fade para mensajes antiguos al hacer scroll */
+.message-container.fading {
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+/* Efecto de highlight al mencionar */
+.message-content.mentioned {
+  background: linear-gradient(135deg, rgba(255, 170, 0, 0.2), rgba(255, 170, 0, 0.1)) !important;
+  border-left: 3px solid #ffaa00;
+  animation: mentionPulse 2s ease-out;
+}
+
+@keyframes mentionPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 170, 0, 0.7); }
+  50% { box-shadow: 0 0 20px 5px rgba(255, 170, 0, 0.4); }
+}
+
+/* Efecto de conexión/desconexión de usuarios */
+.user-item.connecting {
+  animation: userConnecting 0.5s ease;
+}
+
+.user-item.disconnecting {
+  animation: userDisconnecting 0.5s ease;
+}
+
+@keyframes userConnecting {
+  0% { opacity: 0; transform: translateX(-20px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes userDisconnecting {
+  0% { opacity: 1; transform: translateX(0); }
+  100% { opacity: 0; transform: translateX(20px); }
+}
+
+/* Efecto de hover en el room selector */
+.room-selector::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: #00ff00;
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.room-selector:hover::after {
+  width: 100%;
+}
+
+/* Efecto de carga para imágenes */
+.message-image {
+  position: relative;
+  background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+  background-size: 200% 100%;
+  animation: imageLoading 1.5s ease-in-out infinite;
+}
+
+.message-image.loaded {
+  animation: none;
+  background: none;
+}
+
+@keyframes imageLoading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Efecto de partículas al enviar mensaje */
+@keyframes particleBurst {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--tx), var(--ty)) scale(0);
+    opacity: 0;
+  }
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #00ff00;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: particleBurst 0.8s ease-out forwards;
+}
+
+/* Efecto de escritura en tiempo real */
+.message-text.typing {
+  position: relative;
+  overflow: hidden;
+}
+
+.message-text.typing::after {
+  content: '|';
+  animation: blink 1s infinite;
+  margin-left: 2px;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Efecto de hover en botones de control */
+.chat-controls > * {
+  position: relative;
+  overflow: hidden;
+}
+
+.chat-controls > *::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(0, 255, 0, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.chat-controls > *:hover::before {
+  width: 100%;
+  height: 100%;
+}
+
+/* Efecto de scroll infinito suave */
+.chat-area.smooth-scroll {
+  scroll-behavior: smooth;
+}
+
+/* Indicador de scroll al final */
+.scroll-to-bottom {
+  position: fixed;
+  bottom: 100px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #00ff00, #00cc00);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 255, 0, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 998;
+}
+
+.scroll-to-bottom.visible {
+  opacity: 1;
+  visibility: visible;
+  animation: bounceUpDown 2s ease-in-out infinite;
+}
+
+@keyframes bounceUpDown {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.scroll-to-bottom:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 255, 0, 0.7);
+}
+
+.scroll-to-bottom::after {
+  content: '↓';
+  color: #000;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* Efecto de reacción rápida a mensajes */
+.quick-reactions {
+  position: absolute;
+  bottom: -30px;
+  right: 10px;
+  display: flex;
+  gap: 5px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.message-container:hover .quick-reactions {
+  opacity: 1;
+  visibility: visible;
+  bottom: -35px;
+}
+
+.reaction-btn {
+  width: 24px;
+  height: 24px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid #00ff00;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.reaction-btn:hover {
+  transform: scale(1.2);
+  background: rgba(0, 255, 0, 0.2);
+}
+
+/* Efecto de mensaje destacado */
+.message-container.highlighted .message-content {
+  animation: highlightPulse 2s ease-in-out infinite;
+}
+
+@keyframes highlightPulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(0, 255, 0, 0.8);
+  }
+}
+
+/* Efecto de mensaje eliminándose */
+.message-container.deleting {
+  animation: messageDelete 0.5s ease-out forwards;
+}
+
+@keyframes messageDelete {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.8) translateX(50px);
+  }
+}
+
+/* Efecto de carga de sala */
+.room-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 100;
+}
+
+.room-loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(0, 255, 0, 0.1);
+  border-top-color: #00ff00;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.room-loading-text {
+  margin-top: 15px;
+  color: #00ff00;
+  font-family: 'Orbitron', monospace;
+  font-size: 14px;
+  animation: pulse 1.5s ease-in-out infinite;
+}

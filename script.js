@@ -1,5 +1,6 @@
 import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, getRooms, listenToRooms } from './firebase.js';
 import { getUserProfile, findUserByUsername } from './user-profile-service.js';
+import { markAsNewMessage, showNewMessagesIndicator, createParticleBurst, animateMessageDeletion } from './chat-enhancements.js';
 import './admin-listener.js';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -511,13 +512,25 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    let lastMessageCount = 0;
+    
     function renderMessages(messages) {
         const chatArea = document.querySelector('.chat-area');
+        const isNearBottom = chatArea.scrollHeight - chatArea.scrollTop - chatArea.clientHeight < 100;
+        
         chatArea.innerHTML = '';
         
-        messages.forEach(message => {
+        messages.forEach((message, index) => {
             const messageEl = createMessageElement(message);
             chatArea.appendChild(messageEl);
+            
+            // Marcar mensajes nuevos
+            if (index >= lastMessageCount && lastMessageCount > 0) {
+                markAsNewMessage(messageEl);
+                if (!isNearBottom) {
+                    showNewMessagesIndicator();
+                }
+            }
             
             // Si el mensaje indica que la sala fue borrada, redirigir
             if (message.roomDeleted && message.type === 'system') {
@@ -533,7 +546,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        chatArea.scrollTop = chatArea.scrollHeight;
+        lastMessageCount = messages.length;
+        
+        // Solo hacer scroll si estaba cerca del final
+        if (isNearBottom) {
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
     }
     
     function renderUsers(users) {
@@ -1198,10 +1216,16 @@ document.addEventListener('DOMContentLoaded', function() {
     function sendMessageHandler() {
         const message = messageInput.value.trim();
         if (message) {
+            // Efecto de partículas al enviar
+            const sendBtn = document.querySelector('.send-icon');
+            if (sendBtn) {
+                createParticleBurst(sendBtn);
+            }
+            
             sendMessage(message).then(() => {
                 messageInput.value = '';
                 charCounter.textContent = '0/250';
-                charCounter.style.color = '#888';
+                charCounter.classList.remove('warning', 'danger');
             }).catch(error => {
                 console.error('Error enviando mensaje:', error);
                 showNotification(error.message || 'Error al enviar mensaje', 'error');
