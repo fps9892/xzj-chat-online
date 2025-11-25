@@ -49,13 +49,28 @@ function updateURL(roomId) {
     window.history.pushState({ room: roomId }, '', newURL);
 }
 
-// Inicializar sala desde URL
-if (window.location.pathname !== '/login.html') {
-    const urlRoom = getRoomFromURL();
-    if (urlRoom && urlRoom !== 'index.html') {
-        currentRoom = urlRoom;
+// Inicializar sala desde URL con validación
+async function initializeRoomFromURL() {
+    if (window.location.pathname !== '/login.html') {
+        const urlRoom = getRoomFromURL();
+        if (urlRoom && urlRoom !== 'index.html') {
+            try {
+                const roomDoc = await getDoc(doc(db, 'rooms', urlRoom));
+                if (roomDoc.exists()) {
+                    currentRoom = urlRoom;
+                } else {
+                    currentRoom = 'general';
+                    updateURL('general');
+                }
+            } catch (error) {
+                currentRoom = 'general';
+                updateURL('general');
+            }
+        }
     }
 }
+
+initializeRoomFromURL();
 
 // Mantener estado de autenticación
 let authInitialized = false;
