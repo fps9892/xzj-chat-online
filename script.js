@@ -200,6 +200,13 @@ document.addEventListener('DOMContentLoaded', function() {
         roomItems.forEach(item => {
             item.addEventListener('click', function() {
                 const roomId = this.getAttribute('data-room');
+                
+                // No hacer nada si ya estamos en esa sala
+                if (roomId === currentRoom) {
+                    roomsDropdown.classList.remove('active');
+                    return;
+                }
+                
                 const roomDisplayName = this.textContent.split(' (')[0];
                 currentRoomName.textContent = roomDisplayName;
                 originalTitle = `${roomDisplayName} - FYZAR CHAT`;
@@ -219,14 +226,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 cleanupListeners();
                 previousUsersList.clear();
                 isInitialLoad = true;
+                lastMessageCount = 0;
                 
                 // Cambiar sala y recargar datos
-                changeRoom(roomId, false);
-                
-                setTimeout(() => {
+                changeRoom(roomId, false).then(() => {
                     loadMessages();
                     loadUsers();
-                }, 200);
+                });
                 
                 roomsDropdown.classList.remove('active');
             });
