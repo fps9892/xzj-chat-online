@@ -1,4 +1,4 @@
-import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, currentRoom, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, getRooms, listenToRooms } from './firebase.js';
+import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, currentRoom, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, getRooms, listenToRooms, listenToAnnouncements, showAnnouncement } from './firebase.js';
 import { getUserProfile, findUserByUsername } from './user-profile-service.js';
 import { animateMessageDeletion } from './chat-enhancements.js';
 import './admin-listener.js';
@@ -1026,6 +1026,11 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Usuario volvió a la página');
             setUserOnline(); // Asegurar que el estado sea online
         }
+    });
+    
+    // Escuchar anuncios globales
+    listenToAnnouncements((message) => {
+        showAnnouncement(message);
     });
     
     // Esperar a que termine la carga para inicializar

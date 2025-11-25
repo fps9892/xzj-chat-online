@@ -926,8 +926,8 @@ export async function processAdminCommand(message) {
                     throw new Error('Uso: !anuncio <mensaje>');
                 }
                 const announcement = args.join(' ');
-                showAnnouncement(announcement);
-                return { success: true, message: 'Anuncio enviado' };
+                await sendAnnouncement(announcement);
+                return { success: true, message: 'Anuncio enviado a todas las salas' };
                 
             case '!crearsala':
                 if (args.length === 0) {
@@ -974,8 +974,36 @@ export async function processAdminCommand(message) {
     }
 }
 
+// Enviar anuncio a todas las salas
+async function sendAnnouncement(message) {
+    try {
+        const announcementRef = ref(database, 'globalAnnouncements');
+        await push(announcementRef, {
+            message: message,
+            timestamp: serverTimestamp(),
+            sentBy: currentUser.firebaseUid || currentUser.userId
+        });
+    } catch (error) {
+        console.error('Error sending announcement:', error);
+        throw error;
+    }
+}
+
+// Escuchar anuncios globales
+export function listenToAnnouncements(callback) {
+    const announcementsRef = ref(database, 'globalAnnouncements');
+    return onValue(announcementsRef, (snapshot) => {
+        snapshot.forEach((childSnapshot) => {
+            const announcement = childSnapshot.val();
+            callback(announcement.message);
+            // Eliminar el anuncio después de mostrarlo
+            remove(ref(database, `globalAnnouncements/${childSnapshot.key}`));
+        });
+    });
+}
+
 // Mostrar anuncio en centro de pantalla
-function showAnnouncement(message) {
+export function showAnnouncement(message) {
     const announcement = document.createElement('div');
     announcement.className = 'announcement-overlay';
     announcement.innerHTML = `
