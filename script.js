@@ -1013,7 +1013,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const userEl = createElement(`
             <div class="mobile-user-item" data-user-id="${user.id}">
                 <div class="mobile-user-avatar">
-                    <img src="${user.avatar}" alt="${user.name}" onerror="this.src='images/profileuser.jpg'">
+                    <img src="${user.avatar}" alt="${user.name}" onerror="this.src='/images/profileuser.jpg'">
                     <span class="mobile-online-indicator"></span>
                 </div>
                 <span class="mobile-user-name">${displayName}</span>
