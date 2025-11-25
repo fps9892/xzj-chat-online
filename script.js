@@ -93,6 +93,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const currentRoomName = document.querySelector('.current-room-name');
     let roomItems = document.querySelectorAll('.room-item');
     const userInfo = document.querySelector('.user-info');
+    let unreadMessages = 0;
+    let isPageVisible = true;
+    let originalTitle = 'Sala General - FYZAR CHAT';
     const userPanelOverlay = document.querySelector('.user-panel-overlay');
     const closePanel = document.querySelector('.close-panel');
     const panelTabs = document.querySelectorAll('.user-panel-tab');
@@ -204,8 +207,11 @@ document.addEventListener('DOMContentLoaded', function() {
         roomItems.forEach(item => {
             item.addEventListener('click', function() {
                 const roomId = this.getAttribute('data-room');
-                const roomDisplayName = this.textContent.split(' (')[0]; // Remover contador de usuarios del nombre
+                const roomDisplayName = this.textContent.split(' (')[0];
                 currentRoomName.textContent = roomDisplayName;
+                originalTitle = `${roomDisplayName} - FYZAR CHAT`;
+                document.title = originalTitle;
+                unreadMessages = 0;
                 
                 // Remover clase active de todos los items
                 roomItems.forEach(r => r.classList.remove('active'));
@@ -613,12 +619,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const notification = document.createElement('div');
         notification.className = `user-notification ${type}`;
         
-        let icon = '🟢';
-        if (type === 'leave' || type === 'offline') icon = '🔴';
-        else if (type === 'room-change') icon = '🟡';
-        else if (type === 'welcome') icon = '🎉';
-        
-        notification.innerHTML = `<span class="notif-icon">${icon}</span><span>${message}</span>`;
+        notification.innerHTML = `<img src="/images/notification.svg" class="notif-icon" alt="Notification"><span>${message}</span>`;
         
         document.body.appendChild(notification);
         setTimeout(() => notification.classList.add('show'), 100);
@@ -653,6 +654,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function renderMessages(messages) {
+        if (!isPageVisible && messages.length > lastMessageCount) {
+            unreadMessages += (messages.length - lastMessageCount);
+            document.title = `(${unreadMessages}) ${originalTitle}`;
+        }
+        
         const chatArea = document.querySelector('.chat-area');
         const wasAtBottom = chatArea.scrollHeight - chatArea.scrollTop <= chatArea.clientHeight + 50;
         
@@ -1300,12 +1306,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Detectar cuando el usuario vuelve a la página (cambio de visibilidad)
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
-            // Usuario salió de la página (cambió de pestaña, minimizó, etc.)
-            console.log('Usuario salió de la página');
+            isPageVisible = false;
         } else {
-            // Usuario volvió a la página
-            console.log('Usuario volvió a la página');
-            setUserOnline(); // Asegurar que el estado sea online
+            isPageVisible = true;
+            unreadMessages = 0;
+            document.title = originalTitle;
+            setUserOnline();
         }
     });
     
