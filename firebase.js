@@ -1074,7 +1074,7 @@ export async function getConnectedUsersList() {
             let index = 1;
             snapshot.forEach((childSnapshot) => {
                 const userData = childSnapshot.val();
-                if (userData.status === 'online') {
+                if (userData.status === 'online' && !userData.isGuest) {
                     users.push({
                         numId: index++,
                         userId: childSnapshot.key,
@@ -1133,11 +1133,21 @@ export async function processAdminCommand(message) {
                 return { success: true, message: `Sala "${roomToDelete}" eliminada exitosamente` };
                 
             case '!ban':
+                const isAdminBan = await checkAdminStatus(currentUser.firebaseUid);
+                const isModBan = await checkModeratorStatus(currentUser.firebaseUid);
+                
+                if (!isAdminBan && !isModBan) {
+                    throw new Error('Solo administradores y moderadores pueden banear');
+                }
+                
                 if (args.length === 0) {
                     const users = await getConnectedUsersList();
-                    let userList = '📋 Usuarios conectados:\n';
+                    if (users.length === 0) {
+                        return { success: true, message: 'No hay usuarios disponibles para banear' };
+                    }
+                    let userList = '📋 Lista de usuarios:\n';
                     users.forEach(u => {
-                        userList += `${u.numId}. ${u.username}${u.isGuest ? ' (invitado)' : ''}\n`;
+                        userList += `${u.numId}. ${u.username}\n`;
                     });
                     userList += '\nUso: !ban <número> [razón]';
                     return { success: true, message: userList };
@@ -1155,20 +1165,26 @@ export async function processAdminCommand(message) {
                     throw new Error('Usuario no encontrado');
                 }
                 
-                if (targetUser.isGuest) {
-                    throw new Error('No se puede banear usuarios invitados');
-                }
-                
                 const banReason = args.slice(1).join(' ') || 'Violación de reglas';
                 await banUser(targetUser.firebaseUid, banReason);
                 return { success: true, message: `Usuario ${targetUser.username} baneado` };
                 
             case '!mute':
+                const isAdminMute = await checkAdminStatus(currentUser.firebaseUid);
+                const isModMute = await checkModeratorStatus(currentUser.firebaseUid);
+                
+                if (!isAdminMute && !isModMute) {
+                    throw new Error('Solo administradores y moderadores pueden mutear');
+                }
+                
                 if (args.length === 0) {
                     const users = await getConnectedUsersList();
-                    let userList = '📋 Usuarios conectados:\n';
+                    if (users.length === 0) {
+                        return { success: true, message: 'No hay usuarios disponibles para mutear' };
+                    }
+                    let userList = '📋 Lista de usuarios:\n';
                     users.forEach(u => {
-                        userList += `${u.numId}. ${u.username}${u.isGuest ? ' (invitado)' : ''}\n`;
+                        userList += `${u.numId}. ${u.username}\n`;
                     });
                     userList += '\nUso: !mute <número> [minutos]';
                     return { success: true, message: userList };
@@ -1184,10 +1200,6 @@ export async function processAdminCommand(message) {
                 
                 if (!targetMuteUser) {
                     throw new Error('Usuario no encontrado');
-                }
-                
-                if (targetMuteUser.isGuest) {
-                    throw new Error('No se puede mutear usuarios invitados');
                 }
                 
                 const muteDuration = parseInt(args[1]) || 5;

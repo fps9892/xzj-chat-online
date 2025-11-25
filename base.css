@@ -1416,6 +1416,16 @@ body {
   display: flex;
 }
 
+.user-id {
+  font-size: 11px;
+  color: #ffaa00;
+  font-weight: bold;
+  background: rgba(255, 170, 0, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-right: 5px;
+}
+
 .mod-btn, .ban-btn, .mute-btn {
   padding: 3px 8px;
   border: none;

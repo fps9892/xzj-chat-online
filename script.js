@@ -821,10 +821,24 @@ document.addEventListener('DOMContentLoaded', function() {
         return messageEl;
     }
     
+    let userNumericIds = new Map();
+    let currentNumericId = 1;
+    
     function createUserElement(user) {
         let displayName = user.name;
+        let userNumId = '';
+        
         if (user.role === 'Administrador') displayName += ' (Admin)';
         else if (user.role === 'Moderador') displayName += ' (Mod)';
+        
+        // Asignar ID numérico fijo para admins/mods
+        if ((currentUser.isAdmin || currentUser.isModerator) && !user.isGuest) {
+            if (!userNumericIds.has(user.firebaseUid || user.id)) {
+                userNumericIds.set(user.firebaseUid || user.id, currentNumericId++);
+            }
+            const numId = userNumericIds.get(user.firebaseUid || user.id);
+            userNumId = `<span class="user-id">#${numId}</span>`;
+        }
         
         const canModerate = (currentUser.isAdmin || currentUser.isModerator) && user.id !== currentUser.userId && !user.isGuest;
         
@@ -834,7 +848,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <img src="${user.avatar}" alt="${user.name}">
                     <span class="online-indicator"></span>
                 </div>
-                <span class="user-name">${displayName}</span>
+                <span class="user-name">${userNumId}${displayName}</span>
                 ${canModerate ? `
                     <div class="user-actions">
                         ${currentUser.isAdmin ? `<button class="mod-btn" data-action="mod" data-user-id="${user.firebaseUid || user.id}">Mod</button>` : ''}
@@ -1072,15 +1086,18 @@ document.addEventListener('DOMContentLoaded', function() {
         validateCurrentUser();
         
         // Verificar si el usuario está baneado por ID o IP
-        const { checkBannedStatus } = await import('./firebase.js');
-        const banData = await checkBannedStatus(
-            currentUser.firebaseUid || currentUser.userId,
-            currentUser.ip
-        );
-        
-        if (banData) {
-            window.location.href = 'banned.html';
-            return;
+        if (!currentUser.isGuest) {
+            const { checkBannedStatus } = await import('./firebase.js');
+            const banData = await checkBannedStatus(
+                currentUser.firebaseUid || currentUser.userId,
+                currentUser.ip
+            );
+            
+            if (banData) {
+                localStorage.setItem('banData', JSON.stringify(banData));
+                window.location.replace('banned.html');
+                return;
+            }
         }
         
         await updateUserRole();

@@ -1,160 +1,185 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cuenta Baneada - FYZAR CHAT</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Inter", sans-serif;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        color: #fff;
+      }
+      .banned-container {
+        text-align: center;
+        padding: 40px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+        border: 2px solid rgba(255, 68, 68, 0.3);
+        max-width: 500px;
+      }
+      .banned-icon {
+        font-size: 80px;
+        margin-bottom: 20px;
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
         }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            color: #fff;
+        50% {
+          transform: scale(1.1);
         }
-        .banned-container {
-            text-align: center;
-            padding: 40px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            border: 2px solid rgba(255, 68, 68, 0.3);
-            max-width: 500px;
-            backdrop-filter: blur(10px);
-        }
-        .banned-icon {
-            font-size: 80px;
-            margin-bottom: 20px;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-        h1 {
-            font-size: 36px;
-            color: #ff4444;
-            margin-bottom: 20px;
-            text-shadow: 0 0 20px rgba(255, 68, 68, 0.5);
-        }
-        .ban-info {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-        }
-        .ban-info p {
-            margin: 10px 0;
-            font-size: 16px;
-        }
-        .ban-info strong {
-            color: #ff4444;
-        }
-        .contact-info {
-            margin-top: 30px;
-            font-size: 14px;
-            color: #aaa;
-        }
-        .back-btn {
-            margin-top: 20px;
-            padding: 12px 30px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            color: #fff;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-        .back-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
+      }
+      h1 {
+        font-size: 36px;
+        color: #ff4444;
+        margin-bottom: 20px;
+        text-shadow: 0 0 20px rgba(255, 68, 68, 0.5);
+      }
+      .ban-info {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 20px;
+        border-radius: 10px;
+        margin: 20px 0;
+      }
+      .ban-info p {
+        margin: 10px 0;
+        font-size: 16px;
+      }
+      .ban-info strong {
+        color: #ff4444;
+      }
+      .contact-info {
+        margin-top: 30px;
+        font-size: 14px;
+        color: #aaa;
+      }
+      .back-btn {
+        margin-top: 20px;
+        padding: 12px 30px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        color: #fff;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.3s;
+      }
+      .back-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="banned-container">
-        <div class="banned-icon">⛔</div>
-        <h1>CUENTA BANEADA</h1>
-        <p>Tu cuenta ha sido suspendida del chat</p>
-        
-        <div class="ban-info">
-            <p><strong>Razón:</strong> <span id="ban-reason">No especificada</span></p>
-            <p><strong>Duración:</strong> <span id="ban-duration">Permanente</span></p>
-            <p><strong>IP Baneada:</strong> <span id="ban-ip">Tu IP está bloqueada</span></p>
-        </div>
-        
-        <div class="contact-info">
-            <p>Si crees que esto es un error, contacta a un administrador</p>
-            <p>Email: admin@fyzarchat.com</p>
-        </div>
-        
-        <button class="back-btn" onclick="window.location.href='login.html'">Volver al Login</button>
+      <div class="banned-icon">⛔</div>
+      <h1>CUENTA BANEADA</h1>
+      <p>Tu cuenta ha sido suspendida del chat</p>
+
+      <div class="ban-info">
+        <p>
+          <strong>Razón:</strong> <span id="ban-reason">No especificada</span>
+        </p>
+        <p>
+          <strong>Duración:</strong> <span id="ban-duration">Permanente</span>
+        </p>
+        <p>
+          <strong>IP Baneada:</strong>
+          <span id="ban-ip">Tu IP está bloqueada</span>
+        </p>
+      </div>
+
+      <div class="contact-info">
+        <p>Si crees que esto es un error, contacta a un administrador</p>
+        <p>Email: admin@fyzarchat.com</p>
+      </div>
+
+      <button class="back-btn" onclick="window.location.href='login.html'">
+        Volver al Login
+      </button>
     </div>
 
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+      import {
+        getFirestore,
+        doc,
+        getDoc,
+      } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
-            authDomain: "fyzar-80936.firebaseapp.com",
-            databaseURL: "https://fyzar-80936-default-rtdb.firebaseio.com",
-            projectId: "fyzar-80936",
-            storageBucket: "fyzar-80936.firebasestorage.app",
-            messagingSenderId: "718553577005",
-            appId: "1:718553577005:web:74b5b9e790232edf6e2aa4"
-        };
+      const firebaseConfig = {
+        apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
+        authDomain: "fyzar-80936.firebaseapp.com",
+        databaseURL: "https://fyzar-80936-default-rtdb.firebaseio.com",
+        projectId: "fyzar-80936",
+        storageBucket: "fyzar-80936.firebasestorage.app",
+        messagingSenderId: "718553577005",
+        appId: "1:718553577005:web:74b5b9e790232edf6e2aa4",
+      };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
 
-        async function loadBanInfo() {
-            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-            if (!currentUser) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            try {
-                const banDoc = await getDoc(doc(db, 'banned', currentUser.firebaseUid || currentUser.userId));
-                if (banDoc.exists()) {
-                    const banData = banDoc.data();
-                    document.getElementById('ban-reason').textContent = banData.reason || 'No especificada';
-                    
-                    if (banData.expiresAt) {
-                        const expiresDate = new Date(banData.expiresAt);
-                        const now = new Date();
-                        const diffMs = expiresDate - now;
-                        
-                        if (diffMs <= 0) {
-                            window.location.href = 'login.html';
-                            return;
-                        }
-                        
-                        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-                        const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-                        document.getElementById('ban-duration').textContent = `${diffHours}h ${diffMins}m`;
-                    } else {
-                        document.getElementById('ban-duration').textContent = 'Permanente';
-                    }
-                    
-                    if (banData.ip) {
-                        document.getElementById('ban-ip').textContent = banData.ip;
-                    }
-                }
-            } catch (error) {
-                console.error('Error loading ban info:', error);
-            }
+      async function loadBanInfo() {
+        const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+        if (!currentUser) {
+          window.location.href = "login.html";
+          return;
         }
 
-        loadBanInfo();
+        try {
+          const banDoc = await getDoc(
+            doc(db, "banned", currentUser.firebaseUid || currentUser.userId)
+          );
+          if (banDoc.exists()) {
+            const banData = banDoc.data();
+            document.getElementById("ban-reason").textContent =
+              banData.reason || "No especificada";
+
+            if (banData.expiresAt) {
+              const expiresDate = new Date(banData.expiresAt);
+              const now = new Date();
+              const diffMs = expiresDate - now;
+
+              if (diffMs <= 0) {
+                window.location.href = "login.html";
+                return;
+              }
+
+              const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+              const diffMins = Math.floor(
+                (diffMs % (1000 * 60 * 60)) / (1000 * 60)
+              );
+              document.getElementById(
+                "ban-duration"
+              ).textContent = `${diffHours}h ${diffMins}m`;
+            } else {
+              document.getElementById("ban-duration").textContent =
+                "Permanente";
+            }
+
+            if (banData.ip) {
+              document.getElementById("ban-ip").textContent = banData.ip;
+            }
+          }
+        } catch (error) {
+          console.error("Error loading ban info:", error);
+        }
+      }
+
+      loadBanInfo();
     </script>
-</body>
+  </body>
 </html>
