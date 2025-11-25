@@ -121,6 +121,27 @@ export async function sendMessage(text, type = 'text', imageData = null) {
         const commandResult = await processAdminCommand(text);
         if (commandResult) {
             if (commandResult.success) {
+                // Si es mensaje privado, solo visible para el usuario
+                if (commandResult.privateMessage) {
+                    // Mostrar en consola o notificación local
+                    console.log('Lista privada:', commandResult.message);
+                    // Crear mensaje temporal solo visible para el usuario
+                    const tempMessage = document.createElement('div');
+                    tempMessage.className = 'private-command-message';
+                    tempMessage.style.cssText = 'position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.95); border: 2px solid #ffaa00; padding: 20px; border-radius: 12px; color: #fff; font-family: monospace; white-space: pre-wrap; z-index: 9999; max-width: 90%; max-height: 70vh; overflow-y: auto;';
+                    tempMessage.textContent = commandResult.message;
+                    
+                    const closeBtn = document.createElement('button');
+                    closeBtn.textContent = '×';
+                    closeBtn.style.cssText = 'position: absolute; top: 10px; right: 10px; background: none; border: none; color: #fff; font-size: 24px; cursor: pointer;';
+                    closeBtn.onclick = () => tempMessage.remove();
+                    tempMessage.appendChild(closeBtn);
+                    
+                    document.body.appendChild(tempMessage);
+                    setTimeout(() => tempMessage.remove(), 30000);
+                    return;
+                }
+                
                 // Enviar mensaje de confirmación del sistema
                 const systemMessageData = {
                     text: commandResult.message,
@@ -900,6 +921,44 @@ export async function checkMutedStatus(userId) {
     }
 }
 
+// Obtener lista de usuarios baneados
+export async function getBannedUsersList() {
+    try {
+        const bannedSnapshot = await getDocs(collection(db, 'banned'));
+        const bannedUsers = [];
+        let index = 1;
+        
+        for (const docSnapshot of bannedSnapshot.docs) {
+            const banData = docSnapshot.data();
+            const firebaseUid = docSnapshot.id;
+            
+            // Obtener nombre de usuario
+            let username = 'Usuario desconocido';
+            try {
+                const userDoc = await getDoc(doc(db, 'users', firebaseUid));
+                if (userDoc.exists()) {
+                    username = userDoc.data().username || 'Usuario';
+                }
+            } catch (error) {
+                console.error('Error getting username:', error);
+            }
+            
+            bannedUsers.push({
+                numId: index++,
+                firebaseUid: firebaseUid,
+                username: username,
+                reason: banData.reason || 'No especificada',
+                bannedAt: banData.bannedAt
+            });
+        }
+        
+        return bannedUsers;
+    } catch (error) {
+        console.error('Error getting banned users:', error);
+        return [];
+    }
+}
+
 // Desbanear usuario (solo administradores)
 export async function unbanUser(userId) {
     if (!currentUser.firebaseUid || currentUser.isGuest) {
@@ -1103,6 +1162,16 @@ export async function processAdminCommand(message) {
     const command = parts[0].toLowerCase();
     const args = parts.slice(1);
     
+    // Verificar permisos para comandos de moderación
+    const needsModPermission = ['!ban', '!mute', '!unban', '!unmute'].includes(command);
+    if (needsModPermission) {
+        const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
+        const isMod = await checkModeratorStatus(currentUser.firebaseUid);
+        if (!isAdmin && !isMod) {
+            return false; // No mostrar nada si no tiene permisos
+        }
+    }
+    
     try {
         switch (command) {
             case '!anuncio':
@@ -1135,24 +1204,17 @@ export async function processAdminCommand(message) {
                 return { success: true, message: `Sala "${roomToDelete}" eliminada exitosamente` };
                 
             case '!ban':
-                const isAdminBan = await checkAdminStatus(currentUser.firebaseUid);
-                const isModBan = await checkModeratorStatus(currentUser.firebaseUid);
-                
-                if (!isAdminBan && !isModBan) {
-                    throw new Error('Solo administradores y moderadores pueden banear');
-                }
-                
                 if (args.length === 0) {
                     const users = await getConnectedUsersList();
                     if (users.length === 0) {
-                        return { success: true, message: 'No hay usuarios disponibles para banear' };
+                        return { success: true, message: 'No hay usuarios disponibles para banear', privateMessage: true };
                     }
                     let userList = '📋 Lista de usuarios:\n';
                     users.forEach(u => {
                         userList += `${u.numId}. ${u.username}\n`;
                     });
                     userList += '\nUso: !ban <número> [razón]';
-                    return { success: true, message: userList };
+                    return { success: true, message: userList, privateMessage: true };
                 }
                 
                 const banNumId = parseInt(args[0]);
@@ -1176,24 +1238,17 @@ export async function processAdminCommand(message) {
                 return { success: true, message: `Usuario ${targetUser.username} baneado` };
                 
             case '!mute':
-                const isAdminMute = await checkAdminStatus(currentUser.firebaseUid);
-                const isModMute = await checkModeratorStatus(currentUser.firebaseUid);
-                
-                if (!isAdminMute && !isModMute) {
-                    throw new Error('Solo administradores y moderadores pueden mutear');
-                }
-                
                 if (args.length === 0) {
                     const users = await getConnectedUsersList();
                     if (users.length === 0) {
-                        return { success: true, message: 'No hay usuarios disponibles para mutear' };
+                        return { success: true, message: 'No hay usuarios disponibles para mutear', privateMessage: true };
                     }
                     let userList = '📋 Lista de usuarios:\n';
                     users.forEach(u => {
                         userList += `${u.numId}. ${u.username}\n`;
                     });
                     userList += '\nUso: !mute <número> [minutos]';
-                    return { success: true, message: userList };
+                    return { success: true, message: userList, privateMessage: true };
                 }
                 
                 const muteNumId = parseInt(args[0]);
@@ -1218,11 +1273,32 @@ export async function processAdminCommand(message) {
                 
             case '!unban':
                 if (args.length === 0) {
-                    throw new Error('Uso: !unban <userId>');
+                    const bannedUsers = await getBannedUsersList();
+                    if (bannedUsers.length === 0) {
+                        return { success: true, message: 'No hay usuarios baneados', privateMessage: true };
+                    }
+                    let userList = '📋 Usuarios baneados:\n';
+                    bannedUsers.forEach(u => {
+                        userList += `${u.numId}. ${u.username} - ${u.reason}\n`;
+                    });
+                    userList += '\nUso: !unban <número>';
+                    return { success: true, message: userList, privateMessage: true };
                 }
-                const userToUnban = args[0];
-                await unbanUser(userToUnban);
-                return { success: true, message: `Usuario ${userToUnban} desbaneado` };
+                
+                const unbanNumId = parseInt(args[0]);
+                if (isNaN(unbanNumId)) {
+                    throw new Error('ID de usuario inválido');
+                }
+                
+                const bannedUsers = await getBannedUsersList();
+                const targetUnbanUser = bannedUsers.find(u => u.numId === unbanNumId);
+                
+                if (!targetUnbanUser) {
+                    throw new Error('Usuario no encontrado en lista de baneados');
+                }
+                
+                await unbanUser(targetUnbanUser.firebaseUid);
+                return { success: true, message: `Usuario ${targetUnbanUser.username} desbaneado` };
                 
             case '!borrarchat':
                 await clearRoomMessages();

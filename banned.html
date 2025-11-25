@@ -132,12 +132,30 @@
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
 
+      async function disconnectUser() {
+        const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+        if (!currentUser) return;
+
+        try {
+          const { getDatabase, ref, remove } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
+          const database = getDatabase();
+          
+          const sanitizedUserId = currentUser.userId.replace(/[^a-zA-Z0-9_-]/g, '');
+          const userRef = ref(database, `rooms/general/users/${sanitizedUserId}`);
+          await remove(userRef);
+        } catch (error) {
+          console.error('Error disconnecting user:', error);
+        }
+      }
+
       async function loadBanInfo() {
         const currentUser = JSON.parse(localStorage.getItem("currentUser"));
         if (!currentUser) {
           window.location.href = "login.html";
           return;
         }
+
+        await disconnectUser();
 
         try {
           const banDoc = await getDoc(
