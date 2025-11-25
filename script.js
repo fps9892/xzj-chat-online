@@ -525,8 +525,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Si el mensaje indica que la sala fue borrada, redirigir
             if (message.roomDeleted && message.type === 'system') {
                 setTimeout(() => {
-                    const { currentRoom: room } = await import('./firebase.js');
-                    if (room !== 'general') {
+                    if (currentRoom !== 'general') {
                         showNotification('Has sido movido a la Sala General', 'warning');
                         changeRoom('general');
                         currentRoomName.textContent = 'Sala General';
