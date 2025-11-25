@@ -1075,11 +1075,4 @@ export async function getRooms() {
     }
 }
 
-// Check for reserved word misuse or syntax issues
-// Ensure async/await is used inside an async function
-async function exampleFunction() {
-    const data = await someAsyncOperation();
-    // Additional logic can be added here
-}
-
 export { currentUser, currentRoom, database, db };

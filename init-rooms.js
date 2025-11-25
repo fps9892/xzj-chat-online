@@ -14,49 +14,28 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Función para verificar si una sala ya existe
-async function checkIfRoomExists(roomName) {
-    try {
-        const roomRef = doc(db, "rooms", roomName);
-        const roomDoc = await getDoc(roomRef);
-        return roomDoc.exists();
-    } catch (error) {
-        console.error("Error verificando si la sala existe:", error);
-        return false;
-    }
-}
-
 // Función para crear una sala
-async function createRoom(roomName) {
+async function createRoom(roomId, roomName) {
     try {
-        const roomRef = doc(db, "rooms", roomName);
-        await setDoc(roomRef, {
-            name: roomName,
-            createdBy: "system",
-            createdAt: new Date().toISOString(),
-            isActive: true
-        });
-        console.log(`${roomName} creada exitosamente`);
-    } catch (error) {
-        console.error("Error creando la sala:", error);
-    }
-}
-
-// Función para inicializar la sala general
-async function initializeGeneralRoom() {
-    try {
-        const roomName = "Sala General";
-        const roomExists = await checkIfRoomExists(roomName);
-
-        if (!roomExists) {
-            await createRoom(roomName);
+        const roomRef = doc(db, "rooms", roomId);
+        const roomDoc = await getDoc(roomRef);
+        
+        if (!roomDoc.exists()) {
+            await setDoc(roomRef, {
+                name: roomName,
+                createdBy: "system",
+                createdAt: new Date().toISOString(),
+                isActive: true,
+                isDefault: true
+            });
+            console.log(`✅ ${roomName} creada exitosamente`);
         } else {
-            console.log(`${roomName} ya existe`);
+            console.log(`ℹ️ ${roomName} ya existe`);
         }
     } catch (error) {
-        console.error("Error inicializando sala general:", error);
+        console.error("❌ Error creando la sala:", error);
     }
 }
 
 // Ejecutar inicialización
-initializeGeneralRoom();
+createRoom("general", "Sala General");

@@ -1,34 +1,33 @@
 {
   "rules": {
-    ".read": "auth != null",
-    ".write": "auth != null",
-    "users": {
-      "$uid": {
-        ".read": "auth != null && auth.uid == $uid",
-        ".write": "auth != null && auth.uid == $uid"
-      }
-    },
-    "messages": {
-      ".read": "auth != null",
-      "$messageId": {
-        ".write": "auth != null"
-      }
-    },
     "rooms": {
-      ".read": "auth != null",
-      ".write": "auth != null"
+      "$roomId": {
+        ".read": true,
+        ".write": true,
+        "messages": {
+          ".indexOn": ["timestamp"],
+          "$messageId": {
+            ".read": true,
+            ".write": true
+          }
+        },
+        "users": {
+          "$userId": {
+            ".read": true,
+            ".write": true
+          }
+        },
+        "typing": {
+          "$userId": {
+            ".read": true,
+            ".write": true
+          }
+        }
+      }
     },
-    "admins": {
-      ".read": "auth != null",
-      ".write": "root.child('admins').child(auth.uid).exists()"
-    },
-    "moderators": {
-      ".read": "auth != null",
-      ".write": "root.child('admins').child(auth.uid).exists()"
-    },
-    "banned": {
-      ".read": "root.child('admins').child(auth.uid).exists() || root.child('moderators').child(auth.uid).exists()",
-      ".write": "root.child('admins').child(auth.uid).exists() || root.child('moderators').child(auth.uid).exists()"
+    "deviceCounts": {
+      ".read": true,
+      ".write": true
     }
   }
 }
