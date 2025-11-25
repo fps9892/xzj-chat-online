@@ -1,8 +1,20 @@
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, onSnapshot, updateDoc } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { getFirestore, doc, onSnapshot, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 
-const auth = getAuth();
-const db = getFirestore();
+const firebaseConfig = {
+    apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
+    authDomain: "fyzar-80936.firebaseapp.com",
+    databaseURL: "https://fyzar-80936-default-rtdb.firebaseio.com",
+    projectId: "fyzar-80936",
+    storageBucket: "fyzar-80936.firebasestorage.app",
+    messagingSenderId: "718553577005",
+    appId: "1:718553577005:web:74b5b9e790232edf6e2aa4"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 // Función para actualizar el rol en el perfil del usuario
 async function updateUserRole(userId, role) {
