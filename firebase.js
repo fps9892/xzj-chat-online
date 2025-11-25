@@ -469,15 +469,13 @@ function showFloatingNotification(message, type = 'info') {
     }, 3000);
 }
 
-export function changeRoom(roomName, isInitialJoin = false) {
-    // Limpiar estado del usuario en la sala anterior
+export async function changeRoom(roomName, isInitialJoin = false) {
+    const sanitizedUserId = sanitizeUserId(currentUser.userId);
+    
+    // Registrar evento ANTES de cambiar
     if (currentRoom && currentRoom !== roomName) {
-        const sanitizedUserId = sanitizeUserId(currentUser.userId);
-        const oldUserRef = ref(database, `rooms/${currentRoom}/users/${sanitizedUserId}`);
-        
-        // Registrar evento de cambio de sala
         const roomEventRef = ref(database, 'roomEvents');
-        push(roomEventRef, {
+        await push(roomEventRef, {
             userId: currentUser.userId,
             username: currentUser.username,
             fromRoom: currentRoom,
@@ -486,15 +484,19 @@ export function changeRoom(roomName, isInitialJoin = false) {
             type: 'room-change'
         });
         
+        // Esperar un momento para que la notificación se procese
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Limpiar estado del usuario en la sala anterior
+        const oldUserRef = ref(database, `rooms/${currentRoom}/users/${sanitizedUserId}`);
         if (currentUser.isGuest) {
             remove(oldUserRef);
         } else {
             set(ref(database, `rooms/${currentRoom}/users/${sanitizedUserId}/status`), 'offline');
         }
     } else if (isInitialJoin) {
-        // Primera entrada al chat - registrar como join
         const roomEventRef = ref(database, 'roomEvents');
-        push(roomEventRef, {
+        await push(roomEventRef, {
             userId: currentUser.userId,
             username: currentUser.username,
             toRoom: roomName,

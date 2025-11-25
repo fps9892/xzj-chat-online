@@ -165,20 +165,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (roomsListener) return;
             
             roomsListener = listenToRooms(async (rooms) => {
-                // Obtener conteo de usuarios en tiempo real para cada sala
-                const roomsWithCounts = await Promise.all(rooms.map(async (room) => {
-                    const { getUserCountForRoom } = await import('./firebase.js');
-                    const count = await getUserCountForRoom(room.id);
-                    return { ...room, userCount: count };
-                }));
-                
                 roomsDropdown.innerHTML = '';
                 
                 // Asegurar que la sala general esté primero
-                const generalRoom = roomsWithCounts.find(r => r.id === 'general');
-                let sortedRooms = roomsWithCounts;
+                const generalRoom = rooms.find(r => r.id === 'general');
+                let sortedRooms = rooms;
                 if (generalRoom) {
-                    sortedRooms = [generalRoom, ...roomsWithCounts.filter(r => r.id !== 'general')];
+                    sortedRooms = [generalRoom, ...rooms.filter(r => r.id !== 'general')];
                 }
                 
                 // Crear elementos de sala
@@ -189,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         roomElement.classList.add('active');
                     }
                     roomElement.setAttribute('data-room', room.id);
-                    roomElement.innerHTML = `${room.name} <span class="room-users">(${room.userCount || 0})</span>`;
+                    roomElement.innerHTML = room.name;
                     roomsDropdown.appendChild(roomElement);
                 }
                 
@@ -539,35 +532,24 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let currentUsersListener = null;
     let previousUsersList = new Map();
-    let userConnectionStatus = new Map();
     let roomEventsListener = null;
+    let isInitialLoad = true;
     
     function loadUsers() {
         if (currentUsersListener) {
             currentUsersListener();
         }
         
+        isInitialLoad = true;
+        
         currentUsersListener = listenToUsers((users) => {
-            users.forEach(user => {
-                const wasInRoom = previousUsersList.has(user.id);
-                const wasOnline = userConnectionStatus.get(user.id);
-                
-                if (!wasInRoom && previousUsersList.size > 0 && user.id !== currentUser.userId) {
-                    showUserNotification(`${user.name} entró a la sala`, 'join');
-                    userConnectionStatus.set(user.id, true);
-                } else if (!wasOnline && wasInRoom && user.id !== currentUser.userId) {
-                    showUserNotification(`${user.name} se conectó`, 'online');
-                    userConnectionStatus.set(user.id, true);
-                }
-            });
-            
-            previousUsersList.forEach((userData, userId) => {
-                const stillInRoom = users.find(u => u.id === userId);
-                if (!stillInRoom && userId !== currentUser.userId) {
-                    // No mostrar notificación aquí, se maneja con roomEvents
-                    userConnectionStatus.delete(userId);
-                }
-            });
+            if (!isInitialLoad) {
+                users.forEach(user => {
+                    if (!previousUsersList.has(user.id) && user.id !== currentUser.userId) {
+                        showUserNotification(`${user.name} entró a la sala`, 'join');
+                    }
+                });
+            }
             
             previousUsersList.clear();
             users.forEach(user => {
@@ -575,9 +557,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             renderUsers(users);
+            isInitialLoad = false;
         });
         
-        // Escuchar eventos de cambio de sala
         listenToRoomEvents();
     }
     

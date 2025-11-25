@@ -1,4 +1,4 @@
-# 🚀 FYZAR CHAT v3.5
+# 🚀 FYZAR CHAT v3.6
 
 ## 📋 Resumen de Cambios
 
@@ -6,16 +6,19 @@
 
 1. **Scripts Compactados** - 4 archivos consolidados en `core.js` (reducción del 43%)
 2. **Restricciones para Invitados** - Opciones "Cambiar contraseña" y "Eliminar cuenta" ocultas
-3. **Notificaciones Diferenciadas** - 5 tipos: entrada/salida de sala, conexión/desconexión y cambio de sala
+3. **Notificaciones Diferenciadas** - Entrada/salida de sala y cambio de sala con iconos SVG
 4. **Efectos Visuales en Login** - Borde RGB animado, efecto neón reducido y 6 iconos SVG flotantes
 5. **Sistema de Validación** - CAPTCHA, validación de contraseña con indicador de seguridad
 6. **Sistema de Moderadores** - Tag amarillo, permisos de baneo/muteo y creación de salas
 7. **Sistema de Baneo/Muteo** - Temporal o permanente, con pantalla de usuario baneado
 8. **Código Optimizado** - Mejor rendimiento, sin memory leaks, código profesional
+9. **Cambio de Contraseña** - Sistema con reautenticación para usuarios registrados
+10. **Fondo Personalizado** - Subir y eliminar imagen de fondo del chat (persistente)
+11. **Pestaña del Navegador** - Favicon dinámico, título por sala y contador de mensajes no leídos
 
 ---
 
-## 🎨 Nuevas Características v3.5
+## 🎨 Nuevas Características v3.6
 
 ### Login Mejorado
 
@@ -44,10 +47,29 @@
 
 ### Notificaciones Mejoradas
 
-- 🟢 **Verde**: Usuario entra a la sala
-- 🔴 **Rojo**: Usuario se desconecta
-- 🔵 **Cian**: Usuario se conecta
-- 🟡 **Amarillo**: Usuario cambió de sala (muestra nombre de sala destino)
+- **Icono SVG**: notification.svg en todas las notificaciones
+- **Verde**: Usuario entra a la sala
+- **Amarillo**: Usuario cambió de sala (muestra nombre de sala destino)
+- **Sistema optimizado**: Sin notificaciones de usuarios inactivos
+
+### Pestaña del Navegador
+
+- **Favicon**: Logo.svg como icono
+- **Título Dinámico**: Muestra nombre de sala actual (ej: "Sala General - FYZAR CHAT")
+- **Contador de No Leídos**: Muestra "(N)" cuando hay mensajes nuevos en otra pestaña
+- **Reset Automático**: Contador se resetea al volver a la pestaña
+
+### Personalización de Fondo
+
+- **Subir Imagen**: Imagen de fondo personalizada para chat-area (máx 2MB)
+- **Eliminar Fondo**: Volver al fondo negro por defecto
+- **Persistencia**: Fondo guardado en localStorage entre sesiones
+
+### Cambio de Contraseña Mejorado
+
+- **Reautenticación**: Solicita contraseña actual por seguridad
+- **Validación**: Mínimo 6 caracteres
+- **Manejo de Errores**: Mensajes específicos para cada tipo de error
 
 ---
 
@@ -257,10 +279,11 @@ node server.js
 
 ### Para Usuarios Registrados
 
-- ✅ Cambiar contraseña
+- ✅ Cambiar contraseña (con reautenticación)
 - ✅ Eliminar cuenta
 - ✅ Persistencia de datos
 - ✅ Validación de contraseña con indicador
+- ✅ Fondo personalizado del chat
 
 ### Para Moderadores ⭐ NUEVO
 
@@ -291,8 +314,8 @@ node server.js
 | Métrica                 | Antes  | Después  | Mejora     |
 | ----------------------- | ------ | -------- | ---------- |
 | Archivos JS             | 7      | 4        | -43%       |
-| Funcionalidades         | 15     | 30+      | +100%      |
-| Tipos de notificaciones | 1      | 5        | +400%      |
+| Funcionalidades         | 15     | 35+      | +133%      |
+| Tipos de notificaciones | 1      | 3        | +200%      |
 | Roles de usuario        | 2      | 4        | +100%      |
 | Seguridad               | Básica | Avanzada | ⭐⭐⭐⭐⭐ |
 
@@ -325,9 +348,21 @@ node server.js
 ### Notificaciones
 
 - [ ] Verde: Usuario entra a sala
-- [ ] Rojo: Usuario se desconecta
-- [ ] Cian: Usuario se conecta
 - [ ] Amarillo: Usuario cambia de sala (con nombre)
+- [ ] Icono SVG visible en notificaciones
+
+### Pestaña del Navegador
+
+- [ ] Favicon logo.svg visible
+- [ ] Título muestra nombre de sala actual
+- [ ] Contador de mensajes no leídos funciona
+
+### Personalización
+
+- [ ] Subir fondo del chat funciona
+- [ ] Eliminar fondo funciona
+- [ ] Fondo persiste entre sesiones
+- [ ] Cambio de contraseña con reautenticación funciona
 
 ---
 
@@ -400,7 +435,7 @@ showUserNotification(`${username} se fue a ${roomName}`, "room-change");
 ## 📞 Información del Proyecto
 
 - **Proyecto**: fyzar-80936
-- **Versión**: 3.5
+- **Versión**: 3.6
 - **Estado**: ✅ Listo para producción
 - **Calidad**: ⭐⭐⭐⭐⭐
 
@@ -408,12 +443,15 @@ showUserNotification(`${username} se fue a ${roomName}`, "room-change");
 
 ## 🎉 ¡Listo!
 
-Tu proyecto FYZAR CHAT v3.5 incluye:
+Tu proyecto FYZAR CHAT v3.6 incluye:
 
 - ✅ Sistema completo de moderación
 - ✅ Baneo y muteo temporal/permanente
 - ✅ CAPTCHA y validaciones avanzadas
-- ✅ Notificaciones contextuales mejoradas
+- ✅ Notificaciones contextuales optimizadas
+- ✅ Pestaña del navegador personalizada
+- ✅ Fondo de chat personalizable
+- ✅ Cambio de contraseña seguro
 - ✅ Responsive design optimizado
 - ✅ Animaciones profesionales
 - ✅ Seguridad de nivel empresarial
