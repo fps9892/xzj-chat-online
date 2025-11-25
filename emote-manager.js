@@ -1,33 +1,32 @@
-// Sistema de gestión de emotes y gifs con favoritos
+// Sistema de gestión de emotes con favoritos
 import { sendMessage, currentUser } from './firebase.js';
 
 const EMOTES = Array.from({length: 22}, (_, i) => `/images/emotes/emote${i+1}.png`);
-const GIFS = Array.from({length: 11}, (_, i) => `/images/emotes/gifs/emote${i+1}.gif`);
 
 // Obtener favoritos del localStorage
-function getFavorites(type) {
-    const key = `favorites_${type}_${currentUser.userId}`;
+function getFavorites() {
+    const key = `favorites_emotes_${currentUser.userId}`;
     const stored = localStorage.getItem(key);
     return stored ? JSON.parse(stored) : {};
 }
 
 // Guardar favoritos
-function saveFavorites(type, favorites) {
-    const key = `favorites_${type}_${currentUser.userId}`;
+function saveFavorites(favorites) {
+    const key = `favorites_emotes_${currentUser.userId}`;
     localStorage.setItem(key, JSON.stringify(favorites));
 }
 
 // Incrementar contador de uso
-function incrementUsage(type, src) {
-    const favorites = getFavorites(type);
+function incrementUsage(src) {
+    const favorites = getFavorites();
     favorites[src] = (favorites[src] || 0) + 1;
-    saveFavorites(type, favorites);
+    saveFavorites(favorites);
 }
 
 // Obtener top 5 más usados
-function getTopFavorites(type, items) {
-    const favorites = getFavorites(type);
-    return items
+function getTopFavorites() {
+    const favorites = getFavorites();
+    return EMOTES
         .map(src => ({ src, count: favorites[src] || 0 }))
         .filter(item => item.count > 0)
         .sort((a, b) => b.count - a.count)
@@ -35,29 +34,26 @@ function getTopFavorites(type, items) {
         .map(item => item.src);
 }
 
-// Renderizar emotes/gifs
-function renderItems(items, gridId, type) {
-    const grid = document.getElementById(gridId);
+// Renderizar emotes
+function renderItems() {
+    const grid = document.getElementById('emotesGrid');
     if (!grid) return;
     
     grid.innerHTML = '';
-    items.forEach(src => {
+    EMOTES.forEach(src => {
         const img = document.createElement('img');
         img.src = src;
         img.className = 'emote-item';
-        img.dataset.type = type;
-        img.addEventListener('click', () => handleItemClick(src, type));
+        img.addEventListener('click', () => handleItemClick(src));
         grid.appendChild(img);
     });
 }
 
 // Renderizar favoritos
-function renderFavorites(type) {
-    const items = type === 'emotes' ? EMOTES : GIFS;
-    const topFavorites = getTopFavorites(type, items);
-    
-    const favSection = document.getElementById(type === 'emotes' ? 'favoriteEmotes' : 'favoriteGifs');
-    const favGrid = document.getElementById(type === 'emotes' ? 'favoriteEmotesGrid' : 'favoriteGifsGrid');
+function renderFavorites() {
+    const topFavorites = getTopFavorites();
+    const favSection = document.getElementById('favoriteEmotes');
+    const favGrid = document.getElementById('favoriteEmotesGrid');
     
     if (!favSection || !favGrid) return;
     
@@ -68,8 +64,7 @@ function renderFavorites(type) {
             const img = document.createElement('img');
             img.src = src;
             img.className = 'favorite-item';
-            img.dataset.type = type;
-            img.addEventListener('click', () => handleItemClick(src, type));
+            img.addEventListener('click', () => handleItemClick(src));
             favGrid.appendChild(img);
         });
     } else {
@@ -77,16 +72,14 @@ function renderFavorites(type) {
     }
 }
 
-// Manejar click en emote/gif
-async function handleItemClick(src, type) {
-    incrementUsage(type, src);
+// Manejar click en emote
+async function handleItemClick(src) {
+    incrementUsage(src);
     
     try {
         await sendMessage(currentUser.username || 'Usuario', 'emote', src);
         document.querySelector('.emote-panel').classList.remove('active');
-        
-        // Actualizar favoritos después de enviar
-        setTimeout(() => renderFavorites(type), 100);
+        setTimeout(() => renderFavorites(), 100);
     } catch (error) {
         console.error('Error sending emote:', error);
     }
@@ -96,40 +89,17 @@ async function handleItemClick(src, type) {
 export function initEmotePanel() {
     const emoteBtn = document.querySelector('.emote-btn');
     const emotePanel = document.querySelector('.emote-panel');
-    const emoteTabs = document.querySelectorAll('.emote-tab');
     
     if (!emoteBtn || !emotePanel) return;
     
-    // Renderizar emotes y gifs
-    renderItems(EMOTES, 'emotesGrid', 'emotes');
-    renderItems(GIFS, 'gifsGrid', 'gifs');
-    renderFavorites('emotes');
-    renderFavorites('gifs');
+    renderItems();
+    renderFavorites();
     
-    // Toggle panel
     emoteBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         emotePanel.classList.toggle('active');
     });
     
-    // Cambiar tabs
-    emoteTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const tabType = tab.dataset.tab;
-            
-            // Actualizar tabs activos
-            emoteTabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            
-            // Mostrar sección correspondiente
-            document.querySelectorAll('.emote-section').forEach(section => {
-                section.classList.remove('active');
-            });
-            document.querySelector(`[data-section="${tabType}"]`).classList.add('active');
-        });
-    });
-    
-    // Cerrar al hacer click fuera
     document.addEventListener('click', (e) => {
         if (!emoteBtn.contains(e.target) && !emotePanel.contains(e.target)) {
             emotePanel.classList.remove('active');
@@ -137,7 +107,6 @@ export function initEmotePanel() {
     });
 }
 
-// Inicializar cuando el DOM esté listo
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initEmotePanel);
 } else {
