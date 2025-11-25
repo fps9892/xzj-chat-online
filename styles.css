@@ -1,0 +1,14 @@
+#chat-area {
+  overflow-y: auto;
+  max-height: 400px; /* Ajusta según tu diseño */
+  padding: 10px;
+  box-sizing: border-box;
+  scroll-behavior: smooth; /* Desplazamiento suave */
+}
+
+@media (max-width: 768px) {
+  #chat-area {
+    max-height: 70vh; /* Ajusta la altura para pantallas pequeñas */
+    font-size: 14px; /* Texto más pequeño para móviles */
+  }
+}
