@@ -226,14 +226,12 @@ export function setUserOnline() {
     Object.keys(userData).forEach(key => {
         if (userData[key] === undefined || userData[key] === null) {
             console.warn(`Campo ${key} es undefined, usando valor por defecto`);
-            switch(key) {
-                case 'name': userData[key] = 'Usuario'; break;
-                case 'avatar': userData[key] = 'images/profileuser.jpg'; break;
-                case 'textColor': userData[key] = '#ffffff'; break;
-                case 'description': userData[key] = 'Sin descripción'; break;
-                case 'role': userData[key] = 'user'; break;
-                default: userData[key] = '';
-            }
+            if (key === 'name') userData[key] = 'Usuario';
+            else if (key === 'avatar') userData[key] = 'images/profileuser.jpg';
+            else if (key === 'textColor') userData[key] = '#ffffff';
+            else if (key === 'description') userData[key] = 'Sin descripción';
+            else if (key === 'role') userData[key] = 'user';
+            else userData[key] = '';
         }
     });
     
