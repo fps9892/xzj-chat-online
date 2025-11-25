@@ -107,16 +107,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const audioPanel = document.getElementById('audioPanel');
     const audioVisualizer = document.getElementById('audioVisualizer');
     const audioTimer = document.getElementById('audioTimer');
-    const pauseBtn = document.getElementById('pauseBtn');
-    const deleteBtn = document.getElementById('deleteBtn');
+    const playBtn = document.getElementById('playBtn');
+    const stopBtn = document.getElementById('stopBtn');
     const sendAudioBtn = document.getElementById('sendAudioBtn');
     const uploadAudioBtn = document.getElementById('uploadAudioBtn');
     const audioInput = document.querySelector('.audio-input');
     
     let audioRecorder = new AudioRecorder();
     let isRecording = false;
-    let isPaused = false;
     let timerInterval = null;
+    let recordedAudioBlob = null;
     const emoteBtn = document.querySelector('.emote-btn');
     const emotePanel = document.querySelector('.emote-panel');
     const emoteItems = document.querySelectorAll('.emote-item');
@@ -600,9 +600,35 @@ document.addEventListener('DOMContentLoaded', function() {
         
         chatArea.innerHTML = '';
         
+        // Event delegation para botones de velocidad
+        chatArea.addEventListener('click', (e) => {
+            if (e.target.classList.contains('speed-btn')) {
+                const audioId = e.target.dataset.audio;
+                const speed = parseFloat(e.target.dataset.speed);
+                const audioElement = document.getElementById(audioId);
+                
+                if (audioElement) {
+                    audioElement.playbackRate = speed;
+                    
+                    // Actualizar botones activos
+                    const speedBtns = e.target.parentElement.querySelectorAll('.speed-btn');
+                    speedBtns.forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+                }
+            }
+        });
+        
         messages.forEach((message, index) => {
             const messageEl = createMessageElement(message);
             chatArea.appendChild(messageEl);
+            
+            // Inicializar velocidad de audio
+            if (message.type === 'audio') {
+                const audioElement = document.getElementById(`audio-${message.id}`);
+                if (audioElement) {
+                    audioElement.playbackRate = 1;
+                }
+            }
             
             // Si el mensaje indica que la sala fue borrada, redirigir
             if (message.roomDeleted && message.type === 'system') {
@@ -725,14 +751,23 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <span class="message-time">${time}</span>
                             `}
                         </div>
-                        <div class="message-content">
+                        ${message.type === 'audio' ? 
+                            `<div class="audio-message">
+                                <div class="audio-player-container">
+                                    <audio controls class="audio-player" id="audio-${message.id}" src="${message.audioData}"></audio>
+                                </div>
+                                <div class="audio-speed">
+                                    <span>Velocidad:</span>
+                                    <button class="speed-btn" data-speed="0.5" data-audio="audio-${message.id}">0.5x</button>
+                                    <button class="speed-btn active" data-speed="1" data-audio="audio-${message.id}">1x</button>
+                                    <button class="speed-btn" data-speed="1.5" data-audio="audio-${message.id}">1.5x</button>
+                                    <button class="speed-btn" data-speed="2" data-audio="audio-${message.id}">2x</button>
+                                </div>
+                                <span class="audio-duration">🎤 ${formatTime(message.audioDuration || 0)}</span>
+                            </div>` :
+                        `<div class="message-content">
                             ${message.type === 'image' ? 
                                 `<img src="${message.imageData}" alt="Imagen" class="message-image" onclick="showImageModal('${message.imageData}')" />` :
-                            message.type === 'audio' ?
-                                `<div class="audio-message">
-                                    <audio controls class="audio-player" src="${message.audioData}"></audio>
-                                    <span class="audio-duration">${formatTime(message.audioDuration || 0)}</span>
-                                </div>` :
                                 `<div class="message-text copyable-text">${processEmotes(message.text)}</div>
                                 ${message.text.length > getCharacterLimit() ? '<span class="see-more">ver más</span>' : ''}
                                 ${(() => {
@@ -740,7 +775,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                     return youtubeId ? `<div class="youtube-embed"><iframe width="100%" height="200" src="https://www.youtube.com/embed/${youtubeId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>` : '';
                                 })()}`
                             }
-                        </div>
+                        </div>`
+                        }
                     </div>
                 </div>
             `);
@@ -1522,13 +1558,18 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // Audio recording
-    micBtn.addEventListener('click', async () => {
+    micBtn.addEventListener('click', () => {
+        audioPanel.classList.add('active');
+        audioTimer.textContent = '00:00';
+        recordedAudioBlob = null;
+    });
+    
+    playBtn.addEventListener('click', async () => {
         if (!isRecording) {
             const started = await audioRecorder.startRecording(audioVisualizer);
             if (started) {
                 isRecording = true;
-                audioPanel.classList.add('active');
-                pauseBtn.classList.add('recording');
+                playBtn.classList.add('recording');
                 
                 timerInterval = setInterval(() => {
                     const duration = audioRecorder.getRecordingDuration();
@@ -1540,60 +1581,40 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    pauseBtn.addEventListener('click', () => {
-        if (isRecording && !isPaused) {
-            audioRecorder.pauseRecording();
-            isPaused = true;
-            pauseBtn.textContent = '▶';
-            pauseBtn.classList.remove('recording');
+    stopBtn.addEventListener('click', async () => {
+        if (isRecording) {
             clearInterval(timerInterval);
-        } else if (isRecording && isPaused) {
-            audioRecorder.resumeRecording(audioVisualizer);
-            isPaused = false;
-            pauseBtn.textContent = '⏸';
-            pauseBtn.classList.add('recording');
+            recordedAudioBlob = await audioRecorder.stopRecording();
+            isRecording = false;
+            playBtn.classList.remove('recording');
             
-            timerInterval = setInterval(() => {
-                const duration = audioRecorder.getRecordingDuration();
-                audioTimer.textContent = formatTime(duration);
-            }, 1000);
+            if (recordedAudioBlob) {
+                showNotification('Audio listo para enviar', 'success');
+            }
         }
-    });
-    
-    deleteBtn.addEventListener('click', () => {
-        audioRecorder.cancelRecording();
-        audioPanel.classList.remove('active');
-        isRecording = false;
-        isPaused = false;
-        audioTimer.textContent = '00:00';
-        pauseBtn.textContent = '⏸';
-        pauseBtn.classList.remove('recording');
-        clearInterval(timerInterval);
     });
     
     sendAudioBtn.addEventListener('click', async () => {
-        if (!isRecording) return;
-        
-        clearInterval(timerInterval);
-        const duration = audioRecorder.getRecordingDuration();
-        const audioBlob = await audioRecorder.stopRecording();
-        
-        if (audioBlob) {
-            try {
-                const audioBase64 = await blobToBase64(audioBlob);
-                await sendAudio(audioBase64, duration);
-                showNotification('Audio enviado', 'success');
-            } catch (error) {
-                showNotification('Error al enviar audio', 'error');
-            }
+        if (!recordedAudioBlob) {
+            showNotification('No hay audio para enviar', 'error');
+            return;
         }
         
-        audioPanel.classList.remove('active');
-        isRecording = false;
-        isPaused = false;
-        audioTimer.textContent = '00:00';
-        pauseBtn.textContent = '⏸';
-        pauseBtn.classList.remove('recording');
+        const duration = audioRecorder.getRecordingDuration();
+        
+        try {
+            const audioBase64 = await blobToBase64(recordedAudioBlob);
+            await sendAudio(audioBase64, duration);
+            showNotification('Audio enviado', 'success');
+            
+            // Limpiar panel
+            audioPanel.classList.remove('active');
+            audioTimer.textContent = '00:00';
+            recordedAudioBlob = null;
+            playBtn.classList.remove('recording');
+        } catch (error) {
+            showNotification('Error al enviar audio', 'error');
+        }
     });
     
     uploadAudioBtn.addEventListener('click', () => {

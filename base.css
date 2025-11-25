@@ -101,8 +101,6 @@ body {
   border-radius: 2px;
 }
 
-
-
 @keyframes neonSpin {
   0% {
     transform: rotate(0deg);
@@ -111,14 +109,6 @@ body {
     transform: rotate(360deg);
   }
 }
-
-
-
-
-
-
-
-
 
 .header {
   background-color: #000;
@@ -235,8 +225,6 @@ body {
   border-left: 3px solid #00ff00;
 }
 
-
-
 .room-users {
   color: #00ff00;
   font-size: 10px;
@@ -315,15 +303,13 @@ body {
   .chat-area::-webkit-scrollbar {
     display: none;
   }
-  
+
   .chat-area {
     -ms-overflow-style: none;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
   }
 }
-
-
 
 .input-area {
   background-color: #000;
@@ -342,29 +328,29 @@ body {
     min-height: 100vh;
     overflow-x: hidden;
   }
-  
+
   .main-content {
     height: calc(100vh - 60px);
     overflow: hidden;
   }
-  
+
   .input-area {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
   }
-  
+
   .chat-area {
     padding-bottom: 100px;
     margin-bottom: 90px;
   }
-  
+
   .typing-indicator {
     font-size: 11px;
     bottom: 80px;
   }
-  
+
   .notification,
   .floating-notification {
     top: 70px;
@@ -375,52 +361,52 @@ body {
     max-width: none;
     transform: translateY(-100px);
   }
-  
+
   .notification.show,
   .floating-notification.show {
     transform: translateY(0);
   }
-  
+
   .message-content {
     font-size: 13px;
     padding: 10px 14px;
   }
-  
+
   .input-container {
     gap: 8px;
   }
-  
+
   .message-input {
     font-size: 16px;
   }
-  
+
   .chat-controls {
     bottom: 95px;
     right: 10px;
     gap: 8px;
   }
-  
+
   .image-btn,
   .emote-btn {
     width: 40px;
     height: 40px;
     padding: 8px;
   }
-  
+
   .user-panel-overlay.active {
     padding: 20px;
   }
-  
+
   .user-panel {
     width: 100%;
     max-width: 100%;
     max-height: 80vh;
   }
-  
+
   .user-profile-overlay {
     padding: 20px;
   }
-  
+
   .user-profile-panel {
     width: 100%;
     max-width: 100%;
@@ -768,7 +754,7 @@ body {
   border-radius: 12px;
   padding: 12px 20px;
   font-size: 13px;
-  font-family: 'Orbitron', monospace;
+  font-family: "Orbitron", monospace;
   z-index: 3000;
   transform: translateX(400px);
   transition: all 0.3s ease;
@@ -784,7 +770,7 @@ body {
   border-radius: 12px;
   padding: 12px 20px;
   font-size: 13px;
-  font-family: 'Orbitron', monospace;
+  font-family: "Orbitron", monospace;
   z-index: 3000;
   transform: translateX(400px);
   transition: all 0.3s ease;
@@ -832,7 +818,7 @@ body {
   color: #00ff00;
   font-size: 20px;
   font-weight: bold;
-  font-family: 'Orbitron', monospace;
+  font-family: "Orbitron", monospace;
   text-shadow: 0 0 20px #00ff00;
   word-wrap: break-word;
 }
@@ -843,7 +829,7 @@ body {
     max-width: 95%;
     border-width: 2px;
   }
-  
+
   .announcement-text {
     font-size: 16px;
   }
@@ -883,7 +869,7 @@ body {
   border-radius: 12px;
   padding: 10px 16px;
   font-size: 13px;
-  font-family: 'Orbitron', monospace;
+  font-family: "Orbitron", monospace;
   z-index: 2500;
   transform: translateX(-400px);
   transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
@@ -921,8 +907,15 @@ body {
 }
 
 @keyframes pulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.2); opacity: 0.8; }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
 }
 
 @media (max-width: 767px) {
@@ -933,7 +926,7 @@ body {
     font-size: 12px;
     padding: 8px 12px;
   }
-  
+
   .mobile-user-item {
     cursor: pointer;
   }
@@ -1359,8 +1352,6 @@ body {
   border-radius: 8px;
 }
 
-
-
 /* Ocultar username en móvil */
 @media (max-width: 767px) {
   .desktop-only {
@@ -1426,7 +1417,9 @@ body {
   margin-right: 5px;
 }
 
-.mod-btn, .ban-btn, .mute-btn {
+.mod-btn,
+.ban-btn,
+.mute-btn {
   padding: 3px 8px;
   border: none;
   border-radius: 12px;
@@ -1497,7 +1490,7 @@ body {
 }
 
 .banned-content h1 {
-  font-family: 'Orbitron', monospace;
+  font-family: "Orbitron", monospace;
   font-size: 48px;
   color: #ff4444;
   margin-bottom: 20px;
@@ -1532,7 +1525,7 @@ body {
 }
 
 .pinned-message::before {
-  content: '📌';
+  content: "📌";
   position: absolute;
   top: 5px;
   right: 5px;
@@ -1551,7 +1544,8 @@ body {
   display: flex;
 }
 
-.pin-btn, .delete-btn {
+.pin-btn,
+.delete-btn {
   background: rgba(0, 0, 0, 0.7);
   border: none;
   color: white;
@@ -1626,35 +1620,45 @@ body {
 }
 
 @keyframes rgbBorder {
-  0% { 
-    border-color: #00ff00; 
-    box-shadow: 0 0 50px rgba(0, 255, 0, 0.6), inset 0 0 30px rgba(0, 255, 0, 0.2); 
+  0% {
+    border-color: #00ff00;
+    box-shadow: 0 0 50px rgba(0, 255, 0, 0.6),
+      inset 0 0 30px rgba(0, 255, 0, 0.2);
   }
-  33% { 
-    border-color: #00ffff; 
-    box-shadow: 0 0 50px rgba(0, 255, 255, 0.6), inset 0 0 30px rgba(0, 255, 255, 0.2); 
+  33% {
+    border-color: #00ffff;
+    box-shadow: 0 0 50px rgba(0, 255, 255, 0.6),
+      inset 0 0 30px rgba(0, 255, 255, 0.2);
   }
-  66% { 
-    border-color: #00ff88; 
-    box-shadow: 0 0 50px rgba(0, 255, 136, 0.6), inset 0 0 30px rgba(0, 255, 136, 0.2); 
+  66% {
+    border-color: #00ff88;
+    box-shadow: 0 0 50px rgba(0, 255, 136, 0.6),
+      inset 0 0 30px rgba(0, 255, 136, 0.2);
   }
-  100% { 
-    border-color: #00ff00; 
-    box-shadow: 0 0 50px rgba(0, 255, 0, 0.6), inset 0 0 30px rgba(0, 255, 0, 0.2); 
+  100% {
+    border-color: #00ff00;
+    box-shadow: 0 0 50px rgba(0, 255, 0, 0.6),
+      inset 0 0 30px rgba(0, 255, 0, 0.2);
   }
 }
 
 @keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.03); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
 }
 
 @keyframes textGlow {
-  0%, 100% { 
-    text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00; 
+  0%,
+  100% {
+    text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00;
   }
-  50% { 
-    text-shadow: 0 0 30px #00ff00, 0 0 40px #00ff00, 0 0 50px #00ff00; 
+  50% {
+    text-shadow: 0 0 30px #00ff00, 0 0 40px #00ff00, 0 0 50px #00ff00;
   }
 }
 
@@ -1711,7 +1715,7 @@ body {
 
 .audio-timer {
   text-align: center;
-  font-family: 'Orbitron', monospace;
+  font-family: "Orbitron", monospace;
   font-size: 24px;
   color: #00ff00;
   text-shadow: 0 0 10px #00ff00;
@@ -1747,15 +1751,22 @@ body {
 }
 
 @keyframes recordPulse {
-  0%, 100% { box-shadow: 0 0 10px #ff0000; border-color: #ff0000; }
-  50% { box-shadow: 0 0 30px #ff0000; border-color: #ff4444; }
+  0%,
+  100% {
+    box-shadow: 0 0 10px #ff0000;
+    border-color: #ff0000;
+  }
+  50% {
+    box-shadow: 0 0 30px #ff0000;
+    border-color: #ff4444;
+  }
 }
 
-.audio-btn.pause {
-  border-color: #ffaa00;
+.audio-btn.play {
+  border-color: #00ff00;
 }
 
-.audio-btn.delete {
+.audio-btn.stop {
   border-color: #ff4444;
 }
 
@@ -1781,25 +1792,74 @@ body {
   position: relative;
 }
 
+.audio-icon {
+  width: 24px;
+  height: 24px;
+  filter: invert(1);
+}
+
 .audio-message {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px;
+  background: rgba(0, 255, 0, 0.05);
+  border: 1px solid rgba(0, 255, 0, 0.3);
+  border-radius: 12px;
+  min-width: 280px;
+  max-width: 350px;
+}
+
+.audio-player-container {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px;
-  background: rgba(0, 255, 0, 0.1);
-  border-radius: 10px;
-  max-width: 300px;
 }
 
 .audio-player {
   flex: 1;
-  height: 40px;
+  height: 35px;
+  outline: none;
+}
+
+.audio-player::-webkit-media-controls-panel {
+  background: rgba(0, 255, 0, 0.1);
+}
+
+.audio-speed {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #00ff00;
+  font-family: 'Orbitron', monospace;
+}
+
+.speed-btn {
+  background: rgba(0, 255, 0, 0.2);
+  border: 1px solid #00ff00;
+  color: #00ff00;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 10px;
+  transition: all 0.3s;
+}
+
+.speed-btn:hover {
+  background: rgba(0, 255, 0, 0.4);
+}
+
+.speed-btn.active {
+  background: #00ff00;
+  color: #000;
 }
 
 .audio-duration {
-  font-size: 12px;
+  font-size: 11px;
   color: #00ff00;
-  font-family: 'Orbitron', monospace;
+  font-family: "Orbitron", monospace;
+  text-align: center;
 }
 
 @media (max-width: 767px) {
@@ -1809,7 +1869,7 @@ body {
     bottom: 110px;
     min-width: auto;
   }
-  
+
   .mic-btn {
     width: 40px;
     height: 40px;
