@@ -1,0 +1,155 @@
+═══════════════════════════════════════════════════════════════
+  REGLAS DE FIREBASE - FYZAR CHAT v3.5
+═══════════════════════════════════════════════════════════════
+
+📋 FIRESTORE DATABASE RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Firebase Console → Firestore Database → Rules
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isModerator() {
+      return request.auth != null && exists(/databases/$(database)/documents/moderators/$(request.auth.uid));
+    }
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    match /admins/{firebaseUid} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /moderators/{firebaseUid} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /banned/{firebaseUid} {
+      allow read: if true;
+      allow write: if isAdmin() || isModerator();
+    }
+
+    match /bannedIPs/{ipAddress} {
+      allow read: if true;
+      allow write: if isAdmin() || isModerator();
+    }
+
+    match /muted/{firebaseUid} {
+      allow read: if true;
+      allow write: if isAdmin() || isModerator();
+    }
+
+    match /users/{firebaseUid} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (request.auth.uid == firebaseUid || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    match /guests/{guestId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /pinnedMessages/{messageId} {
+      allow read: if true;
+      allow write: if isAdmin() || isModerator();
+    }
+
+    match /rooms/{roomId} {
+      allow read: if true;
+      allow create: if isAdmin() || isModerator();
+      allow update: if isAdmin() || isModerator();
+      allow delete: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 REALTIME DATABASE RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Firebase Console → Realtime Database → Rules
+
+{
+  "rules": {
+    "rooms": {
+      ".read": true,
+      ".write": true,
+      "$roomId": {
+        ".read": true,
+        ".write": true,
+        "messages": {
+          ".indexOn": ["timestamp"],
+          "$messageId": {
+            ".read": true,
+            ".write": true
+          }
+        },
+        "users": {
+          ".indexOn": ["status", "lastSeen"],
+          "$userId": {
+            ".read": true,
+            ".write": true
+          }
+        },
+        "typing": {
+          "$userId": {
+            ".read": true,
+            ".write": true
+          }
+        }
+      }
+    },
+    "globalAnnouncements": {
+      ".read": true,
+      ".write": true,
+      "$announcementId": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "deviceCounts": {
+      ".read": true,
+      ".write": true
+    },
+    "roomEvents": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": ["timestamp"],
+      "$eventId": {
+        ".read": true,
+        ".write": true
+      }
+    }
+  }
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ INSTRUCCIONES:
+
+1. Copia las reglas de Firestore Database
+2. Pégalas en Firebase Console → Firestore Database → Rules
+3. Copia las reglas de Realtime Database
+4. Pégalas en Firebase Console → Realtime Database → Rules
+5. Haz clic en "Publicar" en ambas secciones
+
+⚠️ IMPORTANTE: Las colecciones 'banned' y 'bannedIPs' deben tener
+   permisos de lectura pública para verificar baneos en login.
+
+═══════════════════════════════════════════════════════════════

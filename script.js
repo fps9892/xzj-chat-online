@@ -1085,19 +1085,41 @@ document.addEventListener('DOMContentLoaded', function() {
     async function initializeApp() {
         validateCurrentUser();
         
-        // Verificar si el usuario está baneado por ID o IP
-        if (!currentUser.isGuest) {
-            const { checkBannedStatus } = await import('./firebase.js');
-            const banData = await checkBannedStatus(
-                currentUser.firebaseUid || currentUser.userId,
-                currentUser.ip
-            );
+        // Verificar baneo ANTES de cualquier otra cosa
+        try {
+            const { getFirestore, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
             
-            if (banData) {
-                localStorage.setItem('banData', JSON.stringify(banData));
-                window.location.replace('banned.html');
-                return;
+            const firebaseConfig = {
+                apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
+                authDomain: "fyzar-80936.firebaseapp.com",
+                databaseURL: "https://fyzar-80936-default-rtdb.firebaseio.com",
+                projectId: "fyzar-80936",
+                storageBucket: "fyzar-80936.firebasestorage.app",
+                messagingSenderId: "718553577005",
+                appId: "1:718553577005:web:74b5b9e790232edf6e2aa4"
+            };
+            
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            
+            if (!currentUser.isGuest && currentUser.firebaseUid) {
+                const bannedDoc = await getDoc(doc(db, 'banned', currentUser.firebaseUid));
+                if (bannedDoc.exists()) {
+                    window.location.replace('banned.html');
+                    return;
+                }
+                
+                if (currentUser.ip) {
+                    const bannedIPDoc = await getDoc(doc(db, 'bannedIPs', currentUser.ip.replace(/\./g, '_')));
+                    if (bannedIPDoc.exists()) {
+                        window.location.replace('banned.html');
+                        return;
+                    }
+                }
             }
+        } catch (error) {
+            console.error('Error checking ban status:', error);
         }
         
         await updateUserRole();
