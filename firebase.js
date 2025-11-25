@@ -621,26 +621,49 @@ export async function checkModeratorStatus(userId) {
     }
 }
 
-// Verificar si el usuario está baneado
-export async function checkBannedStatus(userId) {
+// Verificar si el usuario está baneado (por ID o IP)
+export async function checkBannedStatus(userId, userIP = null) {
     if (!userId) return false;
     
     try {
+        // Verificar baneo por ID
         const bannedDoc = await getDoc(doc(db, 'banned', userId));
-        if (!bannedDoc.exists()) return false;
+        if (bannedDoc.exists()) {
+            const banData = bannedDoc.data();
+            
+            if (banData.expiresAt) {
+                const expiresAt = new Date(banData.expiresAt);
+                if (expiresAt < new Date()) {
+                    await deleteDoc(doc(db, 'banned', userId));
+                    if (banData.ip && banData.ip !== 'unknown') {
+                        await deleteDoc(doc(db, 'bannedIPs', banData.ip.replace(/\./g, '_')));
+                    }
+                    return false;
+                }
+            }
+            
+            return banData;
+        }
         
-        const banData = bannedDoc.data();
-        
-        // Si tiene fecha de expiración, verificar
-        if (banData.expiresAt) {
-            const expiresAt = new Date(banData.expiresAt);
-            if (expiresAt < new Date()) {
-                await deleteDoc(doc(db, 'banned', userId));
-                return false;
+        // Verificar baneo por IP
+        if (userIP) {
+            const ipDoc = await getDoc(doc(db, 'bannedIPs', userIP.replace(/\./g, '_')));
+            if (ipDoc.exists()) {
+                const banData = ipDoc.data();
+                
+                if (banData.expiresAt) {
+                    const expiresAt = new Date(banData.expiresAt);
+                    if (expiresAt < new Date()) {
+                        await deleteDoc(doc(db, 'bannedIPs', userIP.replace(/\./g, '_')));
+                        return false;
+                    }
+                }
+                
+                return banData;
             }
         }
         
-        return banData;
+        return false;
     } catch (error) {
         console.error('Error checking banned status:', error);
         return false;
@@ -761,7 +784,18 @@ export async function deleteRoom(roomName) {
     }
 }
 
-// Banear usuario (solo administradores y moderadores)
+// Obtener IP del usuario
+async function getUserIP() {
+    try {
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        return data.ip;
+    } catch (error) {
+        return 'unknown';
+    }
+}
+
+// Banear usuario por ID y IP
 export async function banUser(userId, reason = 'Violación de reglas', duration = null) {
     if (!currentUser.firebaseUid || currentUser.isGuest) {
         throw new Error('Solo usuarios registrados pueden banear');
@@ -775,18 +809,38 @@ export async function banUser(userId, reason = 'Violación de reglas', duration 
     }
     
     try {
+        // Obtener datos del usuario a banear
+        const userDoc = await getDoc(doc(db, 'users', userId));
+        let userIP = 'unknown';
+        
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            userIP = userData.ip || 'unknown';
+        }
+        
         const banData = {
             bannedBy: currentUser.firebaseUid,
             bannedByName: currentUser.username,
             reason: reason,
-            bannedAt: new Date().toISOString()
+            bannedAt: new Date().toISOString(),
+            ip: userIP
         };
         
         if (duration) {
             banData.expiresAt = new Date(Date.now() + duration).toISOString();
         }
         
+        // Banear por firebaseUid
         await setDoc(doc(db, 'banned', userId), banData);
+        
+        // Banear por IP
+        if (userIP !== 'unknown') {
+            await setDoc(doc(db, 'bannedIPs', userIP.replace(/\./g, '_')), {
+                ...banData,
+                userId: userId
+            });
+        }
+        
         return true;
     } catch (error) {
         console.error('Error banning user:', error);
@@ -856,6 +910,15 @@ export async function unbanUser(userId) {
     }
     
     try {
+        // Obtener datos del baneo para eliminar IP
+        const bannedDoc = await getDoc(doc(db, 'banned', userId));
+        if (bannedDoc.exists()) {
+            const banData = bannedDoc.data();
+            if (banData.ip && banData.ip !== 'unknown') {
+                await deleteDoc(doc(db, 'bannedIPs', banData.ip.replace(/\./g, '_')));
+            }
+        }
+        
         await deleteDoc(doc(db, 'banned', userId));
         return true;
     } catch (error) {
@@ -1000,6 +1063,36 @@ export async function getPinnedMessages(roomName = currentRoom) {
     }
 }
 
+// Obtener lista de usuarios conectados con ID numérico
+export async function getConnectedUsersList() {
+    try {
+        const usersRef = ref(database, `rooms/${currentRoom}/users`);
+        const snapshot = await get(usersRef);
+        const users = [];
+        
+        if (snapshot.exists()) {
+            let index = 1;
+            snapshot.forEach((childSnapshot) => {
+                const userData = childSnapshot.val();
+                if (userData.status === 'online') {
+                    users.push({
+                        numId: index++,
+                        userId: childSnapshot.key,
+                        username: userData.name,
+                        firebaseUid: userData.firebaseUid || null,
+                        isGuest: userData.isGuest || false
+                    });
+                }
+            });
+        }
+        
+        return users;
+    } catch (error) {
+        console.error('Error getting users list:', error);
+        return [];
+    }
+}
+
 // Procesar comandos de administrador
 export async function processAdminCommand(message) {
     if (!message.startsWith('!')) return false;
@@ -1041,12 +1134,65 @@ export async function processAdminCommand(message) {
                 
             case '!ban':
                 if (args.length === 0) {
-                    throw new Error('Uso: !ban <userId> [razón]');
+                    const users = await getConnectedUsersList();
+                    let userList = '📋 Usuarios conectados:\n';
+                    users.forEach(u => {
+                        userList += `${u.numId}. ${u.username}${u.isGuest ? ' (invitado)' : ''}\n`;
+                    });
+                    userList += '\nUso: !ban <número> [razón]';
+                    return { success: true, message: userList };
                 }
-                const userToBan = args[0];
+                
+                const banNumId = parseInt(args[0]);
+                if (isNaN(banNumId)) {
+                    throw new Error('ID de usuario inválido');
+                }
+                
+                const users = await getConnectedUsersList();
+                const targetUser = users.find(u => u.numId === banNumId);
+                
+                if (!targetUser) {
+                    throw new Error('Usuario no encontrado');
+                }
+                
+                if (targetUser.isGuest) {
+                    throw new Error('No se puede banear usuarios invitados');
+                }
+                
                 const banReason = args.slice(1).join(' ') || 'Violación de reglas';
-                await banUser(userToBan, banReason);
-                return { success: true, message: `Usuario ${userToBan} baneado` };
+                await banUser(targetUser.firebaseUid, banReason);
+                return { success: true, message: `Usuario ${targetUser.username} baneado` };
+                
+            case '!mute':
+                if (args.length === 0) {
+                    const users = await getConnectedUsersList();
+                    let userList = '📋 Usuarios conectados:\n';
+                    users.forEach(u => {
+                        userList += `${u.numId}. ${u.username}${u.isGuest ? ' (invitado)' : ''}\n`;
+                    });
+                    userList += '\nUso: !mute <número> [minutos]';
+                    return { success: true, message: userList };
+                }
+                
+                const muteNumId = parseInt(args[0]);
+                if (isNaN(muteNumId)) {
+                    throw new Error('ID de usuario inválido');
+                }
+                
+                const muteUsers = await getConnectedUsersList();
+                const targetMuteUser = muteUsers.find(u => u.numId === muteNumId);
+                
+                if (!targetMuteUser) {
+                    throw new Error('Usuario no encontrado');
+                }
+                
+                if (targetMuteUser.isGuest) {
+                    throw new Error('No se puede mutear usuarios invitados');
+                }
+                
+                const muteDuration = parseInt(args[1]) || 5;
+                await muteUser(targetMuteUser.firebaseUid, muteDuration * 60 * 1000);
+                return { success: true, message: `Usuario ${targetMuteUser.username} muteado por ${muteDuration} minutos` };
                 
             case '!unban':
                 if (args.length === 0) {

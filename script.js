@@ -1071,34 +1071,16 @@ document.addEventListener('DOMContentLoaded', function() {
     async function initializeApp() {
         validateCurrentUser();
         
-        // Verificar si el usuario está baneado
-        if (!currentUser.isGuest && currentUser.firebaseUid) {
-            const { checkBannedStatus } = await import('./firebase.js');
-            const banData = await checkBannedStatus(currentUser.firebaseUid);
-            
-            if (banData) {
-                const bannedOverlay = document.getElementById('bannedOverlay');
-                const banReasonText = document.getElementById('ban-reason-text');
-                const banDuration = document.getElementById('ban-duration');
-                
-                banReasonText.textContent = banData.reason || 'No especificada';
-                
-                if (banData.expiresAt) {
-                    const expiresDate = new Date(banData.expiresAt);
-                    const now = new Date();
-                    const diffMs = expiresDate - now;
-                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-                    const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-                    
-                    banDuration.textContent = `Expira en: ${diffHours}h ${diffMins}m`;
-                } else {
-                    banDuration.textContent = 'Baneo permanente';
-                }
-                
-                bannedOverlay.style.display = 'flex';
-                document.getElementById('loadingScreen').style.display = 'none';
-                return;
-            }
+        // Verificar si el usuario está baneado por ID o IP
+        const { checkBannedStatus } = await import('./firebase.js');
+        const banData = await checkBannedStatus(
+            currentUser.firebaseUid || currentUser.userId,
+            currentUser.ip
+        );
+        
+        if (banData) {
+            window.location.href = 'banned.html';
+            return;
         }
         
         await updateUserRole();

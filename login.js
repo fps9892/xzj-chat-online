@@ -147,6 +147,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
 
+    // Obtener IP del usuario
+    async function getUserIP() {
+        try {
+            const response = await fetch('https://api.ipify.org?format=json');
+            const data = await response.json();
+            return data.ip;
+        } catch (error) {
+            return 'unknown';
+        }
+    }
+
     // Login
     document.getElementById('login-submit').addEventListener('click', async function() {
         const username = document.getElementById('login-username').value.trim();
@@ -168,17 +179,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const userDoc = querySnapshot.docs[0];
             const userData = userDoc.data();
+            const userIP = await getUserIP();
             
-            // Check if banned
+            // Verificar baneo por ID
             const bannedDoc = await getDoc(doc(db, 'banned', userData.firebaseUid));
             if (bannedDoc.exists()) {
-                const banData = bannedDoc.data();
-                showNotification(`Estás baneado. Razón: ${banData.reason || 'No especificada'}`, 'error');
+                localStorage.setItem('currentUser', JSON.stringify(userData));
+                window.location.href = 'banned.html';
+                return;
+            }
+            
+            // Verificar baneo por IP
+            const bannedIPDoc = await getDoc(doc(db, 'bannedIPs', userIP.replace(/\./g, '_')));
+            if (bannedIPDoc.exists()) {
+                localStorage.setItem('currentUser', JSON.stringify(userData));
+                window.location.href = 'banned.html';
                 return;
             }
             
             const userCredential = await signInWithEmailAndPassword(auth, userData.email, password);
             userData.firebaseUid = userCredential.user.uid;
+            userData.ip = userIP;
+            
+            // Actualizar IP en Firestore
+            await setDoc(doc(db, 'users', userData.firebaseUid), { ip: userIP }, { merge: true });
+            
             localStorage.setItem('currentUser', JSON.stringify(userData));
             window.location.href = 'index.html';
         } catch (error) {
@@ -219,6 +244,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         try {
+            const userIP = await getUserIP();
+            
+            // Verificar si la IP está baneada
+            const bannedIPDoc = await getDoc(doc(db, 'bannedIPs', userIP.replace(/\./g, '_')));
+            if (bannedIPDoc.exists()) {
+                showNotification('Tu IP está baneada. No puedes crear cuentas', 'error');
+                return;
+            }
+            
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             let avatarUrl = 'images/profileuser.jpg';
 
@@ -246,7 +280,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 isGuest: false,
                 textColor: '#ffffff',
                 background: 'default',
-                firebaseUid: userCredential.user.uid
+                firebaseUid: userCredential.user.uid,
+                ip: userIP
             };
             
             await setDoc(doc(db, 'users', userCredential.user.uid), userData);
@@ -283,6 +318,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         try {
+            const userIP = await getUserIP();
+            
+            // Verificar si la IP está baneada
+            const bannedIPDoc = await getDoc(doc(db, 'bannedIPs', userIP.replace(/\./g, '_')));
+            if (bannedIPDoc.exists()) {
+                showNotification('Tu IP está baneada. No puedes acceder', 'error');
+                return;
+            }
+            
             const userId = 'guest_' + generateUserId();
             const now = new Date();
             const guestUser = {
@@ -295,7 +339,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 textColor: '#ffffff',
                 status: 'online',
                 createdAt: now.toISOString(),
-                lastSeen: now.toISOString()
+                lastSeen: now.toISOString(),
+                ip: userIP
             };
 
             await setDoc(doc(db, 'guests', userId), guestUser);
@@ -311,6 +356,21 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const result = await signInWithPopup(auth, googleProvider);
             const user = result.user;
+            const userIP = await getUserIP();
+            
+            // Verificar baneo por ID
+            const bannedDoc = await getDoc(doc(db, 'banned', user.uid));
+            if (bannedDoc.exists()) {
+                window.location.href = 'banned.html';
+                return;
+            }
+            
+            // Verificar baneo por IP
+            const bannedIPDoc = await getDoc(doc(db, 'bannedIPs', userIP.replace(/\./g, '_')));
+            if (bannedIPDoc.exists()) {
+                window.location.href = 'banned.html';
+                return;
+            }
             
             const userDoc = await getDoc(doc(db, 'users', user.uid));
             
@@ -332,12 +392,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     isGuest: false,
                     textColor: '#ffffff',
                     background: 'default',
-                    firebaseUid: user.uid
+                    firebaseUid: user.uid,
+                    ip: userIP
                 };
                 
                 await setDoc(doc(db, 'users', user.uid), userData);
             } else {
                 userData = userDoc.data();
+                userData.ip = userIP;
+                await setDoc(doc(db, 'users', user.uid), { ip: userIP }, { merge: true });
             }
             
             localStorage.setItem('currentUser', JSON.stringify(userData));

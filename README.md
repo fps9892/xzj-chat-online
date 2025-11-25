@@ -18,6 +18,7 @@
 ## 🎨 Nuevas Características v3.5
 
 ### Login Mejorado
+
 - **Responsive Design**: Móvil usa espacio vertical completo, desktop más horizontal
 - **Validación de Contraseña**: Contador 0/6 caracteres + barra de seguridad (rojo/amarillo/verde)
 - **Selector de País**: Solo banderas, 22 países + otros
@@ -27,17 +28,22 @@
 - **Animación Bienvenida**: Confetti y mensaje para nuevos usuarios
 
 ### Sistema de Moderadores
+
 - **Tag Amarillo**: Color #ffaa00 visible en chat
 - **Permisos**: Crear salas, banear, mutear, borrar mensajes, fijar mensajes
 - **Botones en Lista**: MOD/MUTE/BAN aparecen al hover (desktop) o click (móvil)
 
 ### Sistema de Baneo/Muteo
+
+- **Baneo por IP**: Bloquea usuario por firebaseUid y dirección IP
 - **Baneo**: Temporal o permanente con razón personalizable
 - **Muteo**: 5 minutos por defecto, impide enviar mensajes
-- **Pantalla Baneado**: Muestra razón, tiempo restante y mensaje de contacto
+- **Pantalla Baneado**: Redirige a banned.html con razón, tiempo e IP
 - **Auto-expiración**: Baneos y muteos temporales expiran automáticamente
+- **Comandos**: !ban y !mute muestran lista numerada de usuarios
 
 ### Notificaciones Mejoradas
+
 - 🟢 **Verde**: Usuario entra a la sala
 - 🔴 **Rojo**: Usuario se desconecta
 - 🔵 **Cian**: Usuario se conecta
@@ -50,6 +56,7 @@
 ### 1. Aplicar Reglas de Firebase
 
 #### Firestore Database Rules
+
 ```
 Firebase Console → Firestore Database → Rules
 ```
@@ -58,63 +65,68 @@ Firebase Console → Firestore Database → Rules
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
+
     function isAdmin() {
       return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
-    
+
     function isModerator() {
       return request.auth != null && exists(/databases/$(database)/documents/moderators/$(request.auth.uid));
     }
-    
+
     function isAuthenticated() {
       return request.auth != null;
     }
-    
+
     match /admins/{firebaseUid} {
       allow read: if true;
       allow write: if isAdmin();
     }
-    
+
     match /moderators/{firebaseUid} {
       allow read: if true;
       allow write: if isAdmin();
     }
-    
+
     match /banned/{firebaseUid} {
       allow read: if true;
       allow write: if isAdmin() || isModerator();
     }
-    
+
+    match /bannedIPs/{ipAddress} {
+      allow read: if true;
+      allow write: if isAdmin() || isModerator();
+    }
+
     match /muted/{firebaseUid} {
       allow read: if true;
       allow write: if isAdmin() || isModerator();
     }
-    
+
     match /users/{firebaseUid} {
       allow read: if true;
       allow create: if isAuthenticated();
       allow update: if isAuthenticated() && (request.auth.uid == firebaseUid || isAdmin());
       allow delete: if isAdmin();
     }
-    
+
     match /guests/{guestId} {
       allow read: if true;
       allow write: if true;
     }
-    
+
     match /pinnedMessages/{messageId} {
       allow read: if true;
       allow write: if isAdmin() || isModerator();
     }
-    
+
     match /rooms/{roomId} {
       allow read: if true;
       allow create: if isAdmin() || isModerator();
       allow update: if isAdmin() || isModerator();
       allow delete: if isAdmin();
     }
-    
+
     match /{document=**} {
       allow read, write: if true;
     }
@@ -123,6 +135,7 @@ service cloud.firestore {
 ```
 
 #### Realtime Database Rules
+
 ```
 Firebase Console → Realtime Database → Rules
 ```
@@ -186,11 +199,13 @@ Firebase Console → Realtime Database → Rules
 ### 2. Iniciar el Proyecto
 
 **Opción A**: Abrir directamente
+
 ```bash
 # Abre login.html en tu navegador
 ```
 
 **Opción B**: Con servidor Node.js
+
 ```bash
 npm install
 node server.js
@@ -201,6 +216,7 @@ node server.js
 ## 📁 Estructura de Archivos
 
 ### Archivos Principales
+
 ```
 ├── index.html          # Chat principal
 ├── login.html          # Login con CAPTCHA y validaciones
@@ -218,6 +234,7 @@ node server.js
 ## 🎯 Funcionalidades
 
 ### Para Todos los Usuarios
+
 - ✅ Chat en tiempo real
 - ✅ Envío de imágenes y emotes
 - ✅ Cambio de salas
@@ -226,12 +243,14 @@ node server.js
 - ✅ CAPTCHA en registro e invitado
 
 ### Para Usuarios Registrados
+
 - ✅ Cambiar contraseña
 - ✅ Eliminar cuenta
 - ✅ Persistencia de datos
 - ✅ Validación de contraseña con indicador
 
 ### Para Moderadores ⭐ NUEVO
+
 - ✅ `!crearsala <nombre>` - Crear salas
 - ✅ Banear usuarios (temporal o permanente)
 - ✅ Mutear usuarios (5 minutos)
@@ -240,10 +259,14 @@ node server.js
 - ✅ Tag amarillo en mensajes
 
 ### Para Administradores
+
 - ✅ Todas las funciones de moderador
 - ✅ `!borrar <nombre>` - Borrar salas
 - ✅ `!anuncio <mensaje>` - Enviar anuncios globales
-- ✅ `!ban <userId> [razón]` - Banear por comando
+- ✅ `!ban` - Mostrar lista de usuarios con ID numérico
+- ✅ `!ban <número> [razón]` - Banear usuario por ID numérico
+- ✅ `!mute` - Mostrar lista de usuarios con ID numérico
+- ✅ `!mute <número> [minutos]` - Mutear usuario por ID numérico
 - ✅ `!unban <userId>` - Desbanear usuarios
 - ✅ `!borrarchat` - Borrar historial de sala
 - ✅ Otorgar/revocar rol de moderador
@@ -252,24 +275,26 @@ node server.js
 
 ## 📊 Estadísticas
 
-| Métrica | Antes | Después | Mejora |
-|---------|-------|---------|--------|
-| Archivos JS | 7 | 4 | -43% |
-| Funcionalidades | 15 | 30+ | +100% |
-| Tipos de notificaciones | 1 | 5 | +400% |
-| Roles de usuario | 2 | 4 | +100% |
-| Seguridad | Básica | Avanzada | ⭐⭐⭐⭐⭐ |
+| Métrica                 | Antes  | Después  | Mejora     |
+| ----------------------- | ------ | -------- | ---------- |
+| Archivos JS             | 7      | 4        | -43%       |
+| Funcionalidades         | 15     | 30+      | +100%      |
+| Tipos de notificaciones | 1      | 5        | +400%      |
+| Roles de usuario        | 2      | 4        | +100%      |
+| Seguridad               | Básica | Avanzada | ⭐⭐⭐⭐⭐ |
 
 ---
 
 ## ✅ Checklist de Verificación
 
 ### Configuración
+
 - [ ] Reglas de Firestore aplicadas (incluye `muted`)
 - [ ] Reglas de Realtime Database aplicadas (incluye `roomEvents`)
 - [ ] Proyecto abierto en navegador
 
 ### Login
+
 - [ ] CAPTCHA funciona en registro
 - [ ] CAPTCHA funciona para invitados
 - [ ] Validación de contraseña muestra colores
@@ -277,6 +302,7 @@ node server.js
 - [ ] Animación de bienvenida aparece en registro
 
 ### Sistema de Moderación
+
 - [ ] Tag amarillo visible en moderadores
 - [ ] Botones MOD/MUTE/BAN aparecen al hover
 - [ ] Baneo funciona correctamente
@@ -284,6 +310,7 @@ node server.js
 - [ ] Pantalla de baneado se muestra
 
 ### Notificaciones
+
 - [ ] Verde: Usuario entra a sala
 - [ ] Rojo: Usuario se desconecta
 - [ ] Cian: Usuario se conecta
@@ -294,18 +321,22 @@ node server.js
 ## ⚠️ Solución de Problemas
 
 **CAPTCHA no aparece**
+
 - Verifica que login.js esté cargado
 - Limpia caché del navegador
 
 **Botones de moderación no aparecen**
+
 - Verifica que el usuario tenga rol de moderador o admin
 - Haz hover sobre el usuario en la lista
 
 **Pantalla de baneado no aparece**
+
 - Verifica reglas de Firestore (colección `banned`)
 - Revisa la consola del navegador
 
 **Notificaciones de cambio de sala no funcionan**
+
 - Verifica reglas de Realtime Database (`roomEvents`)
 - Asegúrate de que `.indexOn` esté configurado
 
@@ -314,27 +345,37 @@ node server.js
 ## 🔧 Detalles Técnicos
 
 ### Sistema de Baneo
-```javascript
-// Baneo temporal (1 hora)
-await banUser(userId, 'Spam', 60 * 60 * 1000);
 
-// Baneo permanente
-await banUser(userId, 'Violación grave');
+```javascript
+// Baneo permanente (bloquea firebaseUid + IP)
+await banUser(userId, "Violación grave");
+
+// Baneo temporal (1 hora)
+await banUser(userId, "Spam", 60 * 60 * 1000);
+
+// Comandos en chat
+!ban              // Muestra lista: 1. usuario1, 2. usuario2...
+!ban 1 Spam       // Banea usuario con ID 1
+!mute             // Muestra lista de usuarios
+!mute 2 10        // Mutea usuario con ID 2 por 10 minutos
 ```
 
 ### Sistema de Muteo
+
 ```javascript
 // Mutear 5 minutos
 await muteUser(userId, 5 * 60 * 1000);
 ```
 
 ### Notificaciones con Sala
+
 ```javascript
 // Formato: "(usuario) se fue a (nombre sala)"
-showUserNotification(`${username} se fue a ${roomName}`, 'room-change');
+showUserNotification(`${username} se fue a ${roomName}`, "room-change");
 ```
 
 ### Validación de Contraseña
+
 ```javascript
 // Débil: < 6 caracteres (rojo)
 // Media: 6-10 caracteres con números o especiales (amarillo)
@@ -355,6 +396,7 @@ showUserNotification(`${username} se fue a ${roomName}`, 'room-change');
 ## 🎉 ¡Listo!
 
 Tu proyecto FYZAR CHAT v3.5 incluye:
+
 - ✅ Sistema completo de moderación
 - ✅ Baneo y muteo temporal/permanente
 - ✅ CAPTCHA y validaciones avanzadas
