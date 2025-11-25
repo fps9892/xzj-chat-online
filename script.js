@@ -331,14 +331,45 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                         
                         try {
-                            await changePassword(newPassword);
+                            const { getAuth, updatePassword, EmailAuthProvider, reauthenticateWithCredential } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+                            const auth = getAuth();
+                            
+                            if (!auth.currentUser) {
+                                showNotification('Debes iniciar sesión nuevamente', 'error');
+                                return;
+                            }
+                            
+                            // Pedir contraseña actual para reautenticar
+                            const currentPassword = prompt('Por seguridad, ingresa tu contraseña actual:');
+                            if (!currentPassword) {
+                                showNotification('Cambio de contraseña cancelado', 'warning');
+                                return;
+                            }
+                            
+                            // Reautenticar usuario
+                            const credential = EmailAuthProvider.credential(
+                                auth.currentUser.email,
+                                currentPassword
+                            );
+                            
+                            await reauthenticateWithCredential(auth.currentUser, credential);
+                            
+                            // Cambiar contraseña
+                            await updatePassword(auth.currentUser, newPassword);
+                            
                             showNotification('Contraseña actualizada correctamente', 'success');
                             input.classList.remove('active');
                             button.style.display = 'block';
                             inputField.value = '';
                             return;
                         } catch (error) {
-                            showNotification('Error al cambiar contraseña: ' + error.message, 'error');
+                            if (error.code === 'auth/wrong-password') {
+                                showNotification('Contraseña actual incorrecta', 'error');
+                            } else if (error.code === 'auth/requires-recent-login') {
+                                showNotification('Debes iniciar sesión nuevamente', 'error');
+                            } else {
+                                showNotification('Error al cambiar contraseña: ' + error.message, 'error');
+                            }
                             return;
                         }
                     } else if (configType === 'grant-admin') {
@@ -1174,6 +1205,15 @@ document.addEventListener('DOMContentLoaded', function() {
     async function initializeApp() {
         validateCurrentUser();
         
+        // Cargar fondo guardado
+        const savedBackground = localStorage.getItem('chatBackground');
+        if (savedBackground) {
+            document.querySelector('.chat-area').style.backgroundImage = `url(${savedBackground})`;
+            document.querySelector('.chat-area').style.backgroundSize = 'cover';
+            document.querySelector('.chat-area').style.backgroundPosition = 'center';
+            document.querySelector('.chat-area').style.backgroundAttachment = 'fixed';
+        }
+        
         // Verificar baneo ANTES de cualquier otra cosa
         try {
             const { getFirestore, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
@@ -1327,17 +1367,82 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Manejar configuración de fondo
+    const bgConfigItem = document.querySelector('.config-item[data-config="background"]');
+    if (bgConfigItem) {
+        const bgButton = bgConfigItem.querySelector('button:not(.bg-upload-btn):not(.bg-remove-btn):not(.cancel-btn)');
+        const bgInput = bgConfigItem.querySelector('.config-input');
+        const bgUploadBtn = bgConfigItem.querySelector('.bg-upload-btn');
+        const bgRemoveBtn = bgConfigItem.querySelector('.bg-remove-btn');
+        const bgCancelBtn = bgConfigItem.querySelector('.cancel-btn');
+        
+        bgButton.addEventListener('click', function() {
+            bgInput.classList.add('active');
+            bgButton.style.display = 'none';
+        });
+        
+        bgCancelBtn.addEventListener('click', function() {
+            bgInput.classList.remove('active');
+            bgButton.style.display = 'block';
+        });
+        
+        bgUploadBtn.addEventListener('click', function() {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+            fileInput.style.display = 'none';
+            document.body.appendChild(fileInput);
+            
+            fileInput.addEventListener('change', async function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    if (file.size > 2 * 1024 * 1024) {
+                        showNotification('La imagen debe ser menor a 2MB', 'error');
+                        fileInput.remove();
+                        return;
+                    }
+                    
+                    try {
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            const bgImage = event.target.result;
+                            document.querySelector('.chat-area').style.backgroundImage = `url(${bgImage})`;
+                            document.querySelector('.chat-area').style.backgroundSize = 'cover';
+                            document.querySelector('.chat-area').style.backgroundPosition = 'center';
+                            document.querySelector('.chat-area').style.backgroundAttachment = 'fixed';
+                            
+                            localStorage.setItem('chatBackground', bgImage);
+                            showNotification('Fondo actualizado correctamente', 'success');
+                            bgInput.classList.remove('active');
+                            bgButton.style.display = 'block';
+                        };
+                        reader.readAsDataURL(file);
+                    } catch (error) {
+                        showNotification('Error al cargar imagen', 'error');
+                    }
+                }
+                fileInput.remove();
+            });
+            
+            fileInput.click();
+        });
+        
+        bgRemoveBtn.addEventListener('click', function() {
+            document.querySelector('.chat-area').style.backgroundImage = 'none';
+            localStorage.removeItem('chatBackground');
+            showNotification('Fondo eliminado correctamente', 'success');
+            bgInput.classList.remove('active');
+            bgButton.style.display = 'block';
+        });
+    }
+    
     // Manejar otras configuraciones
     const configButtons = document.querySelectorAll('.config-item:not([data-config]) button');
     configButtons.forEach((btn, index) => {
         const configItem = btn.closest('.config-item');
         const configText = configItem.querySelector('span').textContent;
         
-        if (configText.includes('Cambiar fondo')) {
-            btn.addEventListener('click', function() {
-                showNotification('Funcionalidad de fondo próximamente', 'warning');
-            });
-        } else if (configText.includes('Borrar cuenta')) {
+        if (configText.includes('Borrar cuenta')) {
             btn.addEventListener('click', async function() {
                 if (confirm('¿Estás seguro de que quieres borrar tu cuenta? Esta acción no se puede deshacer.')) {
                     try {
