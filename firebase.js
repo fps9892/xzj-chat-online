@@ -103,15 +103,16 @@ export function processEmotes(text) {
 export async function sendMessage(text, type = 'text', imageData = null) {
     console.log('Sending message:', { text, type, imageData });
     
-    // Verificar si el usuario está baneado o muteado
-    if (!currentUser.isGuest && currentUser.firebaseUid) {
+    // Verificar si el usuario está baneado o muteado (incluye invitados)
+    const userId = currentUser.firebaseUid || currentUser.userId;
+    if (userId) {
         try {
-            const isBanned = await checkBannedStatus(currentUser.firebaseUid);
+            const isBanned = await checkBannedStatus(userId);
             if (isBanned) {
                 throw new Error('No puedes enviar mensajes porque estás baneado');
             }
             
-            const isMuted = await checkMutedStatus(currentUser.firebaseUid);
+            const isMuted = await checkMutedStatus(userId);
             if (isMuted) {
                 throw new Error('Estás muteado y no puedes enviar mensajes');
             }
@@ -825,7 +826,7 @@ async function getUserIP() {
     }
 }
 
-// Banear usuario por ID y IP
+// Banear usuario por ID y IP (incluye invitados)
 export async function banUser(userId, reason = 'Violación de reglas', duration = null) {
     if (!currentUser.firebaseUid || currentUser.isGuest) {
         throw new Error('Solo usuarios registrados pueden banear');
@@ -839,13 +840,18 @@ export async function banUser(userId, reason = 'Violación de reglas', duration 
     }
     
     try {
-        // Obtener datos del usuario a banear
-        const userDoc = await getDoc(doc(db, 'users', userId));
         let userIP = 'unknown';
         
+        // Intentar obtener IP de usuarios registrados
+        const userDoc = await getDoc(doc(db, 'users', userId));
         if (userDoc.exists()) {
-            const userData = userDoc.data();
-            userIP = userData.ip || 'unknown';
+            userIP = userDoc.data().ip || 'unknown';
+        } else {
+            // Intentar obtener IP de invitados
+            const guestDoc = await getDoc(doc(db, 'guests', userId));
+            if (guestDoc.exists()) {
+                userIP = guestDoc.data().ip || 'unknown';
+            }
         }
         
         const banData = {
@@ -860,7 +866,7 @@ export async function banUser(userId, reason = 'Violación de reglas', duration 
             banData.expiresAt = new Date(Date.now() + duration).toISOString();
         }
         
-        // Banear por firebaseUid
+        // Banear por userId (funciona para registrados e invitados)
         await setDoc(doc(db, 'banned', userId), banData);
         
         // Banear por IP
@@ -878,7 +884,7 @@ export async function banUser(userId, reason = 'Violación de reglas', duration 
     }
 }
 
-// Mutear usuario temporalmente
+// Mutear usuario temporalmente (incluye invitados)
 export async function muteUser(userId, duration = 5 * 60 * 1000) {
     if (!currentUser.firebaseUid || currentUser.isGuest) {
         throw new Error('Solo usuarios registrados pueden mutear');
@@ -892,6 +898,7 @@ export async function muteUser(userId, duration = 5 * 60 * 1000) {
     }
     
     try {
+        // Funciona tanto para usuarios registrados como invitados
         await setDoc(doc(db, 'muted', userId), {
             mutedBy: currentUser.firebaseUid,
             mutedByName: currentUser.username,
@@ -928,7 +935,7 @@ export async function checkMutedStatus(userId) {
     }
 }
 
-// Obtener lista de usuarios muteados
+// Obtener lista de usuarios muteados (incluye invitados)
 export async function getMutedUsersList() {
     try {
         const mutedSnapshot = await getDocs(collection(db, 'muted'));
@@ -937,17 +944,27 @@ export async function getMutedUsersList() {
         
         for (const docSnapshot of mutedSnapshot.docs) {
             const muteData = docSnapshot.data();
-            const firebaseUid = docSnapshot.id;
+            const userId = docSnapshot.id;
             
             // Verificar si aún está muteado
             const expiresAt = new Date(muteData.expiresAt);
             if (expiresAt < new Date()) continue;
             
             let username = 'Usuario desconocido';
+            let isGuest = false;
+            
             try {
-                const userDoc = await getDoc(doc(db, 'users', firebaseUid));
+                // Intentar obtener de usuarios registrados
+                const userDoc = await getDoc(doc(db, 'users', userId));
                 if (userDoc.exists()) {
                     username = userDoc.data().username || 'Usuario';
+                } else {
+                    // Intentar obtener de invitados
+                    const guestDoc = await getDoc(doc(db, 'guests', userId));
+                    if (guestDoc.exists()) {
+                        username = guestDoc.data().username || 'Invitado';
+                        isGuest = true;
+                    }
                 }
             } catch (error) {
                 console.error('Error getting username:', error);
@@ -955,8 +972,8 @@ export async function getMutedUsersList() {
             
             mutedUsers.push({
                 numId: index++,
-                firebaseUid: firebaseUid,
-                username: username
+                firebaseUid: userId,
+                username: isGuest ? `${username} (invitado)` : username
             });
         }
         
@@ -989,7 +1006,7 @@ export async function unmuteUser(userId) {
     }
 }
 
-// Obtener lista de usuarios baneados
+// Obtener lista de usuarios baneados (incluye invitados)
 export async function getBannedUsersList() {
     try {
         const bannedSnapshot = await getDocs(collection(db, 'banned'));
@@ -998,14 +1015,23 @@ export async function getBannedUsersList() {
         
         for (const docSnapshot of bannedSnapshot.docs) {
             const banData = docSnapshot.data();
-            const firebaseUid = docSnapshot.id;
+            const userId = docSnapshot.id;
             
-            // Obtener nombre de usuario
             let username = 'Usuario desconocido';
+            let isGuest = false;
+            
             try {
-                const userDoc = await getDoc(doc(db, 'users', firebaseUid));
+                // Intentar obtener de usuarios registrados
+                const userDoc = await getDoc(doc(db, 'users', userId));
                 if (userDoc.exists()) {
                     username = userDoc.data().username || 'Usuario';
+                } else {
+                    // Intentar obtener de invitados
+                    const guestDoc = await getDoc(doc(db, 'guests', userId));
+                    if (guestDoc.exists()) {
+                        username = guestDoc.data().username || 'Invitado';
+                        isGuest = true;
+                    }
                 }
             } catch (error) {
                 console.error('Error getting username:', error);
@@ -1013,8 +1039,8 @@ export async function getBannedUsersList() {
             
             bannedUsers.push({
                 numId: index++,
-                firebaseUid: firebaseUid,
-                username: username,
+                firebaseUid: userId,
+                username: isGuest ? `${username} (invitado)` : username,
                 reason: banData.reason || 'No especificada',
                 bannedAt: banData.bannedAt
             });
@@ -1192,7 +1218,7 @@ export async function getPinnedMessages(roomName = currentRoom) {
     }
 }
 
-// Obtener lista de usuarios conectados con ID numérico
+// Obtener lista de usuarios conectados con ID numérico (incluye invitados)
 export async function getConnectedUsersList() {
     try {
         const usersRef = ref(database, `rooms/${currentRoom}/users`);
@@ -1203,13 +1229,13 @@ export async function getConnectedUsersList() {
             let index = 1;
             snapshot.forEach((childSnapshot) => {
                 const userData = childSnapshot.val();
-                if (userData.status === 'online' && !userData.isGuest && userData.firebaseUid) {
+                if (userData.status === 'online') {
                     users.push({
                         numId: index++,
                         userId: childSnapshot.key,
                         username: userData.name,
-                        firebaseUid: userData.firebaseUid,
-                        isGuest: false
+                        firebaseUid: userData.firebaseUid || childSnapshot.key,
+                        isGuest: userData.isGuest || false
                     });
                 }
             });
@@ -1297,9 +1323,7 @@ export async function processAdminCommand(message) {
                     throw new Error('Usuario no encontrado');
                 }
                 
-                if (!targetUser.firebaseUid) {
-                    throw new Error('No se puede banear este usuario');
-                }
+
                 
                 const banReason = args.slice(1).join(' ') || 'Violación de reglas';
                 await banUser(targetUser.firebaseUid, banReason);
@@ -1331,9 +1355,7 @@ export async function processAdminCommand(message) {
                     throw new Error('Usuario no encontrado');
                 }
                 
-                if (!targetMuteUser.firebaseUid) {
-                    throw new Error('No se puede mutear este usuario');
-                }
+
                 
                 const muteDuration = parseInt(args[1]) || 5;
                 await muteUser(targetMuteUser.firebaseUid, muteDuration * 60 * 1000);
@@ -1614,12 +1636,13 @@ export function listenToRooms(callback) {
     });
 }
 
-// Escuchar cambios en estado de baneo/mute del usuario actual
+// Escuchar cambios en estado de baneo/mute del usuario actual (incluye invitados)
 export function listenToUserStatus(callback) {
-    if (!currentUser.firebaseUid || currentUser.isGuest) return;
+    const userId = currentUser.firebaseUid || currentUser.userId;
+    if (!userId) return;
     
-    const bannedRef = doc(db, 'banned', currentUser.firebaseUid);
-    const mutedRef = doc(db, 'muted', currentUser.firebaseUid);
+    const bannedRef = doc(db, 'banned', userId);
+    const mutedRef = doc(db, 'muted', userId);
     
     const unsubscribeBanned = onSnapshot(bannedRef, (snapshot) => {
         if (snapshot.exists()) {
