@@ -275,6 +275,7 @@ export function listenToMessages(callback) {
     // Limpiar listener anterior si existe
     if (currentMessagesListener) {
         currentMessagesListener();
+        currentMessagesListener = null;
     }
     
     activeRoom = currentRoom;

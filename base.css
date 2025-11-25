@@ -894,6 +894,35 @@ body {
   color: #00ffff;
 }
 
+.room-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 15px;
+}
+
+.loader-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 255, 0, 0.2);
+  border-top: 3px solid #00ff00;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.room-loader p {
+  color: #00ff00;
+  font-family: 'Orbitron', monospace;
+  font-size: 14px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 /* Notificaciones de usuario diferenciadas */
 .user-notification {
   position: fixed;

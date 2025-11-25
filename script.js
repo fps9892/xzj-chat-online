@@ -211,19 +211,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Agregar clase active al item seleccionado
                 this.classList.add('active');
                 
+                // Mostrar loader
+                const chatArea = document.querySelector('.chat-area');
+                chatArea.innerHTML = '<div class="room-loader"><div class="loader-spinner"></div><p>Cargando sala...</p></div>';
+                
                 // Limpiar listeners antes de cambiar sala
                 cleanupListeners();
                 previousUsersList.clear();
+                isInitialLoad = true;
                 
                 // Cambiar sala y recargar datos
                 changeRoom(roomId, false);
-                clearSkeletons();
                 
-                // Pequeño delay para asegurar que el cambio de sala se procese
                 setTimeout(() => {
                     loadMessages();
                     loadUsers();
-                }, 100);
+                }, 200);
                 
                 roomsDropdown.classList.remove('active');
             });
