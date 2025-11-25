@@ -1,6 +1,6 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, push, onValue, serverTimestamp, set, onDisconnect, query, limitToLast, remove, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-import { getFirestore, doc, updateDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirestore, doc, updateDoc, getDoc, setDoc, deleteDoc, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
@@ -83,8 +83,45 @@ export function processEmotes(text) {
 }
 
 // Funciones para mensajes
-export function sendMessage(text, type = 'text', imageData = null) {
+export async function sendMessage(text, type = 'text', imageData = null) {
     console.log('Sending message:', { text, type, imageData });
+    
+    // Verificar si el usuario está baneado
+    if (currentUser.firebaseUid && !currentUser.isGuest) {
+        const isBanned = await checkBannedStatus(currentUser.firebaseUid);
+        if (isBanned) {
+            throw new Error('No puedes enviar mensajes porque estás baneado');
+        }
+    }
+    
+    // Procesar comandos de administrador
+    if (text && text.startsWith('!')) {
+        const commandResult = await processAdminCommand(text);
+        if (commandResult) {
+            if (commandResult.success) {
+                // Enviar mensaje de confirmación del sistema
+                const systemMessageData = {
+                    text: commandResult.message,
+                    userId: 'system',
+                    userName: 'Sistema',
+                    userAvatar: 'images/logo.svg',
+                    textColor: '#00ff00',
+                    timestamp: serverTimestamp(),
+                    type: 'system',
+                    isGuest: false,
+                    role: 'system',
+                    firebaseUid: null
+                };
+                
+                const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
+                await push(messagesRef, systemMessageData);
+                return;
+            } else {
+                throw new Error(commandResult.message);
+            }
+        }
+    }
+    
     const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
     
     // Validar datos antes de enviar
@@ -97,7 +134,8 @@ export function sendMessage(text, type = 'text', imageData = null) {
         timestamp: serverTimestamp(),
         type: type,
         isGuest: currentUser.isGuest || false,
-        role: currentUser.role || 'user'
+        role: currentUser.role || 'Usuario',
+        firebaseUid: currentUser.firebaseUid || null
     };
     
     // Añadir datos de imagen si es tipo imagen o emote
@@ -330,15 +368,26 @@ export async function changePassword(newPassword) {
     }
 }
 
-// Función para eliminar mensaje
-export async function deleteMessage(messageId) {
+// Función para eliminar mensaje (mejorada con permisos)
+export async function deleteMessage(messageId, messageData = null) {
     try {
+        // Verificar permisos
+        if (currentUser.firebaseUid && !currentUser.isGuest) {
+            const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
+            const isModerator = await checkModeratorStatus(currentUser.firebaseUid);
+            const isOwner = messageData && messageData.firebaseUid === currentUser.firebaseUid;
+            
+            if (!isAdmin && !isModerator && !isOwner) {
+                throw new Error('No tienes permisos para eliminar este mensaje');
+            }
+        }
+        
         const messageRef = ref(database, `rooms/${currentRoom}/messages/${messageId}`);
         await remove(messageRef);
         return true;
     } catch (error) {
         console.error('Error deleting message:', error);
-        return false;
+        throw error;
     }
 }
 
@@ -355,11 +404,347 @@ export async function checkAdminStatus(userId) {
     }
 }
 
+// Verificar si el usuario es moderador
+export async function checkModeratorStatus(userId) {
+    if (!userId || currentUser.isGuest) return false;
+    
+    try {
+        const moderatorDoc = await getDoc(doc(db, 'moderators', userId));
+        return moderatorDoc.exists();
+    } catch (error) {
+        console.error('Error checking moderator status:', error);
+        return false;
+    }
+}
+
+// Verificar si el usuario está baneado
+export async function checkBannedStatus(userId) {
+    if (!userId) return false;
+    
+    try {
+        const bannedDoc = await getDoc(doc(db, 'banned', userId));
+        return bannedDoc.exists();
+    } catch (error) {
+        console.error('Error checking banned status:', error);
+        return false;
+    }
+}
+
+// Crear sala nueva (solo administradores)
+export async function createRoom(roomName) {
+    if (!currentUser.firebaseUid || currentUser.isGuest) {
+        throw new Error('Solo usuarios registrados pueden crear salas');
+    }
+    
+    const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
+    if (!isAdmin) {
+        throw new Error('Solo administradores pueden crear salas');
+    }
+    
+    if (roomName.length > 10) {
+        throw new Error('El nombre de la sala no puede tener más de 10 caracteres');
+    }
+    
+    try {
+        const roomId = roomName.toLowerCase().replace(/[^a-z0-9]/g, '');
+        await setDoc(doc(db, 'rooms', roomId), {
+            name: roomName,
+            createdBy: currentUser.firebaseUid,
+            createdAt: new Date().toISOString(),
+            isActive: true
+        });
+        
+        // Crear estructura inicial en Realtime Database
+        const roomRef = ref(database, `rooms/${roomId}`);
+        await set(roomRef, {
+            name: roomName,
+            createdBy: currentUser.firebaseUid,
+            createdAt: serverTimestamp()
+        });
+        
+        return roomId;
+    } catch (error) {
+        console.error('Error creating room:', error);
+        throw error;
+    }
+}
+
+// Borrar sala (solo administradores)
+export async function deleteRoom(roomName) {
+    if (!currentUser.firebaseUid || currentUser.isGuest) {
+        throw new Error('Solo usuarios registrados pueden borrar salas');
+    }
+    
+    const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
+    if (!isAdmin) {
+        throw new Error('Solo administradores pueden borrar salas');
+    }
+    
+    try {
+        const roomId = roomName.toLowerCase().replace(/[^a-z0-9]/g, '');
+        
+        // No permitir borrar la sala general
+        if (roomId === 'general') {
+            throw new Error('No se puede borrar la sala general');
+        }
+        
+        // Borrar de Firestore
+        await deleteDoc(doc(db, 'rooms', roomId));
+        
+        // Borrar de Realtime Database
+        const roomRef = ref(database, `rooms/${roomId}`);
+        await remove(roomRef);
+        
+        return true;
+    } catch (error) {
+        console.error('Error deleting room:', error);
+        throw error;
+    }
+}
+
+// Banear usuario (solo administradores y moderadores)
+export async function banUser(userId, reason = 'Violación de reglas') {
+    if (!currentUser.firebaseUid || currentUser.isGuest) {
+        throw new Error('Solo usuarios registrados pueden banear');
+    }
+    
+    const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
+    const isModerator = await checkModeratorStatus(currentUser.firebaseUid);
+    
+    if (!isAdmin && !isModerator) {
+        throw new Error('Solo administradores y moderadores pueden banear usuarios');
+    }
+    
+    try {
+        await setDoc(doc(db, 'banned', userId), {
+            bannedBy: currentUser.firebaseUid,
+            reason: reason,
+            bannedAt: new Date().toISOString()
+        });
+        
+        return true;
+    } catch (error) {
+        console.error('Error banning user:', error);
+        throw error;
+    }
+}
+
+// Desbanear usuario (solo administradores)
+export async function unbanUser(userId) {
+    if (!currentUser.firebaseUid || currentUser.isGuest) {
+        throw new Error('Solo usuarios registrados pueden desbanear');
+    }
+    
+    const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
+    if (!isAdmin) {
+        throw new Error('Solo administradores pueden desbanear usuarios');
+    }
+    
+    try {
+        await deleteDoc(doc(db, 'banned', userId));
+        return true;
+    } catch (error) {
+        console.error('Error unbanning user:', error);
+        throw error;
+    }
+}
+
+// Dar permisos de moderador (solo administradores)
+export async function grantModeratorRole(userId) {
+    if (!currentUser.firebaseUid || currentUser.isGuest) {
+        throw new Error('Solo usuarios registrados pueden otorgar permisos');
+    }
+    
+    const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
+    if (!isAdmin) {
+        throw new Error('Solo administradores pueden otorgar permisos de moderador');
+    }
+    
+    try {
+        await setDoc(doc(db, 'moderators', userId), {
+            grantedBy: currentUser.firebaseUid,
+            grantedAt: new Date().toISOString()
+        });
+        
+        // Actualizar rol en el documento del usuario
+        await updateDoc(doc(db, 'users', userId), {
+            role: 'Moderador'
+        });
+        
+        return true;
+    } catch (error) {
+        console.error('Error granting moderator role:', error);
+        throw error;
+    }
+}
+
+// Quitar permisos de moderador (solo administradores)
+export async function revokeModerator(userId) {
+    if (!currentUser.firebaseUid || currentUser.isGuest) {
+        throw new Error('Solo usuarios registrados pueden revocar permisos');
+    }
+    
+    const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
+    if (!isAdmin) {
+        throw new Error('Solo administradores pueden revocar permisos de moderador');
+    }
+    
+    try {
+        await deleteDoc(doc(db, 'moderators', userId));
+        
+        // Actualizar rol en el documento del usuario
+        await updateDoc(doc(db, 'users', userId), {
+            role: 'Usuario'
+        });
+        
+        return true;
+    } catch (error) {
+        console.error('Error revoking moderator role:', error);
+        throw error;
+    }
+}
+
+// Fijar mensaje (solo administradores y moderadores)
+export async function pinMessage(messageId, messageData) {
+    if (!currentUser.firebaseUid || currentUser.isGuest) {
+        throw new Error('Solo usuarios registrados pueden fijar mensajes');
+    }
+    
+    const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
+    const isModerator = await checkModeratorStatus(currentUser.firebaseUid);
+    
+    if (!isAdmin && !isModerator) {
+        throw new Error('Solo administradores y moderadores pueden fijar mensajes');
+    }
+    
+    try {
+        await setDoc(doc(db, 'pinnedMessages', messageId), {
+            ...messageData,
+            pinnedBy: currentUser.firebaseUid,
+            pinnedAt: new Date().toISOString(),
+            room: currentRoom
+        });
+        
+        return true;
+    } catch (error) {
+        console.error('Error pinning message:', error);
+        throw error;
+    }
+}
+
+// Desfijar mensaje (solo administradores y moderadores)
+export async function unpinMessage(messageId) {
+    if (!currentUser.firebaseUid || currentUser.isGuest) {
+        throw new Error('Solo usuarios registrados pueden desfijar mensajes');
+    }
+    
+    const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
+    const isModerator = await checkModeratorStatus(currentUser.firebaseUid);
+    
+    if (!isAdmin && !isModerator) {
+        throw new Error('Solo administradores y moderadores pueden desfijar mensajes');
+    }
+    
+    try {
+        await deleteDoc(doc(db, 'pinnedMessages', messageId));
+        return true;
+    } catch (error) {
+        console.error('Error unpinning message:', error);
+        throw error;
+    }
+}
+
+// Obtener mensajes fijados
+export async function getPinnedMessages(roomName = currentRoom) {
+    try {
+        const q = query(collection(db, 'pinnedMessages'), where('room', '==', roomName));
+        const querySnapshot = await getDocs(q);
+        const pinnedMessages = [];
+        
+        querySnapshot.forEach((doc) => {
+            pinnedMessages.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
+        
+        return pinnedMessages;
+    } catch (error) {
+        console.error('Error getting pinned messages:', error);
+        return [];
+    }
+}
+
+// Procesar comandos de administrador
+export async function processAdminCommand(message) {
+    if (!message.startsWith('!')) return false;
+    
+    const parts = message.split(' ');
+    const command = parts[0].toLowerCase();
+    const args = parts.slice(1);
+    
+    try {
+        switch (command) {
+            case '!crearsala':
+                if (args.length === 0) {
+                    throw new Error('Uso: !crearsala <nombre>');
+                }
+                const roomName = args.join(' ');
+                await createRoom(roomName);
+                return { success: true, message: `Sala "${roomName}" creada exitosamente` };
+                
+            case '!borrar':
+                if (args.length === 0) {
+                    throw new Error('Uso: !borrar <nombre_sala>');
+                }
+                const roomToDelete = args.join(' ');
+                await deleteRoom(roomToDelete);
+                return { success: true, message: `Sala "${roomToDelete}" eliminada exitosamente` };
+                
+            case '!ban':
+                if (args.length === 0) {
+                    throw new Error('Uso: !ban <userId> [razón]');
+                }
+                const userToBan = args[0];
+                const banReason = args.slice(1).join(' ') || 'Violación de reglas';
+                await banUser(userToBan, banReason);
+                return { success: true, message: `Usuario ${userToBan} baneado` };
+                
+            case '!unban':
+                if (args.length === 0) {
+                    throw new Error('Uso: !unban <userId>');
+                }
+                const userToUnban = args[0];
+                await unbanUser(userToUnban);
+                return { success: true, message: `Usuario ${userToUnban} desbaneado` };
+                
+            default:
+                return false;
+        }
+    } catch (error) {
+        return { success: false, message: error.message };
+    }
+}
+
 // Actualizar rol del usuario y obtener datos de Firestore
 export async function updateUserRole() {
     if (!currentUser.isGuest && currentUser.firebaseUid) {
         const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
-        currentUser.role = isAdmin ? 'admin' : 'user';
+        const isModerator = await checkModeratorStatus(currentUser.firebaseUid);
+        const isBanned = await checkBannedStatus(currentUser.firebaseUid);
+        
+        if (isBanned) {
+            currentUser.role = 'banned';
+            currentUser.isBanned = true;
+        } else if (isAdmin) {
+            currentUser.role = 'Administrador';
+            currentUser.isAdmin = true;
+        } else if (isModerator) {
+            currentUser.role = 'Moderador';
+            currentUser.isModerator = true;
+        } else {
+            currentUser.role = 'Usuario';
+        }
         
         // Obtener createdAt desde Firestore
         try {

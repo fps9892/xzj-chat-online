@@ -7,6 +7,11 @@ service cloud.firestore {
       return exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
     
+    // Función para verificar si el usuario es moderador
+    function isModerator() {
+      return exists(/databases/$(database)/documents/moderators/$(request.auth.uid));
+    }
+    
     // Función para verificar si el usuario está autenticado
     function isAuthenticated() {
       return request.auth != null;
@@ -19,12 +24,25 @@ service cloud.firestore {
       allow read: if request.auth.uid == firebaseUid;
     }
     
+    // Colección de moderadores - solo admins pueden escribir, moderadores pueden leer
+    match /moderators/{firebaseUid} {
+      allow read: if isAdmin() || isModerator();
+      allow write: if isAdmin();
+      // Permitir que un usuario lea su propio estado de moderador
+      allow read: if request.auth.uid == firebaseUid;
+    }
+    
+    // Colección de usuarios baneados - solo admins y moderadores pueden leer/escribir
+    match /banned/{firebaseUid} {
+      allow read, write: if isAdmin() || isModerator();
+    }
+    
     // Colección de usuarios - acceso basado en autenticación
     match /users/{firebaseUid} {
       // Los usuarios pueden leer y escribir sus propios datos
       allow read, write: if request.auth.uid == firebaseUid;
-      // Los admins pueden leer todos los usuarios
-      allow read: if isAdmin();
+      // Los admins y moderadores pueden leer todos los usuarios
+      allow read: if isAdmin() || isModerator();
       // Los admins pueden escribir datos de otros usuarios
       allow write: if isAdmin();
     }
@@ -34,13 +52,21 @@ service cloud.firestore {
       allow read: if true; // Todos pueden leer mensajes
       allow create: if isAuthenticated(); // Solo usuarios autenticados pueden crear
       allow update, delete: if isAuthenticated() && 
-        (request.auth.uid == resource.data.firebaseUid || isAdmin());
+        (request.auth.uid == resource.data.firebaseUid || isAdmin() || isModerator());
+    }
+    
+    // Colección de mensajes fijados - solo admins y moderadores pueden escribir
+    match /pinnedMessages/{messageId} {
+      allow read: if true;
+      allow write: if isAdmin() || isModerator();
     }
     
     // Colección de salas/rooms - acceso público para lectura
     match /rooms/{roomId} {
       allow read: if true;
-      allow write: if isAdmin(); // Solo admins pueden modificar salas
+      allow write: if isAdmin() || isModerator(); // Admins y moderadores pueden modificar salas
+      allow create: if isAdmin(); // Solo admins pueden crear salas nuevas
+      allow delete: if isAdmin(); // Solo admins pueden borrar salas
     }
     
     // Cualquier otra colección - solo admins tienen acceso completo

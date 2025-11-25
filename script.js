@@ -1,4 +1,4 @@
-import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping, deleteMessage, updateUserRole } from './firebase.js';
+import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages } from './firebase.js';
 import './admin-listener.js';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
@@ -444,8 +444,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const isOwn = message.userId === currentUser.userId;
         const time = message.timestamp ? new Date(message.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
         
-        // Mostrar (invitado) si es usuario invitado
-        const displayName = message.isGuest ? `${message.userName} (invitado)` : message.userName;
+        // Mostrar rol del usuario
+        let displayName = message.userName;
+        let roleTag = '';
+        
+        if (message.isGuest) {
+            displayName += ' (invitado)';
+        } else if (message.role === 'Administrador') {
+            roleTag = '<span class="admin-tag">ADMIN</span>';
+        } else if (message.role === 'Moderador') {
+            roleTag = '<span class="mod-tag">MOD</span>';
+        }
         
         const messageEl = message.type === 'emote' ? 
             createElement(`
@@ -607,7 +616,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function createUserElement(user) {
-        const displayName = user.role === 'admin' ? `${user.name} (Admin)` : user.name;
+        let displayName = user.name;
+        if (user.role === 'Administrador') displayName += ' (Admin)';
+        else if (user.role === 'Moderador') displayName += ' (Mod)';
+        
         const userEl = createElement(`
             <div class="user-item" data-user-id="${user.id}">
                 <div class="user-avatar">
@@ -615,6 +627,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span class="online-indicator"></span>
                 </div>
                 <span class="user-name">${displayName}</span>
+                ${(currentUser.isAdmin || currentUser.isModerator) && user.id !== currentUser.userId ? `
+                    <div class="user-actions">
+                        ${currentUser.isAdmin ? `<button class="mod-btn" onclick="toggleModerator('${user.id}')">Mod</button>` : ''}
+                        <button class="ban-btn" onclick="banUser('${user.id}')">Ban</button>
+                    </div>
+                ` : ''}
             </div>
         `);
         
@@ -624,7 +642,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function createMobileUserElement(user) {
         let displayName = user.name;
-        if (user.role === 'admin') displayName += ' (Admin)';
+        if (user.role === 'Administrador') displayName += ' (Admin)';
+        else if (user.role === 'Moderador') displayName += ' (Mod)';
         else if (user.role === 'guest') displayName += ' (invitado)';
         
         const userEl = createElement(`
@@ -654,7 +673,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <img src="${user.avatar}" alt="${user.name}">
                         </div>
                         <h4>${user.name}</h4>
-                        <p class="user-role">${user.role === 'admin' ? 'Administrador' : user.role === 'guest' ? 'Invitado' : 'Usuario'}</p>
+                        <p class="user-role">${user.role === 'Administrador' ? 'Administrador' : user.role === 'Moderador' ? 'Moderador' : user.role === 'guest' ? 'Invitado' : 'Usuario'}</p>
                         <div class="profile-info">
                             <p><strong>Descripción:</strong> ${user.description || 'Sin descripción'}</p>
                             ${!user.isGuest && user.id ? `<p><strong>ID de cuenta:</strong> ${user.id}</p>` : ''}
@@ -932,10 +951,54 @@ document.addEventListener('DOMContentLoaded', function() {
                 charCounter.style.color = '#888';
             }).catch(error => {
                 console.error('Error enviando mensaje:', error);
-                showNotification('Error al enviar mensaje', 'error');
+                showNotification(error.message || 'Error al enviar mensaje', 'error');
             });
         }
     }
+    
+    // Funciones globales para botones de moderación
+    window.toggleModerator = async function(userId) {
+        try {
+            const isMod = await checkModeratorStatus(userId);
+            if (isMod) {
+                await revokeModerator(userId);
+                showNotification('Permisos de moderador revocados', 'success');
+            } else {
+                await grantModeratorRole(userId);
+                showNotification('Permisos de moderador otorgados', 'success');
+            }
+        } catch (error) {
+            showNotification(error.message, 'error');
+        }
+    };
+    
+    window.banUser = async function(userId) {
+        const reason = prompt('Razón del baneo (opcional):') || 'Violación de reglas';
+        try {
+            await banUser(userId, reason);
+            showNotification('Usuario baneado', 'success');
+        } catch (error) {
+            showNotification(error.message, 'error');
+        }
+    };
+    
+    // Función para fijar/desfijar mensajes
+    window.togglePinMessage = async function(messageId, messageData) {
+        try {
+            const pinnedMessages = await getPinnedMessages();
+            const isPinned = pinnedMessages.some(msg => msg.id === messageId);
+            
+            if (isPinned) {
+                await unpinMessage(messageId);
+                showNotification('Mensaje desfijado', 'success');
+            } else {
+                await pinMessage(messageId, messageData);
+                showNotification('Mensaje fijado', 'success');
+            }
+        } catch (error) {
+            showNotification(error.message, 'error');
+        }
+    };
 
     sendIcon.addEventListener('click', sendMessageHandler);
     
