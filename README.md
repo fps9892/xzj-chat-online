@@ -144,8 +144,8 @@ service cloud.firestore {
 
     match /rooms/{roomId} {
       allow read: if true;
-      allow create: if isAdmin() || isModerator();
-      allow update: if isAdmin() || isModerator();
+      allow create: if isAuthenticated() || true;
+      allow update: if isAuthenticated() || true;
       allow delete: if isAdmin();
     }
 
@@ -276,6 +276,8 @@ node server.js
 - ✅ Perfil personalizable (nombre, foto, color, descripción, país)
 - ✅ Ver perfiles de otros usuarios
 - ✅ CAPTCHA en registro e invitado
+- ✅ `!crearprivada` - Crear sala privada con acceso controlado
+- ✅ `!aceptar` - Aceptar usuarios en sala privada (solo dueño)
 
 ### Para Usuarios Registrados
 
@@ -285,9 +287,9 @@ node server.js
 - ✅ Validación de contraseña con indicador
 - ✅ Fondo personalizado del chat
 
-### Para Moderadores ⭐ NUEVO
+### Para Moderadores ⭐
 
-- ✅ `!crearsala <nombre>` - Crear salas
+- ✅ `!crearsala <nombre>` - Crear salas públicas
 - ✅ Banear usuarios (temporal o permanente)
 - ✅ Mutear usuarios (5 minutos)
 - ✅ Borrar mensajes

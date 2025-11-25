@@ -918,6 +918,13 @@ body {
   font-size: 14px;
 }
 
+.room-loader small {
+  color: #888;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  margin-top: -5px;
+}
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }

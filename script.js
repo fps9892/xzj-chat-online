@@ -1,4 +1,4 @@
-import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, currentRoom, updateUserData, changePassword, sendImage, sendAudio, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, getRooms, listenToRooms, listenToAnnouncements, showAnnouncement, listenToUserStatus, processEmotes, extractYouTubeId } from './firebase.js';
+import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, currentRoom, updateUserData, changePassword, sendImage, sendAudio, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, getRooms, listenToRooms, listenToAnnouncements, showAnnouncement, listenToUserStatus, processEmotes, extractYouTubeId, checkPrivateRoomAccess, requestPrivateRoomAccess } from './firebase.js';
 import { AudioRecorder, formatTime, blobToBase64 } from './audio-recorder.js';
 import { getUserProfile, findUserByUsername, animateMessageDeletion, initAdminListener } from './core.js';
 
@@ -532,11 +532,33 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Funciones de Firebase
-    function loadMessages() {
-        listenToMessages((messages) => {
-            renderMessages(messages);
-            initializeMessages();
-        });
+    async function loadMessages() {
+        // Verificar acceso a sala privada
+        const accessCheck = await checkPrivateRoomAccess(currentRoom);
+        
+        if (accessCheck.isOwner || accessCheck.hasAccess) {
+            // Usuario tiene acceso, cargar mensajes normalmente
+            listenToMessages((messages) => {
+                renderMessages(messages);
+                initializeMessages();
+            });
+        } else if (accessCheck.isPending) {
+            // Usuario está pendiente de aprobación
+            const chatArea = document.querySelector('.chat-area');
+            chatArea.innerHTML = '<div class="room-loader"><div class="loader-spinner"></div><p>Solicitud pendiente de ingreso</p><small>Esperando aprobación del dueño</small></div>';
+        } else {
+            // Usuario no tiene acceso, solicitar acceso
+            try {
+                await requestPrivateRoomAccess(currentRoom);
+                const chatArea = document.querySelector('.chat-area');
+                chatArea.innerHTML = '<div class="room-loader"><div class="loader-spinner"></div><p>Solicitud pendiente de ingreso</p><small>Esperando aprobación del dueño</small></div>';
+            } catch (error) {
+                listenToMessages((messages) => {
+                    renderMessages(messages);
+                    initializeMessages();
+                });
+            }
+        }
     }
     
     let currentUsersListener = null;

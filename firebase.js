@@ -773,6 +773,167 @@ export async function getRoomName(roomId) {
     }
 }
 
+// Crear sala privada (todos los usuarios)
+export async function createPrivateRoom() {
+    const userId = currentUser.firebaseUid || currentUser.userId;
+    const username = currentUser.username || 'Usuario';
+    
+    // Generar ID único para sala privada
+    const randomId = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+    const roomId = `privada-${randomId}`;
+    const roomName = `Privada-${randomId.substring(0, 8)}`;
+    
+    try {
+        await setDoc(doc(db, 'rooms', roomId), {
+            name: roomName,
+            createdBy: userId,
+            createdByName: username,
+            createdAt: new Date().toISOString(),
+            isActive: true,
+            isPrivate: true,
+            owner: userId,
+            acceptedUsers: [userId],
+            pendingUsers: []
+        });
+        
+        // Crear estructura en Realtime Database
+        const roomRef = ref(database, `rooms/${roomId}`);
+        await set(roomRef, {
+            name: roomName,
+            createdBy: userId,
+            createdAt: serverTimestamp(),
+            isPrivate: true,
+            owner: userId
+        });
+        
+        return roomId;
+    } catch (error) {
+        console.error('Error creating private room:', error);
+        throw error;
+    }
+}
+
+// Verificar si usuario tiene acceso a sala privada
+export async function checkPrivateRoomAccess(roomId) {
+    try {
+        const roomDoc = await getDoc(doc(db, 'rooms', roomId));
+        if (!roomDoc.exists()) return { hasAccess: false, isPending: false };
+        
+        const roomData = roomDoc.data();
+        if (!roomData.isPrivate) return { hasAccess: true, isPending: false };
+        
+        const userId = currentUser.firebaseUid || currentUser.userId;
+        const acceptedUsers = roomData.acceptedUsers || [];
+        const pendingUsers = roomData.pendingUsers || [];
+        
+        return {
+            hasAccess: acceptedUsers.includes(userId),
+            isPending: pendingUsers.includes(userId),
+            isOwner: roomData.owner === userId
+        };
+    } catch (error) {
+        console.error('Error checking private room access:', error);
+        return { hasAccess: false, isPending: false };
+    }
+}
+
+// Solicitar acceso a sala privada
+export async function requestPrivateRoomAccess(roomId) {
+    try {
+        const userId = currentUser.firebaseUid || currentUser.userId;
+        const roomRef = doc(db, 'rooms', roomId);
+        const roomDoc = await getDoc(roomRef);
+        
+        if (!roomDoc.exists()) throw new Error('Sala no encontrada');
+        
+        const roomData = roomDoc.data();
+        const pendingUsers = roomData.pendingUsers || [];
+        
+        if (!pendingUsers.includes(userId)) {
+            await updateDoc(roomRef, {
+                pendingUsers: [...pendingUsers, userId]
+            });
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Error requesting access:', error);
+        throw error;
+    }
+}
+
+// Obtener usuarios pendientes
+export async function getPendingUsers(roomId) {
+    try {
+        const roomDoc = await getDoc(doc(db, 'rooms', roomId));
+        if (!roomDoc.exists()) return [];
+        
+        const roomData = roomDoc.data();
+        const pendingUserIds = roomData.pendingUsers || [];
+        const pendingUsers = [];
+        
+        let index = 1;
+        for (const userId of pendingUserIds) {
+            let username = 'Usuario desconocido';
+            
+            try {
+                const userDoc = await getDoc(doc(db, 'users', userId));
+                if (userDoc.exists()) {
+                    username = userDoc.data().username || 'Usuario';
+                } else {
+                    const guestDoc = await getDoc(doc(db, 'guests', userId));
+                    if (guestDoc.exists()) {
+                        username = guestDoc.data().username || 'Invitado';
+                    }
+                }
+            } catch (error) {
+                console.error('Error getting username:', error);
+            }
+            
+            pendingUsers.push({
+                numId: index++,
+                userId: userId,
+                username: username
+            });
+        }
+        
+        return pendingUsers;
+    } catch (error) {
+        console.error('Error getting pending users:', error);
+        return [];
+    }
+}
+
+// Aceptar usuario en sala privada
+export async function acceptUserToPrivateRoom(roomId, userId) {
+    try {
+        const roomRef = doc(db, 'rooms', roomId);
+        const roomDoc = await getDoc(roomRef);
+        
+        if (!roomDoc.exists()) throw new Error('Sala no encontrada');
+        
+        const roomData = roomDoc.data();
+        const currentUserId = currentUser.firebaseUid || currentUser.userId;
+        
+        if (roomData.owner !== currentUserId) {
+            throw new Error('Solo el dueño de la sala puede aceptar usuarios');
+        }
+        
+        const acceptedUsers = roomData.acceptedUsers || [];
+        const pendingUsers = roomData.pendingUsers || [];
+        
+        await updateDoc(roomRef, {
+            acceptedUsers: [...acceptedUsers, userId],
+            pendingUsers: pendingUsers.filter(id => id !== userId)
+        });
+        
+        return true;
+    } catch (error) {
+        console.error('Error accepting user:', error);
+        throw error;
+    }
+}
+
 // Crear sala nueva (administradores y moderadores)
 export async function createRoom(roomName) {
     if (!currentUser.firebaseUid || currentUser.isGuest) {
@@ -1352,6 +1513,39 @@ export async function processAdminCommand(message) {
                 }
                 await createRoom(roomName);
                 return { success: true, message: `Sala "${roomName}" creada exitosamente` };
+                
+            case '!crearprivada':
+                const privateRoomId = await createPrivateRoom();
+                return { success: true, message: `Sala privada creada: ${privateRoomId}` };
+                
+            case '!aceptar':
+                if (args.length === 0) {
+                    const pendingUsers = await getPendingUsers(currentRoom);
+                    if (pendingUsers.length === 0) {
+                        return { success: true, message: 'No hay usuarios pendientes', privateMessage: true };
+                    }
+                    let userList = '📋 Usuarios pendientes:\n';
+                    pendingUsers.forEach(u => {
+                        userList += `${u.numId}. ${u.username}\n`;
+                    });
+                    userList += '\nUso: !aceptar <número>';
+                    return { success: true, message: userList, privateMessage: true };
+                }
+                
+                const acceptNumId = parseInt(args[0]);
+                if (isNaN(acceptNumId)) {
+                    throw new Error('ID de usuario inválido');
+                }
+                
+                const pendingList = await getPendingUsers(currentRoom);
+                const targetPendingUser = pendingList.find(u => u.numId === acceptNumId);
+                
+                if (!targetPendingUser) {
+                    throw new Error('Usuario no encontrado en lista de pendientes');
+                }
+                
+                await acceptUserToPrivateRoom(currentRoom, targetPendingUser.userId);
+                return { success: true, message: `Usuario ${targetPendingUser.username} aceptado en la sala` };
                 
             case '!borrar':
                 if (args.length === 0) {
