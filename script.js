@@ -524,30 +524,25 @@ document.addEventListener('DOMContentLoaded', function() {
         listenToRoomEvents();
     }
     
-    function listenToRoomEvents() {
-        const { ref, onValue, query: dbQuery, limitToLast } = await import('./firebase.js').then(m => ({
-            ref: m.database ? (path => ({ ref: () => {} })) : null,
-            onValue: () => {},
-            query: () => {},
-            limitToLast: () => {}
-        }));
-        
-        import('./firebase.js').then(({ database }) => {
-            const { ref, onValue, query: dbQuery, limitToLast } = require('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
+    async function listenToRoomEvents() {
+        try {
+            const { database, getRoomName } = await import('./firebase.js');
+            const { ref, onValue, query: dbQuery, limitToLast } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
+            
             const eventsRef = dbQuery(ref(database, 'roomEvents'), limitToLast(10));
             
             roomEventsListener = onValue(eventsRef, (snapshot) => {
-                snapshot.forEach((childSnapshot) => {
+                snapshot.forEach(async (childSnapshot) => {
                     const event = childSnapshot.val();
                     if (event.fromRoom === currentRoom && event.userId !== currentUser.userId) {
-                        import('./firebase.js').then(async ({ getRoomName }) => {
-                            const toRoomName = await getRoomName(event.toRoom);
-                            showUserNotification(`${event.username} se fue a ${toRoomName}`, 'room-change');
-                        });
+                        const toRoomName = await getRoomName(event.toRoom);
+                        showUserNotification(`${event.username} se fue a ${toRoomName}`, 'room-change');
                     }
                 });
             });
-        });
+        } catch (error) {
+            console.error('Error setting up room events listener:', error);
+        }
     }
     
     function showUserNotification(message, type) {
