@@ -1476,39 +1476,38 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Botón de emotes
-    emoteBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        emotePanel.classList.toggle('active');
-    });
+    // Botón de emotes - Manejado por emote-manager.js
+    // emoteBtn.addEventListener('click', (e) => {
+    //     e.stopPropagation();
+    //     emotePanel.classList.toggle('active');
+    // });
     
-    // Seleccionar emote
-    function setupEmoteListeners() {
-        const emoteItems = document.querySelectorAll('.emote-item');
-        emoteItems.forEach(item => {
-            item.addEventListener('click', () => {
-                console.log('Emote clicked:', item.src);
-                const emoteSrc = item.src;
-                // Enviar emote con el nickname del usuario
-                sendMessage(currentUser.username || 'Usuario', 'emote', emoteSrc).then(() => {
-                    console.log('Emote sent successfully');
-                }).catch(error => {
-                    console.error('Error sending emote:', error);
-                    showNotification('Error al enviar emote', 'error');
-                });
-                emotePanel.classList.remove('active');
-            });
-        });
-    }
+    // Seleccionar emote - Manejado por emote-manager.js
+    // function setupEmoteListeners() {
+    //     const emoteItems = document.querySelectorAll('.emote-item');
+    //     emoteItems.forEach(item => {
+    //         item.addEventListener('click', () => {
+    //             console.log('Emote clicked:', item.src);
+    //             const emoteSrc = item.src;
+    //             sendMessage(currentUser.username || 'Usuario', 'emote', emoteSrc).then(() => {
+    //                 console.log('Emote sent successfully');
+    //             }).catch(error => {
+    //                 console.error('Error sending emote:', error);
+    //                 showNotification('Error al enviar emote', 'error');
+    //             });
+    //             emotePanel.classList.remove('active');
+    //         });
+    //     });
+    // }
     
-    setupEmoteListeners();
+    // setupEmoteListeners();
     
-    // Cerrar panel de emotes al hacer click fuera
-    document.addEventListener('click', (e) => {
-        if (!emoteBtn.contains(e.target) && !emotePanel.contains(e.target)) {
-            emotePanel.classList.remove('active');
-        }
-    });
+    // Cerrar panel de emotes - Manejado por emote-manager.js
+    // document.addEventListener('click', (e) => {
+    //     if (!emoteBtn.contains(e.target) && !emotePanel.contains(e.target)) {
+    //         emotePanel.classList.remove('active');
+    //     }
+    // });
 
     // Enviar mensaje
     function sendMessageHandler() {
