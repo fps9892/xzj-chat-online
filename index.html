@@ -159,139 +159,25 @@
         title="Emotes"
       />
       <div class="emote-panel">
-        <div class="emote-grid">
-          <img
-            src="/images/emotes/emote1.png"
-            alt=":)"
-            class="emote-item"
-            data-emote=":)"
-          />
-          <img
-            src="/images/emotes/emote2.png"
-            alt=":D"
-            class="emote-item"
-            data-emote=":D"
-          />
-          <img
-            src="/images/emotes/emote3.png"
-            alt=":("
-            class="emote-item"
-            data-emote=":("
-          />
-          <img
-            src="/images/emotes/emote4.png"
-            alt=":P"
-            class="emote-item"
-            data-emote=":P"
-          />
-          <img
-            src="/images/emotes/emote5.png"
-            alt="xD"
-            class="emote-item"
-            data-emote="xD"
-          />
-          <img
-            src="/images/emotes/emote6.png"
-            alt="<3"
-            class="emote-item"
-            data-emote="<3"
-          />
-          <img
-            src="/images/emotes/emote7.png"
-            alt="kappa"
-            class="emote-item"
-            data-emote="kappa"
-          />
-          <img
-            src="/images/emotes/emote8.png"
-            alt="poggers"
-            class="emote-item"
-            data-emote="poggers"
-          />
-          <img
-            src="/images/emotes/emote9.png"
-            alt="sadge"
-            class="emote-item"
-            data-emote="sadge"
-          />
-          <img
-            src="/images/emotes/emote10.png"
-            alt="omegalul"
-            class="emote-item"
-            data-emote="omegalul"
-          />
-          <img
-            src="/images/emotes/emote11.png"
-            alt="monkas"
-            class="emote-item"
-            data-emote="monkas"
-          />
-          <img
-            src="/images/emotes/emote12.png"
-            alt="pepehands"
-            class="emote-item"
-            data-emote="pepehands"
-          />
-          <img
-            src="/images/emotes/emote13.png"
-            alt="catjam"
-            class="emote-item"
-            data-emote="catjam"
-          />
-          <img
-            src="/images/emotes/emote14.png"
-            alt="kekw"
-            class="emote-item"
-            data-emote="kekw"
-          />
-          <img
-            src="/images/emotes/emote15.png"
-            alt="pepe"
-            class="emote-item"
-            data-emote="pepe"
-          />
-          <img
-            src="/images/emotes/emote16.png"
-            alt="pog"
-            class="emote-item"
-            data-emote="pog"
-          />
-          <img
-            src="/images/emotes/emote17.png"
-            alt="ez"
-            class="emote-item"
-            data-emote="ez"
-          />
-          <img
-            src="/images/emotes/emote18.png"
-            alt="lul"
-            class="emote-item"
-            data-emote="lul"
-          />
-          <img
-            src="/images/emotes/emote19.png"
-            alt="5head"
-            class="emote-item"
-            data-emote="5head"
-          />
-          <img
-            src="/images/emotes/emote20.png"
-            alt="pepega"
-            class="emote-item"
-            data-emote="pepega"
-          />
-          <img
-            src="/images/emotes/emote21.png"
-            alt="omg"
-            class="emote-item"
-            data-emote="omg"
-          />
-          <img
-            src="/images/emotes/emote22.png"
-            alt="wow"
-            class="emote-item"
-            data-emote="wow"
-          />
+        <div class="emote-tabs">
+          <div class="emote-tab active" data-tab="emotes">Emotes</div>
+          <div class="emote-tab" data-tab="gifs">GIFs</div>
+        </div>
+        <div class="emote-content">
+          <div class="emote-section active" data-section="emotes">
+            <div class="favorites-section" id="favoriteEmotes" style="display: none;">
+              <div class="favorites-title">⭐ Favoritos</div>
+              <div class="favorites-grid" id="favoriteEmotesGrid"></div>
+            </div>
+            <div class="emote-grid" id="emotesGrid"></div>
+          </div>
+          <div class="emote-section" data-section="gifs">
+            <div class="favorites-section" id="favoriteGifs" style="display: none;">
+              <div class="favorites-title">⭐ Favoritos</div>
+              <div class="favorites-grid" id="favoriteGifsGrid"></div>
+            </div>
+            <div class="emote-grid" id="gifsGrid"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -334,6 +220,7 @@
     <script type="module" src="/main.js"></script>
     <script type="module" src="/script.js"></script>
     <script type="module" src="/level-init.js"></script>
+    <script type="module" src="/emote-manager.js"></script>
     <!-- Panel de Usuario -->
     <div class="user-panel-overlay">
       <div class="user-panel">

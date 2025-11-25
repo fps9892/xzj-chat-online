@@ -3,19 +3,19 @@
   position: fixed;
   bottom: 145px;
   right: 15px;
-  width: 300px;
-  height: 220px;
+  width: 320px;
+  max-height: 400px;
   background: rgba(0, 0, 0, 0.95);
   backdrop-filter: blur(2px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid #00ff00;
   border-radius: 12px;
-  padding: 12px;
   z-index: 100001;
-  overflow-y: auto;
   opacity: 0;
   transform: translateY(20px) scale(0.9);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
+  display: flex;
+  flex-direction: column;
 }
 
 .emote-panel.active {
@@ -24,84 +24,118 @@
   pointer-events: auto;
 }
 
+.emote-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.emote-tab {
+  flex: 1;
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+  color: #888;
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.emote-tab.active {
+  color: #00ff00;
+  border-bottom-color: #00ff00;
+}
+
+.emote-tab:hover {
+  color: #00ff00;
+  background: rgba(0, 255, 0, 0.05);
+}
+
+.emote-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.favorites-section {
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(0, 255, 0, 0.2);
+}
+
+.favorites-title {
+  font-size: 11px;
+  color: #00ff00;
+  font-family: 'Orbitron', monospace;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.favorites-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
 .emote-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 10px;
-  padding: 6px;
+}
+
+.emote-section {
+  display: none;
+}
+
+.emote-section.active {
+  display: block;
 }
 
 .emote-item {
-  width: 46px;
-  height: 46px;
+  width: 50px;
+  height: 50px;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 8px;
   transition: all 0.2s ease;
-  flex-shrink: 0;
-  opacity: 0;
-  transform: scale(0.8);
-  animation: emoteAppear 0.3s ease forwards;
+  border: 2px solid transparent;
+  object-fit: cover;
 }
 
-.emote-item:nth-child(n) {
-  animation-delay: calc(var(--i, 0) * 0.02s);
+.favorite-item {
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  border: 2px solid #00ff00;
+  object-fit: cover;
 }
 
-.emote-item:hover {
+.emote-item:hover, .favorite-item:hover {
   transform: scale(1.15);
   filter: brightness(1.2);
+  border-color: #00ff00;
 }
 
-@keyframes emoteAppear {
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+.emote-content::-webkit-scrollbar {
+  width: 6px;
 }
 
-.emote-panel::-webkit-scrollbar {
-  width: 8px;
+.emote-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
 }
 
-.emote-panel::-webkit-scrollbar-track {
-  background: rgba(51, 51, 51, 0.5);
-  border-radius: 4px;
+.emote-content::-webkit-scrollbar-thumb {
+  background: #00ff00;
+  border-radius: 3px;
 }
 
-.emote-panel::-webkit-scrollbar-thumb {
-  background: rgba(0, 255, 0, 0.7);
-  border-radius: 4px;
-  transition: background 0.2s;
+.emote-content::-webkit-scrollbar-thumb:hover {
+  background: #00cc00;
 }
 
-.emote-panel::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 255, 0, 0.9);
-}
 
-/* Animación de entrada del panel */
-@keyframes panelSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(30px) scale(0.8);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* Animación de salida del panel */
-@keyframes panelSlideOut {
-  from {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(20px) scale(0.9);
-  }
-}
-
-.emote-panel.closing {
-  animation: panelSlideOut 0.2s ease forwards;
-}
