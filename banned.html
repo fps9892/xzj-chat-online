@@ -158,9 +158,9 @@
         await disconnectUser();
 
         try {
-          const banDoc = await getDoc(
-            doc(db, "banned", currentUser.firebaseUid || currentUser.userId)
-          );
+          const userId = currentUser.firebaseUid || currentUser.userId;
+          const banDoc = await getDoc(doc(db, "banned", userId));
+          
           if (banDoc.exists()) {
             const banData = banDoc.data();
             document.getElementById("ban-reason").textContent =
@@ -172,7 +172,7 @@
               const diffMs = expiresDate - now;
 
               if (diffMs <= 0) {
-                window.location.href = "login.html";
+                window.location.href = "index.html";
                 return;
               }
 

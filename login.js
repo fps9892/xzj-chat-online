@@ -328,6 +328,29 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const userId = 'guest_' + generateUserId();
+            
+            // Verificar si el userId está baneado
+            const bannedDoc = await getDoc(doc(db, 'banned', userId));
+            if (bannedDoc.exists()) {
+                const now = new Date();
+                const guestUser = {
+                    userId: userId,
+                    username: nickname,
+                    avatar: 'images/profileuser.jpg',
+                    description: 'Usuario invitado',
+                    role: 'guest',
+                    isGuest: true,
+                    textColor: '#ffffff',
+                    status: 'online',
+                    createdAt: now.toISOString(),
+                    lastSeen: now.toISOString(),
+                    ip: userIP
+                };
+                localStorage.setItem('currentUser', JSON.stringify(guestUser));
+                window.location.href = 'banned.html';
+                return;
+            }
+            
             const now = new Date();
             const guestUser = {
                 userId: userId,
