@@ -254,7 +254,8 @@ export function setUserOnline() {
         description: currentUser.description || 'Sin descripción',
         isGuest: currentUser.isGuest || false,
         createdAt: currentUser.createdAt || new Date().toISOString(),
-        deviceType: deviceType
+        deviceType: deviceType,
+        firebaseUid: currentUser.firebaseUid || null
     };
     
     // Verificar que no hay valores undefined
@@ -345,7 +346,8 @@ export function listenToUsers(callback) {
                 users.push({
                     id: userId,
                     ...userData,
-                    role: userRole
+                    role: userRole,
+                    firebaseUid: userData.firebaseUid || null
                 });
                 
                 // Notificar si es un nuevo usuario (solo si no es el primer carga)
@@ -1074,13 +1076,13 @@ export async function getConnectedUsersList() {
             let index = 1;
             snapshot.forEach((childSnapshot) => {
                 const userData = childSnapshot.val();
-                if (userData.status === 'online' && !userData.isGuest) {
+                if (userData.status === 'online' && !userData.isGuest && userData.firebaseUid) {
                     users.push({
                         numId: index++,
                         userId: childSnapshot.key,
                         username: userData.name,
-                        firebaseUid: userData.firebaseUid || null,
-                        isGuest: userData.isGuest || false
+                        firebaseUid: userData.firebaseUid,
+                        isGuest: false
                     });
                 }
             });
@@ -1165,6 +1167,10 @@ export async function processAdminCommand(message) {
                     throw new Error('Usuario no encontrado');
                 }
                 
+                if (!targetUser.firebaseUid) {
+                    throw new Error('No se puede banear este usuario');
+                }
+                
                 const banReason = args.slice(1).join(' ') || 'Violación de reglas';
                 await banUser(targetUser.firebaseUid, banReason);
                 return { success: true, message: `Usuario ${targetUser.username} baneado` };
@@ -1200,6 +1206,10 @@ export async function processAdminCommand(message) {
                 
                 if (!targetMuteUser) {
                     throw new Error('Usuario no encontrado');
+                }
+                
+                if (!targetMuteUser.firebaseUid) {
+                    throw new Error('No se puede mutear este usuario');
                 }
                 
                 const muteDuration = parseInt(args[1]) || 5;
