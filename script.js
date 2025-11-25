@@ -1,4 +1,24 @@
 import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping, deleteMessage, updateUserRole } from './firebase.js';
+import './admin-listener.js';
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
+
+const auth = getAuth();
+const db = getFirestore();
+
+
+
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    const adminDoc = await getDoc(doc(db, "admins", user.uid));
+    const role = adminDoc.exists() ? "Administrador" : "Usuario";
+
+    document.querySelector(".user-role").textContent = `[Rol: ${role}]`;
+  } else {
+    // Redirigir al login si no está autenticado
+    window.location.href = "/login.html";
+  }
+});
 
 document.addEventListener('DOMContentLoaded', function() {
     // Elementos de la pantalla de carga
