@@ -68,9 +68,25 @@ service cloud.firestore {
     // Colección de salas/rooms - acceso público para lectura
     match /rooms/{roomId} {
       allow read: if true;
-      allow write: if isAdmin() || isModerator(); // Admins y moderadores pueden modificar salas
-      allow create: if isAdmin(); // Solo admins pueden crear salas nuevas
-      allow delete: if isAdmin(); // Solo admins pueden borrar salas
+      allow write: if isAuthenticated() && (isAdmin() || isModerator()); 
+      // Admins y moderadores autenticados pueden modificar salas
+      allow create: if isAuthenticated() && isAdmin(); // Solo admins autenticados pueden crear salas nuevas
+      allow delete: if isAuthenticated() && isAdmin(); // Solo admins autenticados pueden borrar salas
+    }
+    
+    // Colección de conectados - para lista de usuarios conectados por dispositivo
+    match /connected/{deviceId} {
+      allow read: if isAuthenticated(); // Solo usuarios autenticados pueden ver quién está conectado
+      allow write: if isAuthenticated() && request.auth.uid == request.resource.data.firebaseUid; 
+      // Solo usuarios autenticados pueden actualizar su estado de conexión
+    }
+    
+    // Colección de sesiones activas - para manejar múltiples dispositivos por usuario
+    match /activeSessions/{sessionId} {
+      allow read: if true; // Todos pueden ver sesiones activas
+      allow create, update: if isAuthenticated(); // Solo usuarios autenticados pueden crear/actualizar
+      allow delete: if isAuthenticated() && 
+        (request.auth.uid == resource.data.firebaseUid || isAdmin() || isModerator());
     }
     
     // Cualquier otra colección - solo admins tienen acceso completo
