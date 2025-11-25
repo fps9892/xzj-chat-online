@@ -383,27 +383,10 @@ async function showJoinNotification(username) {
     }
 }
 
-// Función para enviar notificación de usuario que se va como mensaje del sistema
+// Función para enviar notificación de usuario que se va - DESACTIVADA
 async function showLeaveNotification(username) {
-    try {
-        const systemMessageData = {
-            text: `👋 ${username} se fue a otra sala`,
-            userId: 'system',
-            userName: 'Sistema',
-            userAvatar: 'images/logo.svg',
-            textColor: '#ff8800',
-            timestamp: serverTimestamp(),
-            type: 'system',
-            isGuest: false,
-            role: 'system',
-            firebaseUid: null
-        };
-        
-        const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
-        await push(messagesRef, systemMessageData);
-    } catch (error) {
-        console.error('Error sending leave notification:', error);
-    }
+    // Notificaciones de salida desactivadas
+    return;
 }
 
 export function changeRoom(roomName) {

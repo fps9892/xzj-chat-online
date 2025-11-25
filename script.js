@@ -516,7 +516,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function renderMessages(messages) {
         const chatArea = document.querySelector('.chat-area');
-        const isNearBottom = chatArea.scrollHeight - chatArea.scrollTop - chatArea.clientHeight < 100;
+        const wasAtBottom = chatArea.scrollHeight - chatArea.scrollTop - chatArea.clientHeight < 100;
+        const previousScrollHeight = chatArea.scrollHeight;
         
         chatArea.innerHTML = '';
         
@@ -527,7 +528,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Marcar mensajes nuevos
             if (index >= lastMessageCount && lastMessageCount > 0) {
                 markAsNewMessage(messageEl);
-                if (!isNearBottom) {
+                if (!wasAtBottom) {
                     showNewMessagesIndicator();
                 }
             }
@@ -548,10 +549,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         lastMessageCount = messages.length;
         
-        // Solo hacer scroll si estaba cerca del final
-        if (isNearBottom) {
-            chatArea.scrollTop = chatArea.scrollHeight;
-        }
+        // Mantener scroll apropiadamente
+        requestAnimationFrame(() => {
+            if (wasAtBottom) {
+                chatArea.scrollTop = chatArea.scrollHeight;
+            }
+        });
     }
     
     function renderUsers(users) {
