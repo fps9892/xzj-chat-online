@@ -1657,3 +1657,25 @@ body {
     text-shadow: 0 0 30px #00ff00, 0 0 40px #00ff00, 0 0 50px #00ff00; 
   }
 }
+
+/* YouTube embed */
+.youtube-embed {
+  margin-top: 10px;
+  border-radius: 8px;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.youtube-embed iframe {
+  border-radius: 8px;
+}
+
+.message-text a {
+  color: #4a9eff;
+  text-decoration: underline;
+  word-break: break-all;
+}
+
+.message-text a:hover {
+  color: #6bb3ff;
+}

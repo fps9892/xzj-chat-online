@@ -81,7 +81,7 @@ async function initializeAuth() {
 // Inicializar autenticación
 initializeAuth();
 
-// Procesar emotes en texto
+// Procesar emotes y links en texto
 export function processEmotes(text) {
     const emoteMap = {
         ':)': '😊', ':D': '😃', ':(': '😢', ':P': '😛',
@@ -96,7 +96,25 @@ export function processEmotes(text) {
         processedText = processedText.replace(regex, emoteMap[emote]);
     });
     
+    // Procesar links
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    processedText = processedText.replace(urlRegex, '<a href="$1" target="_blank" style="color: #4a9eff; text-decoration: underline;">$1</a>');
+    
     return processedText;
+}
+
+// Extraer ID de video de YouTube
+export function extractYouTubeId(url) {
+    const patterns = [
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/,
+        /youtube\.com\/embed\/([^?\s]+)/
+    ];
+    
+    for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match) return match[1];
+    }
+    return null;
 }
 
 // Funciones para mensajes
@@ -1280,6 +1298,11 @@ export async function processAdminCommand(message) {
     try {
         switch (command) {
             case '!anuncio':
+                const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
+                const isMod = await checkModeratorStatus(currentUser.firebaseUid);
+                if (!isAdmin && !isMod) {
+                    throw new Error('Solo administradores y moderadores pueden enviar anuncios');
+                }
                 if (args.length === 0) {
                     throw new Error('Uso: !anuncio <mensaje>');
                 }
