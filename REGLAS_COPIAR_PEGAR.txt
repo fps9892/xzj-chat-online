@@ -1,14 +1,12 @@
 ═══════════════════════════════════════════════════════════════════
-  REGLAS DE FIREBASE - COPIAR Y PEGAR DIRECTAMENTE
+  REGLAS DE FIREBASE - FYZAR CHAT
+  Proyecto: fyzar-80936
 ═══════════════════════════════════════════════════════════════════
 
 ┌─────────────────────────────────────────────────────────────────┐
 │  1️⃣  FIRESTORE DATABASE RULES                                   │
-│  Ubicación: Firebase Console → Firestore Database → Rules      │
+│  Firebase Console → Firestore Database → Rules                 │
 └─────────────────────────────────────────────────────────────────┘
-
-COPIAR DESDE AQUÍ ↓
-─────────────────────────────────────────────────────────────────
 
 rules_version = '2';
 service cloud.firestore {
@@ -113,6 +111,14 @@ COPIAR DESDE AQUÍ ↓
         }
       }
     },
+    "globalAnnouncements": {
+      ".read": true,
+      ".write": true,
+      "$announcementId": {
+        ".read": true,
+        ".write": true
+      }
+    },
     "deviceCounts": {
       ".read": true,
       ".write": true
@@ -182,11 +188,7 @@ PASO 3: VERIFICAR
     1. Primero Firestore
     2. Después Realtime Database
 
-✅  Después de aplicar las reglas, ejecuta:
-    http://localhost:8000/init-general-room.html
-    para crear la Sala General
-
-✅  Usa test-console.html para verificar que todo funciona
+✅  Los !anuncios ahora funcionarán para todos los usuarios en todas las salas
 
 
 ═══════════════════════════════════════════════════════════════════
@@ -208,8 +210,7 @@ Error: "Invalid rules"
 
 ═══════════════════════════════════════════════════════════════════
 
-Archivo creado: $(date)
 Proyecto: fyzar-80936
-Versión: 1.0
+Versión: 2.0 - Con soporte para anuncios globales
 
 ═══════════════════════════════════════════════════════════════════

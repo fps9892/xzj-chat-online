@@ -1,7 +1,5 @@
 import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, currentRoom, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, getRooms, listenToRooms, listenToAnnouncements, showAnnouncement } from './firebase.js';
-import { getUserProfile, findUserByUsername } from './user-profile-service.js';
-import { animateMessageDeletion } from './chat-enhancements.js';
-import './admin-listener.js';
+import { getUserProfile, findUserByUsername, animateMessageDeletion, initAdminListener } from './core.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     // Elementos de la pantalla de carga
@@ -484,33 +482,35 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let currentUsersListener = null;
     let previousUsersList = new Map();
+    let userConnectionStatus = new Map();
     
     function loadUsers() {
-        // Limpiar listener anterior si existe
         if (currentUsersListener) {
             currentUsersListener();
         }
         
-        // Crear nuevo listener para la sala actual
         currentUsersListener = listenToUsers((users) => {
-            // Detectar usuarios que se conectaron o cambiaron de sala
             users.forEach(user => {
-                if (!previousUsersList.has(user.id) && previousUsersList.size > 0) {
-                    if (user.id !== currentUser.userId) {
-                        showNotification(`${user.name} se unió a la sala`, 'info');
-                    }
+                const wasInRoom = previousUsersList.has(user.id);
+                const wasOnline = userConnectionStatus.get(user.id);
+                
+                if (!wasInRoom && previousUsersList.size > 0 && user.id !== currentUser.userId) {
+                    showUserNotification(`${user.name} entró a la sala`, 'join');
+                    userConnectionStatus.set(user.id, true);
+                } else if (!wasOnline && wasInRoom && user.id !== currentUser.userId) {
+                    showUserNotification(`${user.name} se conectó`, 'online');
+                    userConnectionStatus.set(user.id, true);
                 }
             });
             
-            // Detectar usuarios que se desconectaron o cambiaron de sala
             previousUsersList.forEach((userData, userId) => {
-                const stillConnected = users.find(u => u.id === userId);
-                if (!stillConnected && userId !== currentUser.userId) {
-                    showNotification(`${userData.name} salió de la sala`, 'info');
+                const stillInRoom = users.find(u => u.id === userId);
+                if (!stillInRoom && userId !== currentUser.userId) {
+                    showUserNotification(`${userData.name} salió de la sala`, 'leave');
+                    userConnectionStatus.delete(userId);
                 }
             });
             
-            // Actualizar lista de usuarios previos
             previousUsersList.clear();
             users.forEach(user => {
                 previousUsersList.set(user.id, user);
@@ -518,6 +518,21 @@ document.addEventListener('DOMContentLoaded', function() {
             
             renderUsers(users);
         });
+    }
+    
+    function showUserNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `user-notification ${type}`;
+        
+        const icon = type === 'join' || type === 'online' ? '🟢' : '🔴';
+        notification.innerHTML = `<span class="notif-icon">${icon}</span><span>${message}</span>`;
+        
+        document.body.appendChild(notification);
+        setTimeout(() => notification.classList.add('show'), 100);
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
     }
     
     let lastMessageCount = 0;
@@ -976,22 +991,30 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Inicializar Firebase después de la carga
     async function initializeApp() {
         validateCurrentUser();
-        await updateUserRole(); // Verificar rol de administrador
+        await updateUserRole();
         updateUserHeader();
-        updateAdminUI(); // Mostrar/ocultar opciones de admin
+        updateAdminUI();
+        updateGuestUI();
+        initAdminListener();
         
-        // Inicializar con delay para evitar problemas de carga
         setTimeout(() => {
             setUserOnline();
             loadMessages();
             loadUsers();
         }, 500);
         
-        // Limpiar skeletons después de 3 segundos
         setTimeout(clearSkeletons, 3000);
+    }
+    
+    function updateGuestUI() {
+        if (currentUser.isGuest) {
+            const passwordItem = document.querySelector('.config-item[data-config="password"]');
+            const deleteAccountItem = document.querySelector('.config-item.danger');
+            if (passwordItem) passwordItem.style.display = 'none';
+            if (deleteAccountItem) deleteAccountItem.style.display = 'none';
+        }
     }
     
     // Limpiar listeners al cerrar la ventana
@@ -1043,9 +1066,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // Manejar cerrar sesión
     const logoutBtn = document.querySelector('.config-item:nth-last-child(2) button');
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', function() {
-            localStorage.removeItem('currentUser');
-            window.location.href = 'login.html';
+        logoutBtn.addEventListener('click', async function() {
+            try {
+                if (!currentUser.isGuest) {
+                    const { getAuth, signOut } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+                    const auth = getAuth();
+                    await signOut(auth);
+                }
+            } catch (error) {
+                console.error('Error al cerrar sesión:', error);
+            } finally {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'login.html';
+            }
         });
     }
     
@@ -1060,13 +1093,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 showNotification('Funcionalidad de fondo próximamente', 'warning');
             });
         } else if (configText.includes('Borrar cuenta')) {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', async function() {
                 if (confirm('¿Estás seguro de que quieres borrar tu cuenta? Esta acción no se puede deshacer.')) {
-                    localStorage.removeItem('currentUser');
-                    showNotification('Cuenta eliminada', 'success');
-                    setTimeout(() => {
+                    try {
+                        if (!currentUser.isGuest && currentUser.firebaseUid) {
+                            const { getAuth, deleteUser } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+                            const { deleteDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                            const { db } = await import('./firebase.js');
+                            const auth = getAuth();
+                            
+                            await deleteDoc(doc(db, 'users', currentUser.firebaseUid));
+                            if (auth.currentUser) await deleteUser(auth.currentUser);
+                        }
+                        localStorage.removeItem('currentUser');
+                        showNotification('Cuenta eliminada', 'success');
+                        setTimeout(() => window.location.href = 'login.html', 1000);
+                    } catch (error) {
+                        console.error('Error al borrar cuenta:', error);
+                        localStorage.removeItem('currentUser');
                         window.location.href = 'login.html';
-                    }, 1500);
+                    }
                 }
             });
         }

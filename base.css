@@ -873,6 +873,68 @@ body {
   color: #00ffff;
 }
 
+/* Notificaciones de usuario diferenciadas */
+.user-notification {
+  position: fixed;
+  bottom: 100px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.95);
+  border: 2px solid;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-family: 'Orbitron', monospace;
+  z-index: 2500;
+  transform: translateX(-400px);
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.user-notification.show {
+  transform: translateX(0);
+}
+
+.user-notification.join {
+  border-color: #00ff00;
+  color: #00ff00;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+}
+
+.user-notification.leave {
+  border-color: #ff4444;
+  color: #ff4444;
+  box-shadow: 0 0 20px rgba(255, 68, 68, 0.4);
+}
+
+.user-notification.online {
+  border-color: #00ffff;
+  color: #00ffff;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+}
+
+.user-notification .notif-icon {
+  font-size: 16px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+}
+
+@media (max-width: 767px) {
+  .user-notification {
+    bottom: 110px;
+    left: 10px;
+    right: 10px;
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+}
+
 .message-container {
   margin-bottom: 20px;
   display: flex;
