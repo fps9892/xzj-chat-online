@@ -774,7 +774,9 @@ body {
     .login-form.active .file-label,
     .login-form.active .social-login,
     .login-form.active .captcha-container,
-    .login-form.active .password-container {
+    .login-form.active .password-container,
+    .login-form.active .captcha-row,
+    .login-form.active .preview-row {
         grid-column: 1 / -1;
     }
     
@@ -830,7 +832,9 @@ body {
     .login-form.active .file-label,
     .login-form.active .social-login,
     .login-form.active .captcha-container,
-    .login-form.active .password-container {
+    .login-form.active .password-container,
+    .login-form.active .captcha-row,
+    .login-form.active .preview-row {
         grid-column: 1 / -1;
     }
     
@@ -841,5 +845,9 @@ body {
     .login-btn {
         padding: 16px 22px;
         font-size: 16px;
+    }
+    
+    #guest-form .captcha-input-inline {
+        flex: 1.5;
     }
 }

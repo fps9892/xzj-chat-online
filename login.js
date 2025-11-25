@@ -322,7 +322,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        if (captchaInput !== currentCaptcha) {
+        if (captchaInput.toUpperCase() !== currentCaptcha.toUpperCase()) {
             showNotification('Código CAPTCHA incorrecto', 'error');
             generateCaptcha();
             return;
@@ -406,7 +406,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        if (captchaInput !== currentCaptchaGuest) {
+        if (captchaInput.toUpperCase() !== currentCaptchaGuest.toUpperCase()) {
             showNotification('Código CAPTCHA incorrecto', 'error');
             generateCaptchaGuest();
             return;
