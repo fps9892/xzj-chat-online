@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="/resolutions/mobile.css" />
     <link rel="stylesheet" href="/resolutions/tablet.css" />
     <link rel="stylesheet" href="/resolutions/desktop.css" />
+    <link rel="stylesheet" href="/level-system.css" />
   </head>
   <body>
     <!-- Pantalla de Usuario Baneado -->
@@ -332,6 +333,7 @@
 
     <script type="module" src="/main.js"></script>
     <script type="module" src="/script.js"></script>
+    <script type="module" src="/level-init.js"></script>
     <!-- Panel de Usuario -->
     <div class="user-panel-overlay">
       <div class="user-panel">
@@ -401,12 +403,32 @@
             <div class="config-item" data-config="country">
               <span>País</span>
               <button>Editar</button>
-              <div class="config-input">
-                <input
-                  type="text"
-                  placeholder="Tu país"
-                  maxlength="50"
-                />
+              <div class="country-selector-panel">
+                <select class="country-select">
+                  <option value="">Selecciona tu país</option>
+                  <option value="🇦🇷">🇦🇷 Argentina</option>
+                  <option value="🇧🇷">🇧🇷 Brasil</option>
+                  <option value="🇨🇱">🇨🇱 Chile</option>
+                  <option value="🇨🇴">🇨🇴 Colombia</option>
+                  <option value="🇨🇷">🇨🇷 Costa Rica</option>
+                  <option value="🇨🇺">🇨🇺 Cuba</option>
+                  <option value="🇪🇨">🇪🇨 Ecuador</option>
+                  <option value="🇸🇻">🇸🇻 El Salvador</option>
+                  <option value="🇪🇸">🇪🇸 España</option>
+                  <option value="🇺🇸">🇺🇸 Estados Unidos</option>
+                  <option value="🇬🇹">🇬🇹 Guatemala</option>
+                  <option value="🇭🇳">🇭🇳 Honduras</option>
+                  <option value="🇲🇽">🇲🇽 México</option>
+                  <option value="🇳🇮">🇳🇮 Nicaragua</option>
+                  <option value="🇵🇦">🇵🇦 Panamá</option>
+                  <option value="🇵🇾">🇵🇾 Paraguay</option>
+                  <option value="🇵🇪">🇵🇪 Perú</option>
+                  <option value="🇵🇷">🇵🇷 Puerto Rico</option>
+                  <option value="🇩🇴">🇩🇴 República Dominicana</option>
+                  <option value="🇺🇾">🇺🇾 Uruguay</option>
+                  <option value="🇻🇪">🇻🇪 Venezuela</option>
+                  <option value="🌎">🌎 Otro</option>
+                </select>
                 <div class="input-buttons">
                   <button class="accept-btn">Aceptar</button>
                   <button class="cancel-btn">Cancelar</button>

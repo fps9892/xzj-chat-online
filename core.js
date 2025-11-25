@@ -78,6 +78,7 @@ export async function getUserProfile(userId, isGuest = false) {
             lastSeen: userData.lastSeen || userData.lastUpdated || 'No disponible',
             avatar: userData.avatar || 'images/profileuser.jpg',
             textColor: userData.textColor || '#ffffff',
+            messageCount: userData.messageCount || 0,
             isGuest, isAdmin, isModerator, isBanned
         };
     } catch (error) {

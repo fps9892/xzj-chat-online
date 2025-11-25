@@ -1,0 +1,116 @@
+/* Selector de países */
+.country-selector-panel {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.country-selector-panel.active {
+  display: flex;
+}
+
+.country-select {
+  background: #000;
+  border: 2px solid #00ff00;
+  border-radius: 8px;
+  padding: 10px;
+  color: #fff;
+  font-size: 14px;
+  font-family: monospace;
+  outline: none;
+  cursor: pointer;
+}
+
+.country-select option {
+  background: #000;
+  color: #fff;
+  padding: 8px;
+}
+
+/* Sistema de niveles */
+.user-level-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #00ff00, #00cc00);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: bold;
+  color: #000;
+  font-family: "Orbitron", monospace;
+  margin-left: 5px;
+}
+
+.level-progress-container {
+  margin-top: 10px;
+  padding: 10px;
+  background: rgba(0, 255, 0, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 255, 0, 0.2);
+}
+
+.level-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #00ff00;
+  font-family: "Orbitron", monospace;
+}
+
+.level-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 255, 0, 0.3);
+}
+
+.level-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ff00, #00cc00);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 10px #00ff00;
+}
+
+.level-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  font-size: 10px;
+  color: #888;
+  font-family: monospace;
+}
+
+/* Badge de nivel en perfil de usuario */
+.profile-level-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+  padding: 15px;
+  background: rgba(0, 255, 0, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 255, 0, 0.2);
+}
+
+.profile-level-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #00ff00;
+  font-family: "Orbitron", monospace;
+}
+
+.country-flag {
+  font-size: 20px;
+  margin-left: 5px;
+}
