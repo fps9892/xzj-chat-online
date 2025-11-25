@@ -812,7 +812,7 @@ export async function clearRoomMessages() {
     }
 }
 
-// Obtener todas las salas disponibles
+// Obtener todas las salas disponibles con conteo de usuarios
 export async function getRooms() {
     try {
         const roomsSnapshot = await getDocs(collection(db, 'rooms'));
@@ -841,6 +841,28 @@ export async function getRooms() {
             });
         }
         
+        // Obtener conteo de usuarios para cada sala
+        for (const room of rooms) {
+            try {
+                const usersRef = ref(database, `rooms/${room.id}/users`);
+                const snapshot = await get(usersRef);
+                let userCount = 0;
+                
+                if (snapshot.exists()) {
+                    snapshot.forEach((childSnapshot) => {
+                        const userData = childSnapshot.val();
+                        if (userData.status === 'online') {
+                            userCount++;
+                        }
+                    });
+                }
+                
+                room.userCount = userCount;
+            } catch (error) {
+                room.userCount = 0;
+            }
+        }
+        
         return rooms;
     } catch (error) {
         console.error('Error getting rooms:', error);
@@ -848,7 +870,8 @@ export async function getRooms() {
             id: 'general',
             name: 'Sala General',
             createdBy: 'system',
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            userCount: 0
         }];
     }
 }

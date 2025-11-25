@@ -359,6 +359,19 @@ body {
   pointer-events: none;
 }
 
+.room-users {
+  color: #00ff00;
+  font-size: 10px;
+  margin-left: 5px;
+}
+
+.room-user-count {
+  color: #00ff00;
+  font-size: 10px;
+  margin-left: 8px;
+  font-family: "Orbitron", monospace;
+}
+
 .main-content {
   flex: 1;
   display: flex;

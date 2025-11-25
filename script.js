@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const roomElement = document.createElement('div');
                 roomElement.className = 'room-item';
                 roomElement.setAttribute('data-room', room.id);
-                roomElement.textContent = room.name;
+                roomElement.innerHTML = `${room.name} <span class="room-users">(${room.userCount || 0})</span>`;
                 roomsDropdown.appendChild(roomElement);
             });
             
@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
         roomItems.forEach(item => {
             item.addEventListener('click', function() {
                 const roomId = this.getAttribute('data-room');
-                const roomDisplayName = this.textContent;
+                const roomDisplayName = this.textContent.split(' (')[0]; // Remover contador de usuarios del nombre
                 currentRoomName.textContent = roomDisplayName;
                 changeRoom(roomId);
                 clearSkeletons();
@@ -756,6 +756,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateUserCount(count) {
         document.querySelector('.user-count').textContent = count;
         document.querySelector('.mobile-user-count').textContent = count;
+        
+        // Actualizar contador en el header de la sala
+        const roomUserCount = document.querySelector('.room-user-count');
+        if (roomUserCount) {
+            roomUserCount.textContent = `(${count} usuarios)`;
+        }
     }
     
     // Actualizar nombre de usuario en header
@@ -800,11 +806,22 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
     }
     
+    // Actualizar UI según permisos de administrador
+    function updateAdminUI() {
+        const adminOnlyElements = document.querySelectorAll('.admin-only');
+        const isAdmin = currentUser.isAdmin || currentUser.role === 'Administrador';
+        
+        adminOnlyElements.forEach(element => {
+            element.style.display = isAdmin ? 'flex' : 'none';
+        });
+    }
+    
     // Inicializar Firebase después de la carga
     async function initializeApp() {
         validateCurrentUser();
         await updateUserRole(); // Verificar rol de administrador
         updateUserHeader();
+        updateAdminUI(); // Mostrar/ocultar opciones de admin
         
         // Inicializar con delay para evitar problemas de carga
         setTimeout(() => {
