@@ -161,16 +161,16 @@ export async function sendMessage(text, type = 'text', imageData = null) {
     });
 }
 
-// Limit messages to 5 per room
+// Limit messages to 50 per room
 async function limitMessages() {
     const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
     const snapshot = await get(messagesRef);
     
     if (snapshot.exists()) {
         const messages = Object.keys(snapshot.val());
-        if (messages.length > 5) {
+        if (messages.length > 50) {
             // Remove oldest messages
-            const messagesToRemove = messages.slice(0, messages.length - 5);
+            const messagesToRemove = messages.slice(0, messages.length - 50);
             messagesToRemove.forEach(messageId => {
                 remove(ref(database, `rooms/${currentRoom}/messages/${messageId}`));
             });
@@ -179,7 +179,7 @@ async function limitMessages() {
 }
 
 export function listenToMessages(callback) {
-    const messagesRef = dbQuery(ref(database, `rooms/${currentRoom}/messages`), limitToLast(5));
+    const messagesRef = dbQuery(ref(database, `rooms/${currentRoom}/messages`), limitToLast(50));
     return onValue(messagesRef, (snapshot) => {
         const messages = [];
         snapshot.forEach((childSnapshot) => {
@@ -269,19 +269,31 @@ export async function updateUserData(updates) {
             }
         });
         
+        // Agregar timestamp de última actualización
+        cleanUpdates.lastUpdated = new Date().toISOString();
+        
         if (Object.keys(cleanUpdates).length === 0) {
             console.warn('No hay actualizaciones válidas para procesar');
             return false;
         }
         
         if (currentUser.isGuest) {
-            await updateDoc(doc(db, 'guests', currentUser.userId), cleanUpdates);
+            // Para usuarios invitados, usar colección guests
+            await setDoc(doc(db, 'guests', currentUser.userId), {
+                ...cleanUpdates,
+                userId: currentUser.userId,
+                isGuest: true,
+                createdAt: currentUser.createdAt || new Date().toISOString()
+            }, { merge: true });
         } else {
-            // Buscar documento por userId
-            const userDoc = await getDoc(doc(db, 'users', currentUser.firebaseUid || currentUser.userId));
-            if (userDoc.exists()) {
-                await updateDoc(doc(db, 'users', userDoc.id), cleanUpdates);
-            }
+            // Para usuarios registrados, usar firebaseUid como ID de documento
+            const userDocRef = doc(db, 'users', currentUser.firebaseUid);
+            await setDoc(userDocRef, {
+                ...cleanUpdates,
+                firebaseUid: currentUser.firebaseUid,
+                isGuest: false,
+                createdAt: currentUser.createdAt || new Date().toISOString()
+            }, { merge: true });
         }
         
         // Actualizar localStorage
@@ -728,6 +740,10 @@ export async function processAdminCommand(message) {
                 await unbanUser(userToUnban);
                 return { success: true, message: `Usuario ${userToUnban} desbaneado` };
                 
+            case '!borrarchat':
+                await clearRoomMessages();
+                return { success: true, message: 'Historial de chat eliminado' };
+                
             default:
                 return false;
         }
@@ -770,6 +786,70 @@ export async function updateUserRole() {
         }
         
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    }
+}
+
+// Borrar todos los mensajes de la sala actual (solo administradores)
+export async function clearRoomMessages() {
+    if (!currentUser.firebaseUid || currentUser.isGuest) {
+        throw new Error('Solo usuarios registrados pueden borrar el chat');
+    }
+    
+    const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
+    const isModerator = await checkModeratorStatus(currentUser.firebaseUid);
+    
+    if (!isAdmin && !isModerator) {
+        throw new Error('Solo administradores y moderadores pueden borrar el chat');
+    }
+    
+    try {
+        const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
+        await remove(messagesRef);
+        return true;
+    } catch (error) {
+        console.error('Error clearing room messages:', error);
+        throw error;
+    }
+}
+
+// Obtener todas las salas disponibles
+export async function getRooms() {
+    try {
+        const roomsSnapshot = await getDocs(collection(db, 'rooms'));
+        const rooms = [];
+        
+        roomsSnapshot.forEach((doc) => {
+            const roomData = doc.data();
+            if (roomData.isActive !== false) {
+                rooms.push({
+                    id: doc.id,
+                    name: roomData.name,
+                    createdBy: roomData.createdBy,
+                    createdAt: roomData.createdAt
+                });
+            }
+        });
+        
+        // Asegurar que la sala general siempre esté presente
+        const hasGeneral = rooms.some(room => room.id === 'general');
+        if (!hasGeneral) {
+            rooms.unshift({
+                id: 'general',
+                name: 'Sala General',
+                createdBy: 'system',
+                createdAt: new Date().toISOString()
+            });
+        }
+        
+        return rooms;
+    } catch (error) {
+        console.error('Error getting rooms:', error);
+        return [{
+            id: 'general',
+            name: 'Sala General',
+            createdBy: 'system',
+            createdAt: new Date().toISOString()
+        }];
     }
 }
 

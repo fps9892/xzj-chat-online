@@ -1,4 +1,4 @@
-import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser } from './firebase.js';
+import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser, getRooms } from './firebase.js';
 import './admin-listener.js';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const mobileUsersIndicator = document.querySelector('.mobile-users-indicator');
     const mobileUsersDropdown = document.querySelector('.mobile-users-dropdown');
     const currentRoomName = document.querySelector('.current-room-name');
-    const roomItems = document.querySelectorAll('.room-item');
+    let roomItems = document.querySelectorAll('.room-item');
     const userInfo = document.querySelector('.user-info');
     const userPanelOverlay = document.querySelector('.user-panel-overlay');
     const closePanel = document.querySelector('.close-panel');
@@ -133,19 +133,43 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Manejar selección de sala
-    roomItems.forEach(item => {
-        item.addEventListener('click', function() {
-            const roomId = this.getAttribute('data-room');
-            const roomDisplayName = this.textContent;
-            currentRoomName.textContent = roomDisplayName;
-            changeRoom(roomId);
-            clearSkeletons();
-            loadMessages();
-            loadUsers();
-            roomsDropdown.classList.remove('active');
+    // Cargar salas dinámicamente
+    async function loadRooms() {
+        try {
+            const rooms = await getRooms();
+            roomsDropdown.innerHTML = '';
+            
+            rooms.forEach(room => {
+                const roomElement = document.createElement('div');
+                roomElement.className = 'room-item';
+                roomElement.setAttribute('data-room', room.id);
+                roomElement.textContent = room.name;
+                roomsDropdown.appendChild(roomElement);
+            });
+            
+            // Actualizar event listeners
+            setupRoomListeners();
+        } catch (error) {
+            console.error('Error loading rooms:', error);
+        }
+    }
+    
+    // Configurar event listeners para salas
+    function setupRoomListeners() {
+        const roomItems = document.querySelectorAll('.room-item');
+        roomItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const roomId = this.getAttribute('data-room');
+                const roomDisplayName = this.textContent;
+                currentRoomName.textContent = roomDisplayName;
+                changeRoom(roomId);
+                clearSkeletons();
+                loadMessages();
+                loadUsers();
+                roomsDropdown.classList.remove('active');
+            });
         });
-    });
+    }
 
     // Abrir panel de usuario
     userInfo.addEventListener('click', function(e) {
@@ -253,6 +277,29 @@ document.addEventListener('DOMContentLoaded', function() {
                             return;
                         } catch (error) {
                             showNotification('Error al cambiar contraseña: ' + error.message, 'error');
+                            return;
+                        }
+                    } else if (configType === 'grant-admin') {
+                        if (!currentUser.isAdmin) {
+                            showNotification('Solo administradores pueden otorgar roles', 'error');
+                            return;
+                        }
+                        
+                        const targetUid = inputField.value.trim();
+                        if (!targetUid) {
+                            showNotification('Ingresa un UID válido', 'error');
+                            return;
+                        }
+                        
+                        try {
+                            await grantModeratorRole(targetUid);
+                            showNotification('Rol de moderador otorgado correctamente', 'success');
+                            input.classList.remove('active');
+                            button.style.display = 'block';
+                            inputField.value = '';
+                            return;
+                        } catch (error) {
+                            showNotification('Error al otorgar rol: ' + error.message, 'error');
                             return;
                         }
                     }
@@ -657,7 +704,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         <p class="user-role">${user.role === 'Administrador' ? 'Administrador' : user.role === 'Moderador' ? 'Moderador' : user.role === 'guest' ? 'Invitado' : 'Usuario'}</p>
                         <div class="profile-info">
                             <p><strong>Descripción:</strong> ${user.description || 'Sin descripción'}</p>
-                            ${!user.isGuest && user.firebaseUid ? `<p><strong>ID de Firebase:</strong> ${user.firebaseUid}</p>` : ''}
+                            <p><strong>ID de Cuenta:</strong> ${user.firebaseUid || user.id || 'No disponible'}</p>
+                            <p><strong>Nombre de Usuario:</strong> ${user.name || 'Usuario'}</p>
+                            <p><strong>Rol:</strong> ${user.role === 'Administrador' ? 'Administrador' : user.role === 'Moderador' ? 'Moderador' : user.role === 'guest' ? 'Invitado' : 'Usuario'}</p>
+                            <p><strong>Color de Texto:</strong> <span style="color: ${user.textColor || '#ffffff'}">■</span> ${user.textColor || '#ffffff'}</p>
+                            <p><strong>Estado:</strong> ${user.status === 'online' ? 'En línea' : 'Desconectado'}</p>
                             <p><strong>Cuenta creada:</strong> ${user.createdAt ? getTimeAgo(user.createdAt) : 'No disponible'}</p>
                             <p><strong>Última conexión:</strong> ${user.lastSeen ? new Date(user.lastSeen).toLocaleString('es-ES') : 'Ahora'}</p>
                         </div>
@@ -727,8 +778,23 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!currentUser.textColor) currentUser.textColor = '#ffffff';
         if (!currentUser.description) currentUser.description = 'Sin descripción';
         if (!currentUser.avatar) currentUser.avatar = 'images/profileuser.jpg';
-        if (!currentUser.role) currentUser.role = currentUser.isGuest ? 'guest' : 'user';
+        if (!currentUser.role) currentUser.role = currentUser.isGuest ? 'guest' : 'Usuario';
         if (!currentUser.status) currentUser.status = 'online';
+        if (!currentUser.createdAt) currentUser.createdAt = new Date().toISOString();
+        if (!currentUser.lastUpdated) currentUser.lastUpdated = new Date().toISOString();
+        
+        // Para usuarios no invitados, asegurar que firebaseUid sea el ID principal
+        if (!currentUser.isGuest && currentUser.firebaseUid) {
+            // Actualizar datos en Firestore con toda la información
+            updateUserData({
+                username: currentUser.username,
+                avatar: currentUser.avatar,
+                textColor: currentUser.textColor,
+                description: currentUser.description,
+                role: currentUser.role,
+                status: currentUser.status
+            });
+        }
         
         // Actualizar localStorage con datos corregidos
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
@@ -752,7 +818,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Esperar a que termine la carga para inicializar
-    setTimeout(initializeApp, 4500);
+    setTimeout(() => {
+        initializeApp();
+        // Cargar salas con un pequeño delay para asegurar que Firebase esté listo
+        setTimeout(loadRooms, 1000);
+    }, 4500);
     
     // Manejar cerrar sesión
     const logoutBtn = document.querySelector('.config-item:nth-last-child(2) button');
