@@ -134,6 +134,19 @@ service cloud.firestore {
 }
 ```
 
+#### Archivo _redirects (Netlify)
+
+```
+Crear archivo: _redirects en la raíz del proyecto
+```
+
+```
+/images/*  200
+/*.css     200
+/*.js      200
+/*         /index.html   200
+```
+
 #### Realtime Database Rules
 
 ```
