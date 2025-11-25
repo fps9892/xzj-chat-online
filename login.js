@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 lastSeen: now.toISOString()
             };
 
-            // Guardar en Firestore en la colección `users` en lugar de `guests`
+            // Guardar en Firestore en la colección `users`
             await setDoc(doc(db, 'users', userId), guestUser);
             
             localStorage.setItem('currentUser', JSON.stringify(guestUser));

@@ -657,7 +657,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <p class="user-role">${user.role === 'Administrador' ? 'Administrador' : user.role === 'Moderador' ? 'Moderador' : user.role === 'guest' ? 'Invitado' : 'Usuario'}</p>
                         <div class="profile-info">
                             <p><strong>Descripción:</strong> ${user.description || 'Sin descripción'}</p>
-                            ${!user.isGuest && user.id ? `<p><strong>ID de cuenta:</strong> ${user.id}</p>` : ''}
+                            ${!user.isGuest && user.firebaseUid ? `<p><strong>ID de Firebase:</strong> ${user.firebaseUid}</p>` : ''}
                             <p><strong>Cuenta creada:</strong> ${user.createdAt ? getTimeAgo(user.createdAt) : 'No disponible'}</p>
                             <p><strong>Última conexión:</strong> ${user.lastSeen ? new Date(user.lastSeen).toLocaleString('es-ES') : 'Ahora'}</p>
                         </div>
