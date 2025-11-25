@@ -1578,8 +1578,8 @@ document.addEventListener('DOMContentLoaded', function() {
         recIndicator.classList.remove('recording');
     });
     
-    // Cerrar panel
-    const closePanel = () => {
+    // Cerrar panel de audio
+    const closeAudioPanelFunc = () => {
         if (isRecording) {
             audioRecorder.cancelRecording();
             isRecording = false;
@@ -1593,8 +1593,8 @@ document.addEventListener('DOMContentLoaded', function() {
         playBtn.classList.remove('recording');
     };
     
-    closeAudioPanel.addEventListener('click', closePanel);
-    audioPanelOverlay.addEventListener('click', closePanel);
+    closeAudioPanel.addEventListener('click', closeAudioPanelFunc);
+    audioPanelOverlay.addEventListener('click', closeAudioPanelFunc);
     
     playBtn.addEventListener('click', async () => {
         if (!isRecording) {
@@ -1656,7 +1656,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showNotification('Audio enviado', 'success');
             
             // Limpiar y cerrar panel
-            closePanel();
+            closeAudioPanelFunc();
         } catch (error) {
             showNotification('Error al enviar audio', 'error');
         }
