@@ -1,4 +1,4 @@
-import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser, getRooms } from './firebase.js';
+import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, getRooms } from './firebase.js';
 import { getUserProfile, findUserByUsername } from './user-profile-service.js';
 import './admin-listener.js';
 
@@ -1139,7 +1139,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.banUser = async function(userId) {
         const reason = prompt('Razón del baneo (opcional):') || 'Violación de reglas';
         try {
-            await banUser(userId, reason);
+            await banUserFirebase(userId, reason);
             showNotification('Usuario baneado', 'success');
         } catch (error) {
             showNotification(error.message, 'error');
