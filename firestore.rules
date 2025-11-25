@@ -40,7 +40,7 @@ service cloud.firestore {
     // Colección de usuarios - acceso basado en autenticación
     match /users/{firebaseUid} {
       // Los usuarios pueden leer y escribir sus propios datos
-      allow read, write: if request.auth.uid == firebaseUid;
+      allow read, write: if request.auth != null || resource.data.isGuest == true;
       // Los admins y moderadores pueden leer todos los usuarios
       allow read: if isAdmin() || isModerator();
       // Los admins pueden escribir datos de otros usuarios

@@ -212,11 +212,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         try {
-            if (!(await isUsernameAvailable(nickname))) {
-                showNotification('El nickname ya está en uso', 'error');
-                return;
-            }
-
             const userId = generateUserId();
             const now = new Date();
             const guestUser = {
@@ -232,8 +227,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 lastSeen: now.toISOString()
             };
 
-            // Guardar en Firestore para usuarios invitados también
-            await setDoc(doc(db, 'guests', userId), guestUser);
+            // Guardar en Firestore en la colección `users` en lugar de `guests`
+            await setDoc(doc(db, 'users', userId), guestUser);
             
             localStorage.setItem('currentUser', JSON.stringify(guestUser));
             window.location.href = 'index.html';
