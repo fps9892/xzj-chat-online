@@ -832,11 +832,37 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Añadir funcionalidad de borrar mensaje (solo para el propietario)
         if (isOwn) {
-            const messageContent = messageEl.querySelector('.message-content');
-            let pressTimer;
+            const messageContent = messageEl.querySelector('.message-content') || messageEl.querySelector('.audio-message');
             
-            const startDeletePress = () => {
-                pressTimer = setTimeout(() => {
+            if (messageContent) {
+                let pressTimer;
+                
+                const startDeletePress = () => {
+                    pressTimer = setTimeout(() => {
+                        if (confirm('¿Estás seguro de que quieres borrar este mensaje?')) {
+                            deleteMessage(message.id).then(success => {
+                                if (success) {
+                                    showNotification('Mensaje eliminado', 'success');
+                                } else {
+                                    showNotification('Error al eliminar mensaje', 'error');
+                                }
+                            });
+                        }
+                    }, 1000);
+                };
+                
+                const endDeletePress = () => {
+                    clearTimeout(pressTimer);
+                };
+                
+                // Para dispositivos táctiles
+                messageContent.addEventListener('touchstart', startDeletePress);
+                messageContent.addEventListener('touchend', endDeletePress);
+                messageContent.addEventListener('touchcancel', endDeletePress);
+                
+                // Para mouse (click derecho)
+                messageContent.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
                     if (confirm('¿Estás seguro de que quieres borrar este mensaje?')) {
                         deleteMessage(message.id).then(success => {
                             if (success) {
@@ -846,31 +872,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                         });
                     }
-                }, 1000); // 1 segundo para borrar
-            };
-            
-            const endDeletePress = () => {
-                clearTimeout(pressTimer);
-            };
-            
-            // Para dispositivos táctiles
-            messageContent.addEventListener('touchstart', startDeletePress);
-            messageContent.addEventListener('touchend', endDeletePress);
-            messageContent.addEventListener('touchcancel', endDeletePress);
-            
-            // Para mouse (click derecho)
-            messageContent.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                if (confirm('¿Estás seguro de que quieres borrar este mensaje?')) {
-                    deleteMessage(message.id).then(success => {
-                        if (success) {
-                            showNotification('Mensaje eliminado', 'success');
-                        } else {
-                            showNotification('Error al eliminar mensaje', 'error');
-                        }
-                    });
-                }
-            });
+                });
+            }
         }
         
         // Añadir funcionalidad de click en nickname
