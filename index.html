@@ -133,11 +133,23 @@
         class="image-input"
         style="display: none"
       />
+      <input
+        type="file"
+        accept="audio/*"
+        class="audio-input"
+        style="display: none"
+      />
       <img
         src="images/image-load.svg"
         alt="Upload Image"
         class="image-btn"
         title="Enviar imagen"
+      />
+      <img
+        src="images/microphone.svg"
+        alt="Voice Message"
+        class="mic-btn"
+        title="Mensaje de voz"
       />
       <img
         src="images/emote.svg"
@@ -280,6 +292,18 @@
             data-emote="wow"
           />
         </div>
+      </div>
+    </div>
+
+    <!-- Panel de Grabación de Audio -->
+    <div class="audio-panel" id="audioPanel">
+      <canvas class="audio-visualizer" id="audioVisualizer" width="300" height="80"></canvas>
+      <div class="audio-timer" id="audioTimer">00:00</div>
+      <div class="audio-controls">
+        <button class="audio-btn pause" id="pauseBtn" title="Pausar">⏸</button>
+        <button class="audio-btn delete" id="deleteBtn" title="Borrar">🗑</button>
+        <button class="audio-btn upload" id="uploadAudioBtn" title="Subir audio">📁</button>
+        <button class="audio-btn send" id="sendAudioBtn" title="Enviar">✓</button>
       </div>
     </div>
 

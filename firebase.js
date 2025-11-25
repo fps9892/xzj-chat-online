@@ -118,7 +118,7 @@ export function extractYouTubeId(url) {
 }
 
 // Funciones para mensajes
-export async function sendMessage(text, type = 'text', imageData = null) {
+export async function sendMessage(text, type = 'text', imageData = null, audioDuration = null) {
     console.log('Sending message:', { text, type, imageData });
     
     // Verificar si el usuario está baneado o muteado (incluye invitados)
@@ -211,6 +211,12 @@ export async function sendMessage(text, type = 'text', imageData = null) {
     if ((type === 'image' || type === 'emote') && imageData) {
         messageData.imageData = imageData;
         console.log('Added imageData to message');
+    }
+    
+    // Añadir datos de audio
+    if (type === 'audio' && imageData) {
+        messageData.audioData = imageData;
+        messageData.audioDuration = audioDuration || 0;
     }
     
     // Verificar que no hay valores undefined
@@ -568,6 +574,12 @@ export async function sendImage(file) {
         reader.onerror = () => reject(new Error('Error al leer el archivo'));
         reader.readAsDataURL(file);
     });
+}
+
+// Enviar audio
+export async function sendAudio(audioData, duration) {
+    if (!audioData) throw new Error('No hay audio para enviar');
+    return sendMessage('', 'audio', audioData, duration);
 }
 
 // Funciones de typing status

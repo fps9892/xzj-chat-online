@@ -1,4 +1,5 @@
-import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, currentRoom, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, getRooms, listenToRooms, listenToAnnouncements, showAnnouncement, listenToUserStatus, processEmotes, extractYouTubeId } from './firebase.js';
+import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, currentRoom, updateUserData, changePassword, sendImage, sendAudio, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, getRooms, listenToRooms, listenToAnnouncements, showAnnouncement, listenToUserStatus, processEmotes, extractYouTubeId } from './firebase.js';
+import { AudioRecorder, formatTime, blobToBase64 } from './audio-recorder.js';
 import { getUserProfile, findUserByUsername, animateMessageDeletion, initAdminListener } from './core.js';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -102,6 +103,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const colorInput = document.querySelector('.color-input');
     const imageBtn = document.querySelector('.image-btn');
     const imageInput = document.querySelector('.image-input');
+    const micBtn = document.querySelector('.mic-btn');
+    const audioPanel = document.getElementById('audioPanel');
+    const audioVisualizer = document.getElementById('audioVisualizer');
+    const audioTimer = document.getElementById('audioTimer');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const deleteBtn = document.getElementById('deleteBtn');
+    const sendAudioBtn = document.getElementById('sendAudioBtn');
+    const uploadAudioBtn = document.getElementById('uploadAudioBtn');
+    const audioInput = document.querySelector('.audio-input');
+    
+    let audioRecorder = new AudioRecorder();
+    let isRecording = false;
+    let isPaused = false;
+    let timerInterval = null;
     const emoteBtn = document.querySelector('.emote-btn');
     const emotePanel = document.querySelector('.emote-panel');
     const emoteItems = document.querySelectorAll('.emote-item');
@@ -713,6 +728,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="message-content">
                             ${message.type === 'image' ? 
                                 `<img src="${message.imageData}" alt="Imagen" class="message-image" onclick="showImageModal('${message.imageData}')" />` :
+                            message.type === 'audio' ?
+                                `<div class="audio-message">
+                                    <audio controls class="audio-player" src="${message.audioData}"></audio>
+                                    <span class="audio-duration">${formatTime(message.audioDuration || 0)}</span>
+                                </div>` :
                                 `<div class="message-text copyable-text">${processEmotes(message.text)}</div>
                                 ${message.text.length > getCharacterLimit() ? '<span class="see-more">ver más</span>' : ''}
                                 ${(() => {
@@ -1500,6 +1520,108 @@ document.addEventListener('DOMContentLoaded', function() {
             showNotification(error.message, 'error');
         }
     };
+
+    // Audio recording
+    micBtn.addEventListener('click', async () => {
+        if (!isRecording) {
+            const started = await audioRecorder.startRecording(audioVisualizer);
+            if (started) {
+                isRecording = true;
+                audioPanel.classList.add('active');
+                pauseBtn.classList.add('recording');
+                
+                timerInterval = setInterval(() => {
+                    const duration = audioRecorder.getRecordingDuration();
+                    audioTimer.textContent = formatTime(duration);
+                }, 1000);
+            } else {
+                showNotification('No se pudo acceder al micrófono', 'error');
+            }
+        }
+    });
+    
+    pauseBtn.addEventListener('click', () => {
+        if (isRecording && !isPaused) {
+            audioRecorder.pauseRecording();
+            isPaused = true;
+            pauseBtn.textContent = '▶';
+            pauseBtn.classList.remove('recording');
+            clearInterval(timerInterval);
+        } else if (isRecording && isPaused) {
+            audioRecorder.resumeRecording(audioVisualizer);
+            isPaused = false;
+            pauseBtn.textContent = '⏸';
+            pauseBtn.classList.add('recording');
+            
+            timerInterval = setInterval(() => {
+                const duration = audioRecorder.getRecordingDuration();
+                audioTimer.textContent = formatTime(duration);
+            }, 1000);
+        }
+    });
+    
+    deleteBtn.addEventListener('click', () => {
+        audioRecorder.cancelRecording();
+        audioPanel.classList.remove('active');
+        isRecording = false;
+        isPaused = false;
+        audioTimer.textContent = '00:00';
+        pauseBtn.textContent = '⏸';
+        pauseBtn.classList.remove('recording');
+        clearInterval(timerInterval);
+    });
+    
+    sendAudioBtn.addEventListener('click', async () => {
+        if (!isRecording) return;
+        
+        clearInterval(timerInterval);
+        const duration = audioRecorder.getRecordingDuration();
+        const audioBlob = await audioRecorder.stopRecording();
+        
+        if (audioBlob) {
+            try {
+                const audioBase64 = await blobToBase64(audioBlob);
+                await sendAudio(audioBase64, duration);
+                showNotification('Audio enviado', 'success');
+            } catch (error) {
+                showNotification('Error al enviar audio', 'error');
+            }
+        }
+        
+        audioPanel.classList.remove('active');
+        isRecording = false;
+        isPaused = false;
+        audioTimer.textContent = '00:00';
+        pauseBtn.textContent = '⏸';
+        pauseBtn.classList.remove('recording');
+    });
+    
+    uploadAudioBtn.addEventListener('click', () => {
+        audioInput.click();
+    });
+    
+    audioInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        if (file.size > 10 * 1024 * 1024) {
+            showNotification('El audio debe ser menor a 10MB', 'error');
+            return;
+        }
+        
+        try {
+            const audioBase64 = await blobToBase64(file);
+            const audio = new Audio(audioBase64);
+            audio.onloadedmetadata = async () => {
+                const duration = Math.floor(audio.duration);
+                await sendAudio(audioBase64, duration);
+                showNotification('Audio enviado', 'success');
+                audioInput.value = '';
+            };
+        } catch (error) {
+            showNotification('Error al enviar audio', 'error');
+        }
+    });
 
     sendIcon.addEventListener('click', sendMessageHandler);
     
