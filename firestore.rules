@@ -67,11 +67,12 @@ service cloud.firestore {
     
     // Colección de salas/rooms - acceso público para lectura
     match /rooms/{roomId} {
-      allow read: if true;
-      allow write: if isAuthenticated() && (isAdmin() || isModerator()); 
-      // Admins y moderadores autenticados pueden modificar salas
-      allow create: if isAuthenticated() && isAdmin(); // Solo admins autenticados pueden crear salas nuevas
-      allow delete: if isAuthenticated() && isAdmin(); // Solo admins autenticados pueden borrar salas
+      allow read: if true; // Todos pueden leer salas
+      allow write: if isAdmin() || request.auth.token.isSystemAdmin == true; 
+      // Solo administradores o el sistema pueden escribir
+      allow create: if isAdmin() || request.auth.token.isSystemAdmin == true; 
+      // Solo administradores o el sistema pueden crear salas
+      allow delete: if isAdmin(); // Solo administradores pueden borrar salas
     }
     
     // Colección de conectados - para lista de usuarios conectados por dispositivo

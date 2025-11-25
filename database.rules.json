@@ -1,21 +1,21 @@
 {
   "rules": {
-    ".read": true,
-    ".write": true,
+    ".read": "auth != null",
+    ".write": "auth != null",
     "users": {
       "$uid": {
-        ".read": "auth != null && auth.uid == $uid || data.child('isGuest').val() == true",
-        ".write": "auth != null && auth.uid == $uid || data.child('isGuest').val() == true || newData.child('isGuest').val() == true"
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid"
       }
     },
     "messages": {
-      ".read": true,
+      ".read": "auth != null",
       "$messageId": {
-        ".write": "auth != null || newData.child('isGuest').val() == true"
+        ".write": "auth != null"
       }
     },
     "rooms": {
-      ".read": true,
+      ".read": "auth != null",
       ".write": "auth != null"
     },
     "admins": {
