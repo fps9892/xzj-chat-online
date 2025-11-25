@@ -594,13 +594,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let lastMessageCount = 0;
     
-    function renderMessages(messages) {
-        const chatArea = document.querySelector('.chat-area');
-        const wasAtBottom = chatArea.scrollHeight - chatArea.scrollTop <= chatArea.clientHeight + 50;
-        
-        chatArea.innerHTML = '';
-        
-        // Event delegation para botones de velocidad
+    // Event delegation para botones de velocidad (solo una vez)
+    const chatArea = document.querySelector('.chat-area');
+    if (chatArea && !chatArea.dataset.speedListenerAdded) {
         chatArea.addEventListener('click', (e) => {
             if (e.target.classList.contains('speed-btn')) {
                 const audioId = e.target.dataset.audio;
@@ -617,6 +613,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
+        chatArea.dataset.speedListenerAdded = 'true';
+    }
+    
+    function renderMessages(messages) {
+        const chatArea = document.querySelector('.chat-area');
+        const wasAtBottom = chatArea.scrollHeight - chatArea.scrollTop <= chatArea.clientHeight + 50;
+        
+        chatArea.innerHTML = '';
         
         messages.forEach((message, index) => {
             const messageEl = createMessageElement(message);
