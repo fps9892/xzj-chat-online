@@ -312,11 +312,11 @@ body {
 }
 
 .rooms-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 5%;
+  position: fixed;
+  top: 70px;
+  left: 50%;
   transform: translateX(-50%);
-  width: 150px;
+  width: 300px;
   max-height: 200px;
   overflow-y: auto;
   background-color: #000;
@@ -324,6 +324,7 @@ body {
   border-radius: 8px;
   margin-top: 5px;
   display: none;
+  z-index: 1500;
 }
 
 .rooms-dropdown.active {
@@ -370,6 +371,16 @@ body {
   font-size: 10px;
   margin-left: 8px;
   font-family: "Orbitron", monospace;
+}
+
+.sidebar-typing-indicator {
+  padding: 8px 12px;
+  font-size: 11px;
+  color: #00ff00;
+  font-family: monospace;
+  border-top: 1px solid #333;
+  background-color: rgba(0, 255, 0, 0.05);
+  animation: blink 1.5s infinite;
 }
 
 .main-content {

@@ -928,6 +928,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Escuchar usuarios escribiendo
     listenToTyping((typingUsers) => {
+        const sidebarTypingIndicator = document.querySelector('.sidebar-typing-indicator');
+        
         if (typingUsers.length > 0) {
             let message;
             if (typingUsers.length === 1) {
@@ -939,8 +941,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             typingIndicator.textContent = message;
             typingIndicator.style.display = 'block';
+            
+            // Mostrar también en sidebar
+            if (sidebarTypingIndicator) {
+                sidebarTypingIndicator.textContent = message;
+                sidebarTypingIndicator.style.display = 'block';
+            }
         } else {
             typingIndicator.style.display = 'none';
+            if (sidebarTypingIndicator) {
+                sidebarTypingIndicator.style.display = 'none';
+            }
         }
     });
 
