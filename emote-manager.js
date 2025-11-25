@@ -2,24 +2,7 @@
 import { sendMessage, currentUser } from './firebase.js';
 
 const EMOTES = Array.from({length: 22}, (_, i) => `/images/emotes/emote${i+1}.png`);
-let GIFS = [];
-
-// Verificar qué GIFs existen
-async function loadAvailableGifs() {
-    const gifPromises = Array.from({length: 11}, (_, i) => {
-        const src = `/images/emotes/emote${i+1}.gif`;
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.onload = () => resolve(src);
-            img.onerror = () => resolve(null);
-            img.src = src;
-        });
-    });
-    
-    const results = await Promise.all(gifPromises);
-    GIFS = results.filter(src => src !== null);
-    return GIFS;
-}
+const GIFS = Array.from({length: 11}, (_, i) => `/images/emotes/gifs/emote${i+1}.gif`);
 
 // Obtener favoritos del localStorage
 function getFavorites(type) {
@@ -110,29 +93,18 @@ async function handleItemClick(src, type) {
 }
 
 // Inicializar panel de emotes
-export async function initEmotePanel() {
+export function initEmotePanel() {
     const emoteBtn = document.querySelector('.emote-btn');
     const emotePanel = document.querySelector('.emote-panel');
     const emoteTabs = document.querySelectorAll('.emote-tab');
     
     if (!emoteBtn || !emotePanel) return;
     
-    // Cargar GIFs disponibles
-    await loadAvailableGifs();
-    
-    // Ocultar pestaña de GIFs si no hay ninguno
-    const gifTab = document.querySelector('[data-tab="gifs"]');
-    if (GIFS.length === 0 && gifTab) {
-        gifTab.style.display = 'none';
-    }
-    
     // Renderizar emotes y gifs
     renderItems(EMOTES, 'emotesGrid', 'emotes');
-    if (GIFS.length > 0) {
-        renderItems(GIFS, 'gifsGrid', 'gifs');
-        renderFavorites('gifs');
-    }
+    renderItems(GIFS, 'gifsGrid', 'gifs');
     renderFavorites('emotes');
+    renderFavorites('gifs');
     
     // Toggle panel
     emoteBtn.addEventListener('click', (e) => {
@@ -167,7 +139,7 @@ export async function initEmotePanel() {
 
 // Inicializar cuando el DOM esté listo
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => initEmotePanel());
+    document.addEventListener('DOMContentLoaded', initEmotePanel);
 } else {
     initEmotePanel();
 }
