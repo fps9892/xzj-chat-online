@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         try {
-            const userId = generateUserId();
+            const userId = 'guest_' + generateUserId();
             const now = new Date();
             const guestUser = {
                 userId: userId,
@@ -227,12 +227,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 lastSeen: now.toISOString()
             };
 
-            // Guardar en Firestore en la colección `users`
-            await setDoc(doc(db, 'users', userId), guestUser);
+            // Guardar en Firestore en la colección `guests`
+            await setDoc(doc(db, 'guests', userId), guestUser);
             
             localStorage.setItem('currentUser', JSON.stringify(guestUser));
             window.location.href = 'index.html';
         } catch (error) {
+            console.error('Error completo:', error);
             showNotification('Error al entrar como invitado: ' + error.message, 'error');
         }
     });

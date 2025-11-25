@@ -1,10 +1,9 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Permitir lectura global, escritura solo autenticados
+    // Permitir lectura global
     match /{document=**} {
       allow read: if true;
-      allow write: if request.auth != null;
     }
     
     // Administradores
@@ -38,13 +37,14 @@ service cloud.firestore {
     
     // Usuarios
     match /users/{userId} {
-      allow read: if request.auth != null && 
-        (request.auth.uid == userId || 
-         exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
-         exists(/databases/$(database)/documents/moderators/$(request.auth.uid)));
-      allow write: if request.auth != null && 
-        (request.auth.uid == userId || 
-         exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+      allow read: if true;
+      allow write: if true; // Permitir a invitados crear su perfil
+    }
+    
+    // Invitados
+    match /guests/{guestId} {
+      allow read: if true;
+      allow write: if true;
     }
     
     // Salas de chat

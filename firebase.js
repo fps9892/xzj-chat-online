@@ -22,20 +22,16 @@ function sanitizeUserId(userId) {
 }
 
 // Usuario actual desde localStorage
-const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {
-    userId: sanitizeUserId('guest_' + Math.random().toString(36).substr(2, 9)),
-    username: 'guest',
-    avatar: 'images/profileuser.jpg',
-    textColor: '#ffffff',
-    description: 'Usuario invitado',
-    status: 'online',
-    role: 'guest',
-    isGuest: true
-};
+let currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
 // Redirect to login if no user
-if (!localStorage.getItem('currentUser')) {
+if (!currentUser) {
     window.location.href = 'login.html';
+}
+
+// Sanitizar userId si es necesario
+if (currentUser && currentUser.userId) {
+    currentUser.userId = sanitizeUserId(currentUser.userId);
 }
 
 let currentRoom = 'general';
@@ -86,11 +82,16 @@ export function processEmotes(text) {
 export async function sendMessage(text, type = 'text', imageData = null) {
     console.log('Sending message:', { text, type, imageData });
     
-    // Verificar si el usuario está baneado
-    if (currentUser.firebaseUid && !currentUser.isGuest) {
-        const isBanned = await checkBannedStatus(currentUser.firebaseUid);
-        if (isBanned) {
-            throw new Error('No puedes enviar mensajes porque estás baneado');
+    // Verificar si el usuario está baneado (solo para usuarios registrados)
+    if (!currentUser.isGuest && currentUser.firebaseUid) {
+        try {
+            const isBanned = await checkBannedStatus(currentUser.firebaseUid);
+            if (isBanned) {
+                throw new Error('No puedes enviar mensajes porque estás baneado');
+            }
+        } catch (error) {
+            console.warn('No se pudo verificar estado de baneo:', error);
+            // Continuar para invitados
         }
     }
     
@@ -272,19 +273,24 @@ export async function updateUserData(updates) {
         // Agregar timestamp de última actualización
         cleanUpdates.lastUpdated = new Date().toISOString();
         
-        if (Object.keys(cleanUpdates).length === 0) {
+        if (Object.keys(cleanUpdates).length === 1) { // Solo lastUpdated
             console.warn('No hay actualizaciones válidas para procesar');
             return false;
         }
         
         if (currentUser.isGuest) {
             // Para usuarios invitados, usar colección guests
-            await setDoc(doc(db, 'guests', currentUser.userId), {
-                ...cleanUpdates,
-                userId: currentUser.userId,
-                isGuest: true,
-                createdAt: currentUser.createdAt || new Date().toISOString()
-            }, { merge: true });
+            try {
+                await setDoc(doc(db, 'guests', currentUser.userId), {
+                    ...cleanUpdates,
+                    userId: currentUser.userId,
+                    isGuest: true,
+                    createdAt: currentUser.createdAt || new Date().toISOString()
+                }, { merge: true });
+            } catch (error) {
+                console.warn('No se pudo actualizar Firestore para invitado:', error);
+                // Continuar sin error para invitados
+            }
         } else {
             // Para usuarios registrados, usar firebaseUid como ID de documento
             const userDocRef = doc(db, 'users', currentUser.firebaseUid);
@@ -431,7 +437,7 @@ export async function checkModeratorStatus(userId) {
 
 // Verificar si el usuario está baneado
 export async function checkBannedStatus(userId) {
-    if (!userId) return false;
+    if (!userId || currentUser.isGuest) return false;
     
     try {
         const bannedDoc = await getDoc(doc(db, 'banned', userId));
@@ -754,38 +760,52 @@ export async function processAdminCommand(message) {
 
 // Actualizar rol del usuario y obtener datos de Firestore
 export async function updateUserRole() {
-    if (!currentUser.isGuest && currentUser.firebaseUid) {
-        const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
-        const isModerator = await checkModeratorStatus(currentUser.firebaseUid);
-        const isBanned = await checkBannedStatus(currentUser.firebaseUid);
-        
-        if (isBanned) {
-            currentUser.role = 'banned';
-            currentUser.isBanned = true;
-        } else if (isAdmin) {
-            currentUser.role = 'Administrador';
-            currentUser.isAdmin = true;
-        } else if (isModerator) {
-            currentUser.role = 'Moderador';
-            currentUser.isModerator = true;
-        } else {
-            currentUser.role = 'Usuario';
-        }
-        
-        // Obtener createdAt desde Firestore
-        try {
-            const userDoc = await getDoc(doc(db, 'users', currentUser.firebaseUid));
-            if (userDoc.exists()) {
-                const userData = userDoc.data();
-                if (userData.createdAt) {
-                    currentUser.createdAt = userData.createdAt;
-                }
-            }
-        } catch (error) {
-            console.error('Error getting user data:', error);
-        }
-        
+    if (currentUser.isGuest) {
+        // Para invitados, asegurar que tengan rol de guest
+        currentUser.role = 'guest';
+        currentUser.isAdmin = false;
+        currentUser.isModerator = false;
+        currentUser.isBanned = false;
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        return;
+    }
+    
+    if (currentUser.firebaseUid) {
+        try {
+            const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
+            const isModerator = await checkModeratorStatus(currentUser.firebaseUid);
+            const isBanned = await checkBannedStatus(currentUser.firebaseUid);
+            
+            if (isBanned) {
+                currentUser.role = 'banned';
+                currentUser.isBanned = true;
+            } else if (isAdmin) {
+                currentUser.role = 'Administrador';
+                currentUser.isAdmin = true;
+            } else if (isModerator) {
+                currentUser.role = 'Moderador';
+                currentUser.isModerator = true;
+            } else {
+                currentUser.role = 'Usuario';
+            }
+            
+            // Obtener createdAt desde Firestore
+            try {
+                const userDoc = await getDoc(doc(db, 'users', currentUser.firebaseUid));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    if (userData.createdAt) {
+                        currentUser.createdAt = userData.createdAt;
+                    }
+                }
+            } catch (error) {
+                console.error('Error getting user data:', error);
+            }
+            
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        } catch (error) {
+            console.error('Error updating user role:', error);
+        }
     }
 }
 
