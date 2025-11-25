@@ -1,6 +1,6 @@
-import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, getRooms, listenToRooms } from './firebase.js';
+import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, currentRoom, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, getRooms, listenToRooms } from './firebase.js';
 import { getUserProfile, findUserByUsername } from './user-profile-service.js';
-import { markAsNewMessage, showNewMessagesIndicator, createParticleBurst, animateMessageDeletion } from './chat-enhancements.js';
+import { animateMessageDeletion } from './chat-enhancements.js';
 import './admin-listener.js';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -525,7 +525,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Si el mensaje indica que la sala fue borrada, redirigir
             if (message.roomDeleted && message.type === 'system') {
                 setTimeout(() => {
-                    if (currentRoom !== 'general') {
+                    const { currentRoom: room } = await import('./firebase.js');
+                    if (room !== 'general') {
                         showNotification('Has sido movido a la Sala General', 'warning');
                         changeRoom('general');
                         currentRoomName.textContent = 'Sala General';
