@@ -193,11 +193,20 @@ export function listenToMessages(callback) {
     });
 }
 
+// Detectar tipo de dispositivo
+function getDeviceType() {
+    const userAgent = navigator.userAgent.toLowerCase();
+    if (/tablet|ipad|playbook|silk/.test(userAgent)) return 'tablet';
+    if (/mobile|iphone|ipod|android|blackberry|opera|mini|windows\sce|palm|smartphone|iemobile/.test(userAgent)) return 'mobile';
+    return 'desktop';
+}
+
 // Funciones para usuarios conectados
 export function setUserOnline() {
     const sanitizedUserId = sanitizeUserId(currentUser.userId);
     const userRef = ref(database, `rooms/${currentRoom}/users/${sanitizedUserId}`);
     const userStatusRef = ref(database, `rooms/${currentRoom}/users/${sanitizedUserId}/status`);
+    const deviceType = getDeviceType();
     
     // Asegurar que todos los campos requeridos tengan valores válidos
     const userData = {
@@ -210,7 +219,7 @@ export function setUserOnline() {
         description: currentUser.description || 'Sin descripción',
         isGuest: currentUser.isGuest || false,
         createdAt: currentUser.createdAt || new Date().toISOString(),
-        role: currentUser.role || 'user'
+        deviceType: deviceType
     };
     
     // Verificar que no hay valores undefined
@@ -230,11 +239,48 @@ export function setUserOnline() {
     
     set(userRef, userData);
     
+    // Actualizar contador de dispositivos
+    updateDeviceCount(deviceType, 1);
+    
     if (currentUser.isGuest) {
         onDisconnect(userRef).remove();
+        onDisconnect(ref(database, `deviceCounts/${deviceType}`)).transaction((current) => {
+            return Math.max(0, (current || 1) - 1);
+        });
     } else {
         onDisconnect(userStatusRef).set('offline');
+        onDisconnect(ref(database, `deviceCounts/${deviceType}`)).transaction((current) => {
+            return Math.max(0, (current || 1) - 1);
+        });
     }
+}
+
+// Actualizar contador de dispositivos
+function updateDeviceCount(deviceType, increment) {
+    const deviceCountRef = ref(database, `deviceCounts/${deviceType}`);
+    set(deviceCountRef, serverTimestamp()); // Trigger para contar
+}
+
+// Escuchar contadores de dispositivos globales
+export function listenToDeviceCounts(callback) {
+    const allUsersRef = ref(database, 'rooms');
+    return onValue(allUsersRef, (snapshot) => {
+        const globalCounts = { desktop: 0, mobile: 0, tablet: 0 };
+        
+        snapshot.forEach((roomSnapshot) => {
+            const usersData = roomSnapshot.child('users').val();
+            if (usersData) {
+                Object.values(usersData).forEach(userData => {
+                    if (userData.status === 'online') {
+                        const deviceType = userData.deviceType || 'desktop';
+                        globalCounts[deviceType]++;
+                    }
+                });
+            }
+        });
+        
+        callback(globalCounts);
+    });
 }
 
 let previousUsers = new Map(); // Cambiar a Map para almacenar datos del usuario
@@ -251,12 +297,17 @@ export function listenToUsers(callback) {
     const unsubscribe = onValue(usersRef, async (snapshot) => {
         const users = [];
         const currentUsers = new Map();
+        const deviceCounts = { desktop: 0, mobile: 0, tablet: 0 };
         
-        for (const childSnapshot of snapshot.children) {
+        snapshot.forEach((childSnapshot) => {
             const userData = childSnapshot.val();
             if (userData.status === 'online') {
                 const userId = childSnapshot.key;
                 currentUsers.set(userId, userData);
+                
+                // Contar dispositivos
+                const deviceType = userData.deviceType || 'desktop';
+                deviceCounts[deviceType]++;
                 
                 // Verificar si es administrador
                 let isAdmin = false;
@@ -293,7 +344,7 @@ export function listenToUsers(callback) {
                     showJoinNotification(userData.name || 'Usuario');
                 }
             }
-        }
+        });
         
         // Detectar usuarios que se fueron y enviar notificación
         if (previousUsers.size > 0) {
@@ -305,7 +356,7 @@ export function listenToUsers(callback) {
         }
         
         previousUsers = currentUsers;
-        callback(users);
+        callback(users, deviceCounts);
     });
     
     // Guardar el listener para poder limpiarlo después

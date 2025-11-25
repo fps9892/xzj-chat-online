@@ -76,9 +76,14 @@ service cloud.firestore {
     
     // Colección de conectados - para lista de usuarios conectados por dispositivo
     match /connected/{deviceId} {
-      allow read: if isAuthenticated(); // Solo usuarios autenticados pueden ver quién está conectado
-      allow write: if isAuthenticated() && request.auth.uid == request.resource.data.firebaseUid; 
-      // Solo usuarios autenticados pueden actualizar su estado de conexión
+      allow read: if true; // Todos pueden ver contadores de dispositivos
+      allow write: if true; // Todos pueden actualizar contadores
+    }
+    
+    // Colección de contadores de dispositivos
+    match /deviceCounts/{deviceType} {
+      allow read: if true; // Todos pueden leer contadores
+      allow write: if true; // Todos pueden actualizar contadores
     }
     
     // Colección de sesiones activas - para manejar múltiples dispositivos por usuario
