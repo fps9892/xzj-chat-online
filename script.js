@@ -1,4 +1,5 @@
 import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser, getRooms } from './firebase.js';
+import { getUserProfile, findUserByUsername } from './user-profile-service.js';
 import './admin-listener.js';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -112,7 +113,8 @@ document.addEventListener('DOMContentLoaded', function() {
         name: 30 * 60 * 1000, // 30 minutos
         description: 30 * 60 * 1000, // 30 minutos
         password: 30 * 60 * 1000, // 30 minutos
-        color: 2 * 60 * 1000 // 2 minutos
+        color: 2 * 60 * 1000, // 2 minutos
+        country: 30 * 60 * 1000 // 30 minutos
     };
     
     const lastChanges = {};
@@ -242,6 +244,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         document.querySelector('.username').textContent = updates.username;
                     } else if (configType === 'description') {
                         updates.description = inputField.value.trim();
+                    } else if (configType === 'country') {
+                        updates.country = inputField.value.trim();
                     } else if (configType === 'color') {
                         updates.textColor = inputField.value;
                         document.querySelector('.username').style.color = inputField.value;
@@ -285,14 +289,25 @@ document.addEventListener('DOMContentLoaded', function() {
                             return;
                         }
                         
-                        const targetUid = inputField.value.trim();
-                        if (!targetUid) {
-                            showNotification('Ingresa un UID válido', 'error');
+                        const targetUsername = inputField.value.trim();
+                        if (!targetUsername) {
+                            showNotification('Ingresa un nombre de usuario válido', 'error');
                             return;
                         }
                         
                         try {
-                            await grantModeratorRole(targetUid);
+                            const targetUser = await findUserByUsername(targetUsername);
+                            if (!targetUser) {
+                                showNotification('Usuario no encontrado', 'error');
+                                return;
+                            }
+                            
+                            if (targetUser.isGuest) {
+                                showNotification('No se puede otorgar rol a usuarios invitados', 'error');
+                                return;
+                            }
+                            
+                            await grantModeratorRole(targetUser.firebaseUid);
                             showNotification('Rol de moderador otorgado correctamente', 'success');
                             input.classList.remove('active');
                             button.style.display = 'block';
@@ -346,7 +361,8 @@ document.addEventListener('DOMContentLoaded', function() {
             description: 'Descripción',
             password: 'Contraseña',
             color: 'Color',
-            photo: 'Foto de perfil'
+            photo: 'Foto de perfil',
+            country: 'País'
         };
         return names[configType];
     }
@@ -625,18 +641,26 @@ document.addEventListener('DOMContentLoaded', function() {
         // Añadir funcionalidad de click en nickname
         const clickableUsername = messageEl.querySelector('.clickable-username');
         if (clickableUsername) {
-            clickableUsername.addEventListener('click', () => {
+            clickableUsername.addEventListener('click', async () => {
                 const userId = clickableUsername.dataset.userId;
-                // Buscar datos del usuario y mostrar perfil
-                const userData = {
-                    id: userId,
-                    name: message.userName,
-                    avatar: message.userAvatar,
-                    role: message.isGuest ? 'guest' : 'user',
-                    description: 'Usuario del chat',
-                    textColor: message.textColor
-                };
-                showUserProfile(userData);
+                // Obtener perfil completo del usuario
+                const userProfile = await getUserProfile(message.firebaseUid || userId, message.isGuest);
+                if (userProfile) {
+                    showUserProfile(userProfile);
+                } else {
+                    // Fallback con datos del mensaje
+                    const userData = {
+                        id: userId,
+                        username: message.userName,
+                        avatar: message.userAvatar,
+                        role: message.isGuest ? 'Invitado' : 'Usuario',
+                        description: 'Usuario del chat',
+                        textColor: message.textColor,
+                        firebaseUid: message.firebaseUid,
+                        isGuest: message.isGuest
+                    };
+                    showUserProfile(userData);
+                }
             });
         }
         
@@ -664,7 +688,10 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `);
         
-        userEl.addEventListener('click', () => showUserProfile(user));
+        userEl.addEventListener('click', async () => {
+            const userProfile = await getUserProfile(user.firebaseUid || user.id, user.isGuest);
+            showUserProfile(userProfile || user);
+        });
         return userEl;
     }
     
@@ -684,7 +711,10 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `);
         
-        userEl.addEventListener('click', () => showUserProfile(user));
+        userEl.addEventListener('click', async () => {
+            const userProfile = await getUserProfile(user.firebaseUid || user.id, user.isGuest);
+            showUserProfile(userProfile || user);
+        });
         return userEl;
     }
     
@@ -698,19 +728,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div class="user-profile-content">
                         <div class="profile-avatar">
-                            <img src="${user.avatar}" alt="${user.name}">
+                            <img src="${user.avatar}" alt="${user.username || user.name}">
                         </div>
-                        <h4>${user.name}</h4>
-                        <p class="user-role">${user.role === 'Administrador' ? 'Administrador' : user.role === 'Moderador' ? 'Moderador' : user.role === 'guest' ? 'Invitado' : 'Usuario'}</p>
+                        <h4>${user.username || user.name}</h4>
+                        <p class="user-role">${user.role}</p>
                         <div class="profile-info">
                             <p><strong>Descripción:</strong> ${user.description || 'Sin descripción'}</p>
-                            <p><strong>ID de Cuenta:</strong> ${user.firebaseUid || user.id || 'No disponible'}</p>
-                            <p><strong>Nombre de Usuario:</strong> ${user.name || 'Usuario'}</p>
-                            <p><strong>Rol:</strong> ${user.role === 'Administrador' ? 'Administrador' : user.role === 'Moderador' ? 'Moderador' : user.role === 'guest' ? 'Invitado' : 'Usuario'}</p>
-                            <p><strong>Color de Texto:</strong> <span style="color: ${user.textColor || '#ffffff'}">■</span> ${user.textColor || '#ffffff'}</p>
-                            <p><strong>Estado:</strong> ${user.status === 'online' ? 'En línea' : 'Desconectado'}</p>
+                            <p><strong>País:</strong> ${user.country || 'No especificado'}</p>
+                            <p><strong>Rol:</strong> ${user.role}</p>
+                            <p><strong>Estado:</strong> ${user.status || (user.status === 'online' ? 'En línea' : 'Desconectado')}</p>
                             <p><strong>Cuenta creada:</strong> ${user.createdAt ? getTimeAgo(user.createdAt) : 'No disponible'}</p>
                             <p><strong>Última conexión:</strong> ${user.lastSeen ? new Date(user.lastSeen).toLocaleString('es-ES') : 'Ahora'}</p>
+                            <p><strong>ID de la cuenta:</strong> ${user.firebaseUid || user.id || 'No disponible'}</p>
                         </div>
                     </div>
                 </div>
@@ -788,6 +817,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!currentUser.status) currentUser.status = 'online';
         if (!currentUser.createdAt) currentUser.createdAt = new Date().toISOString();
         if (!currentUser.lastUpdated) currentUser.lastUpdated = new Date().toISOString();
+        if (!currentUser.country) currentUser.country = 'No especificado';
         
         // Para usuarios no invitados, asegurar que firebaseUid sea el ID principal
         if (!currentUser.isGuest && currentUser.firebaseUid) {
@@ -798,7 +828,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 textColor: currentUser.textColor,
                 description: currentUser.description,
                 role: currentUser.role,
-                status: currentUser.status
+                status: currentUser.status,
+                country: currentUser.country || 'No especificado'
             });
         }
         
