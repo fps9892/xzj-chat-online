@@ -24,11 +24,47 @@
   pointer-events: auto;
 }
 
+.emote-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.emote-tab {
+  flex: 1;
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+  color: #888;
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.emote-tab.active {
+  color: #00ff00;
+  border-bottom-color: #00ff00;
+}
+
+.emote-tab:hover {
+  color: #00ff00;
+  background: rgba(0, 255, 0, 0.05);
+}
+
 .emote-content {
   flex: 1;
   overflow-y: auto;
   padding: 12px;
   max-height: 500px;
+}
+
+.emote-section {
+  display: none;
+}
+
+.emote-section.active {
+  display: block;
 }
 
 .favorites-section {
