@@ -237,25 +237,76 @@ export function setUserOnline() {
     }
 }
 
+let previousUsers = new Set();
+
 export function listenToUsers(callback) {
     const usersRef = ref(database, `rooms/${currentRoom}/users`);
-    return onValue(usersRef, (snapshot) => {
+    return onValue(usersRef, async (snapshot) => {
         const users = [];
-        snapshot.forEach((childSnapshot) => {
+        const currentUsers = new Set();
+        
+        for (const childSnapshot of snapshot.children) {
             const userData = childSnapshot.val();
             if (userData.status === 'online') {
+                const userId = childSnapshot.key;
+                currentUsers.add(userId);
+                
+                // Verificar si es administrador
+                let isAdmin = false;
+                if (!userData.isGuest && userData.firebaseUid) {
+                    try {
+                        isAdmin = await checkAdminStatus(userData.firebaseUid);
+                    } catch (error) {
+                        console.warn('Error checking admin status:', error);
+                    }
+                }
+                
+                // Actualizar rol si es admin
+                const userRole = isAdmin ? 'Administrador' : (userData.role || 'Usuario');
+                
                 users.push({
-                    id: childSnapshot.key,
-                    ...userData
+                    id: userId,
+                    ...userData,
+                    role: userRole,
+                    isAdmin: isAdmin
                 });
+                
+                // Notificar si es un nuevo usuario
+                if (!previousUsers.has(userId) && previousUsers.size > 0) {
+                    showJoinNotification(userData.name || 'Usuario');
+                }
             }
-        });
+        }
+        
+        previousUsers = currentUsers;
         callback(users);
     });
 }
 
+// Función para mostrar notificación de usuario que se une
+function showJoinNotification(username) {
+    const notification = document.createElement('div');
+    notification.className = 'join-notification';
+    notification.innerHTML = `
+        <div class="join-notification-content">
+            <span class="join-icon">👋</span>
+            <span class="join-text">${username} se unió a la sala</span>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => notification.classList.add('show'), 100);
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
 export function changeRoom(roomName) {
     currentRoom = roomName;
+    previousUsers.clear(); // Limpiar usuarios previos al cambiar sala
     setUserOnline();
 }
 
