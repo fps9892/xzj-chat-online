@@ -172,7 +172,7 @@ body {
 .rooms-dropdown {
   position: absolute;
   top: 100%;
-  left: 50%;
+  right: 110%;
   transform: translateX(-50%) translateY(10px) scale(0.95);
   width: 280px;
   max-height: 300px;
