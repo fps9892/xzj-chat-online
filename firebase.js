@@ -374,14 +374,14 @@ export function listenToUsers(callback) {
     return unsubscribe;
 }
 
-// Notificación flotante para conexión
+// Notificación flotante para conexión (no se usa, se maneja en script.js)
 function showJoinNotification(username) {
-    showFloatingNotification(`👋 ${username} se conectó`, 'info');
+    // Desactivado - se maneja en script.js
 }
 
-// Notificación flotante para desconexión
+// Notificación flotante para desconexión (no se usa, se maneja en script.js)
 function showLeaveNotification(username) {
-    showFloatingNotification(`👋 ${username} se desconectó`, 'info');
+    // Desactivado - se maneja en script.js
 }
 
 // Mostrar notificación flotante temporal
@@ -520,9 +520,16 @@ export function setTypingStatus(isTyping) {
     }
 }
 
+let currentTypingListener = null;
+
 export function listenToTyping(callback) {
+    // Limpiar listener anterior si existe
+    if (currentTypingListener) {
+        currentTypingListener();
+    }
+    
     const typingRef = ref(database, `rooms/${currentRoom}/typing`);
-    return onValue(typingRef, (snapshot) => {
+    currentTypingListener = onValue(typingRef, (snapshot) => {
         const typingUsers = [];
         snapshot.forEach((childSnapshot) => {
             const data = childSnapshot.val();
@@ -534,6 +541,8 @@ export function listenToTyping(callback) {
         });
         callback(typingUsers);
     });
+    
+    return currentTypingListener;
 }
 
 // Función para cambiar contraseña
@@ -1142,4 +1151,27 @@ export function listenToRooms(callback) {
     });
 }
 
-export { currentUser, currentRoom, database, db, showAnnouncement };
+// Obtener conteo de usuarios para una sala específica
+export async function getUserCountForRoom(roomId) {
+    try {
+        const usersRef = ref(database, `rooms/${roomId}/users`);
+        const snapshot = await get(usersRef);
+        let count = 0;
+        
+        if (snapshot.exists()) {
+            snapshot.forEach((childSnapshot) => {
+                const userData = childSnapshot.val();
+                if (userData.status === 'online') {
+                    count++;
+                }
+            });
+        }
+        
+        return count;
+    } catch (error) {
+        console.error(`Error getting user count for room ${roomId}:`, error);
+        return 0;
+    }
+}
+
+export { currentUser, currentRoom, database, db, showAnnouncement, getUserCountForRoom };

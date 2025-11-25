@@ -144,16 +144,24 @@ document.addEventListener('DOMContentLoaded', function() {
             if (roomsListener) return;
             
             roomsListener = listenToRooms(async (rooms) => {
+                // Obtener conteo de usuarios en tiempo real para cada sala
+                const roomsWithCounts = await Promise.all(rooms.map(async (room) => {
+                    const { getUserCountForRoom } = await import('./firebase.js');
+                    const count = await getUserCountForRoom(room.id);
+                    return { ...room, userCount: count };
+                }));
+                
                 roomsDropdown.innerHTML = '';
                 
                 // Asegurar que la sala general esté primero
-                const generalRoom = rooms.find(r => r.id === 'general');
+                const generalRoom = roomsWithCounts.find(r => r.id === 'general');
+                let sortedRooms = roomsWithCounts;
                 if (generalRoom) {
-                    rooms = [generalRoom, ...rooms.filter(r => r.id !== 'general')];
+                    sortedRooms = [generalRoom, ...roomsWithCounts.filter(r => r.id !== 'general')];
                 }
                 
-                // Obtener conteo de usuarios para cada sala
-                for (const room of rooms) {
+                // Crear elementos de sala
+                for (const room of sortedRooms) {
                     const roomElement = document.createElement('div');
                     roomElement.className = 'room-item';
                     if (room.id === currentRoom) {
@@ -188,6 +196,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Limpiar listeners antes de cambiar sala
                 cleanupListeners();
+                previousUsersList.clear();
                 
                 // Cambiar sala y recargar datos
                 changeRoom(roomId);
@@ -484,21 +493,20 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Crear nuevo listener para la sala actual
         currentUsersListener = listenToUsers((users) => {
-            // Detectar usuarios que se conectaron
+            // Detectar usuarios que se conectaron o cambiaron de sala
             users.forEach(user => {
                 if (!previousUsersList.has(user.id) && previousUsersList.size > 0) {
-                    // Usuario se conectó
                     if (user.id !== currentUser.userId) {
-                        showNotification(`${user.name} se conectó`, 'info');
+                        showNotification(`${user.name} se unió a la sala`, 'info');
                     }
                 }
             });
             
-            // Detectar usuarios que se desconectaron
+            // Detectar usuarios que se desconectaron o cambiaron de sala
             previousUsersList.forEach((userData, userId) => {
                 const stillConnected = users.find(u => u.id === userId);
                 if (!stillConnected && userId !== currentUser.userId) {
-                    showNotification(`${userData.name} se desconectó`, 'info');
+                    showNotification(`${userData.name} salió de la sala`, 'info');
                 }
             });
             
