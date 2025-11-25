@@ -1174,4 +1174,4 @@ export async function getUserCountForRoom(roomId) {
     }
 }
 
-export { currentUser, currentRoom, database, db, showAnnouncement, getUserCountForRoom };
+export { currentUser, currentRoom, database, db, showAnnouncement };
