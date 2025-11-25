@@ -164,10 +164,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 const roomId = this.getAttribute('data-room');
                 const roomDisplayName = this.textContent.split(' (')[0]; // Remover contador de usuarios del nombre
                 currentRoomName.textContent = roomDisplayName;
+                
+                // Limpiar listeners antes de cambiar sala
+                cleanupListeners();
+                
+                // Cambiar sala y recargar datos
                 changeRoom(roomId);
                 clearSkeletons();
-                loadMessages();
-                loadUsers();
+                
+                // Pequeño delay para asegurar que el cambio de sala se procese
+                setTimeout(() => {
+                    loadMessages();
+                    loadUsers();
+                }, 100);
+                
                 roomsDropdown.classList.remove('active');
             });
         });
@@ -442,10 +452,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    let currentUsersListener = null;
+    
     function loadUsers() {
-        listenToUsers((users) => {
+        // Limpiar listener anterior si existe
+        if (currentUsersListener) {
+            currentUsersListener();
+        }
+        
+        // Crear nuevo listener para la sala actual
+        currentUsersListener = listenToUsers((users) => {
             renderUsers(users);
-            updateUserCount(users.length);
         });
     }
     
@@ -465,6 +482,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const usersList = document.querySelector('.users-list');
         const mobileUsersDropdown = document.querySelector('.mobile-users-dropdown');
         
+        // Limpiar skeletons si existen
+        document.querySelectorAll('.skeleton-user').forEach(el => el.remove());
+        
         // Desktop users list
         if (usersList) {
             usersList.innerHTML = '';
@@ -474,7 +494,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // Mobile/Tablet users dropdown
+        // Mobile/Tablet users dropdown - actualizar completamente
         if (mobileUsersDropdown) {
             mobileUsersDropdown.innerHTML = '';
             users.forEach(user => {
@@ -482,11 +502,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 mobileUsersDropdown.appendChild(userEl);
             });
         }
+        
+        // Actualizar contador en el header móvil
+        updateUserCount(users.length);
     }
     
     function createMessageElement(message) {
         const isOwn = message.userId === currentUser.userId;
         const time = message.timestamp ? new Date(message.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+        
+        // Manejar mensajes del sistema
+        if (message.type === 'system') {
+            return createElement(`
+                <div class="message-container system-message" data-message-id="${message.id}">
+                    <div class="message system">
+                        <div class="message-content">
+                            <div class="message-text">${message.text}</div>
+                        </div>
+                    </div>
+                </div>
+            `);
+        }
         
         // Mostrar rol del usuario
         let displayName = message.userName;
@@ -699,12 +735,12 @@ document.addEventListener('DOMContentLoaded', function() {
         let displayName = user.name;
         if (user.role === 'Administrador') displayName += ' (Admin)';
         else if (user.role === 'Moderador') displayName += ' (Mod)';
-        else if (user.role === 'guest') displayName += ' (invitado)';
+        else if (user.isGuest || user.role === 'guest') displayName += ' (invitado)';
         
         const userEl = createElement(`
             <div class="mobile-user-item" data-user-id="${user.id}">
                 <div class="mobile-user-avatar">
-                    <img src="${user.avatar}" alt="${user.name}">
+                    <img src="${user.avatar}" alt="${user.name}" onerror="this.src='images/profileuser.jpg'">
                     <span class="mobile-online-indicator"></span>
                 </div>
                 <span class="mobile-user-name">${displayName}</span>
@@ -714,6 +750,8 @@ document.addEventListener('DOMContentLoaded', function() {
         userEl.addEventListener('click', async () => {
             const userProfile = await getUserProfile(user.firebaseUid || user.id, user.isGuest);
             showUserProfile(userProfile || user);
+            // Cerrar dropdown después de hacer click
+            mobileUsersDropdown.classList.remove('active');
         });
         return userEl;
     }
@@ -783,13 +821,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function updateUserCount(count) {
-        document.querySelector('.user-count').textContent = count;
-        document.querySelector('.mobile-user-count').textContent = count;
+        const userCountEl = document.querySelector('.user-count');
+        const mobileUserCountEl = document.querySelector('.mobile-user-count');
+        const roomUserCountEl = document.querySelector('.room-user-count');
         
-        // Actualizar contador en el header de la sala
-        const roomUserCount = document.querySelector('.room-user-count');
-        if (roomUserCount) {
-            roomUserCount.textContent = `(${count} usuarios)`;
+        if (userCountEl) {
+            userCountEl.textContent = count;
+        }
+        if (mobileUserCountEl) {
+            mobileUserCountEl.textContent = count;
+        }
+        if (roomUserCountEl) {
+            roomUserCountEl.textContent = `(${count} usuario${count !== 1 ? 's' : ''})`;
         }
     }
     
@@ -847,6 +890,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Limpiar listeners al cambiar de sala
+    function cleanupListeners() {
+        if (currentUsersListener) {
+            currentUsersListener();
+            currentUsersListener = null;
+        }
+    }
+    
     // Inicializar Firebase después de la carga
     async function initializeApp() {
         validateCurrentUser();
@@ -864,6 +915,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Limpiar skeletons después de 3 segundos
         setTimeout(clearSkeletons, 3000);
     }
+    
+    // Limpiar listeners al cerrar la ventana
+    window.addEventListener('beforeunload', cleanupListeners);
     
     // Esperar a que termine la carga para inicializar
     setTimeout(() => {

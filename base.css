@@ -1429,3 +1429,29 @@ body {
 .skeleton-message.received .skeleton-header {
   justify-content: flex-start;
 }
+
+/* Mensajes del sistema */
+.message.system {
+  background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 204, 106, 0.1));
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  text-align: center;
+  margin: 10px auto;
+  max-width: 300px;
+  border-radius: 20px;
+}
+
+.message.system .message-content {
+  padding: 8px 16px;
+  background: transparent !important;
+}
+
+.message.system .message-text {
+  color: #00ff88;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.message.system .message-content::before,
+.message.system .message-content::after {
+  display: none;
+}

@@ -237,76 +237,155 @@ export function setUserOnline() {
     }
 }
 
-let previousUsers = new Set();
+let previousUsers = new Map(); // Cambiar a Map para almacenar datos del usuario
+let roomUserListeners = new Map(); // Para manejar listeners por sala
 
 export function listenToUsers(callback) {
     const usersRef = ref(database, `rooms/${currentRoom}/users`);
-    return onValue(usersRef, async (snapshot) => {
+    
+    // Limpiar listener anterior si existe
+    if (roomUserListeners.has(currentRoom)) {
+        roomUserListeners.get(currentRoom)();
+    }
+    
+    const unsubscribe = onValue(usersRef, async (snapshot) => {
         const users = [];
-        const currentUsers = new Set();
+        const currentUsers = new Map();
         
         for (const childSnapshot of snapshot.children) {
             const userData = childSnapshot.val();
             if (userData.status === 'online') {
                 const userId = childSnapshot.key;
-                currentUsers.add(userId);
+                currentUsers.set(userId, userData);
                 
                 // Verificar si es administrador
                 let isAdmin = false;
+                let isModerator = false;
                 if (!userData.isGuest && userData.firebaseUid) {
                     try {
                         isAdmin = await checkAdminStatus(userData.firebaseUid);
+                        isModerator = await checkModeratorStatus(userData.firebaseUid);
                     } catch (error) {
-                        console.warn('Error checking admin status:', error);
+                        console.warn('Error checking admin/mod status:', error);
                     }
                 }
                 
-                // Actualizar rol si es admin
-                const userRole = isAdmin ? 'Administrador' : (userData.role || 'Usuario');
+                // Actualizar rol si es admin o moderador
+                let userRole = userData.role || 'Usuario';
+                if (isAdmin) {
+                    userRole = 'Administrador';
+                } else if (isModerator) {
+                    userRole = 'Moderador';
+                } else if (userData.isGuest) {
+                    userRole = 'guest';
+                }
                 
                 users.push({
                     id: userId,
                     ...userData,
                     role: userRole,
-                    isAdmin: isAdmin
+                    isAdmin: isAdmin,
+                    isModerator: isModerator
                 });
                 
-                // Notificar si es un nuevo usuario
+                // Notificar si es un nuevo usuario (solo si no es el primer carga)
                 if (!previousUsers.has(userId) && previousUsers.size > 0) {
                     showJoinNotification(userData.name || 'Usuario');
                 }
             }
         }
         
+        // Detectar usuarios que se fueron y enviar notificación
+        if (previousUsers.size > 0) {
+            previousUsers.forEach((userData, userId) => {
+                if (!currentUsers.has(userId)) {
+                    showLeaveNotification(userData.name || 'Usuario');
+                }
+            });
+        }
+        
         previousUsers = currentUsers;
         callback(users);
     });
+    
+    // Guardar el listener para poder limpiarlo después
+    roomUserListeners.set(currentRoom, unsubscribe);
+    
+    return unsubscribe;
 }
 
-// Función para mostrar notificación de usuario que se une
-function showJoinNotification(username) {
-    const notification = document.createElement('div');
-    notification.className = 'join-notification';
-    notification.innerHTML = `
-        <div class="join-notification-content">
-            <span class="join-icon">👋</span>
-            <span class="join-text">${username} se unió a la sala</span>
-        </div>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => notification.classList.add('show'), 100);
-    
-    setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
+// Función para enviar notificación de usuario que se une como mensaje del sistema
+async function showJoinNotification(username) {
+    try {
+        const systemMessageData = {
+            text: `👋 ${username} se unió a la sala`,
+            userId: 'system',
+            userName: 'Sistema',
+            userAvatar: 'images/logo.svg',
+            textColor: '#00ff88',
+            timestamp: serverTimestamp(),
+            type: 'system',
+            isGuest: false,
+            role: 'system',
+            firebaseUid: null
+        };
+        
+        const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
+        await push(messagesRef, systemMessageData);
+    } catch (error) {
+        console.error('Error sending join notification:', error);
+    }
+}
+
+// Función para enviar notificación de usuario que se va como mensaje del sistema
+async function showLeaveNotification(username) {
+    try {
+        const systemMessageData = {
+            text: `👋 ${username} se fue a otra sala`,
+            userId: 'system',
+            userName: 'Sistema',
+            userAvatar: 'images/logo.svg',
+            textColor: '#ff8800',
+            timestamp: serverTimestamp(),
+            type: 'system',
+            isGuest: false,
+            role: 'system',
+            firebaseUid: null
+        };
+        
+        const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
+        await push(messagesRef, systemMessageData);
+    } catch (error) {
+        console.error('Error sending leave notification:', error);
+    }
 }
 
 export function changeRoom(roomName) {
+    // Limpiar estado del usuario en la sala anterior
+    if (currentRoom && currentRoom !== roomName) {
+        const sanitizedUserId = sanitizeUserId(currentUser.userId);
+        const oldUserRef = ref(database, `rooms/${currentRoom}/users/${sanitizedUserId}`);
+        
+        if (currentUser.isGuest) {
+            // Para invitados, eliminar completamente
+            remove(oldUserRef);
+        } else {
+            // Para usuarios registrados, marcar como offline
+            set(ref(database, `rooms/${currentRoom}/users/${sanitizedUserId}/status`), 'offline');
+        }
+    }
+    
     currentRoom = roomName;
     previousUsers.clear(); // Limpiar usuarios previos al cambiar sala
+    
+    // Limpiar listeners de la sala anterior
+    roomUserListeners.forEach((unsubscribe, room) => {
+        if (room !== roomName) {
+            unsubscribe();
+            roomUserListeners.delete(room);
+        }
+    });
+    
     setUserOnline();
 }
 
