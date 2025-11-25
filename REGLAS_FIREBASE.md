@@ -88,6 +88,8 @@ service cloud.firestore {
 {
   "rules": {
     "rooms": {
+      ".read": true,
+      ".write": true,
       "$roomId": {
         ".read": true,
         ".write": true,
@@ -95,23 +97,20 @@ service cloud.firestore {
           ".indexOn": ["timestamp"],
           "$messageId": {
             ".read": true,
-            ".write": true,
-            ".validate": "newData.hasChildren(['text', 'userId', 'userName', 'userAvatar', 'timestamp', 'type'])"
+            ".write": true
           }
         },
         "users": {
           ".indexOn": ["status", "lastSeen"],
           "$userId": {
             ".read": true,
-            ".write": true,
-            ".validate": "newData.hasChildren(['name', 'avatar', 'status'])"
+            ".write": true
           }
         },
         "typing": {
           "$userId": {
             ".read": true,
-            ".write": true,
-            ".validate": "newData.hasChildren(['userName', 'timestamp'])"
+            ".write": true
           }
         }
       }
@@ -119,6 +118,14 @@ service cloud.firestore {
     "deviceCounts": {
       ".read": true,
       ".write": true
+    },
+    "roomEvents": {
+      ".read": true,
+      ".write": true,
+      "$eventId": {
+        ".read": true,
+        ".write": true
+      }
     }
   }
 }

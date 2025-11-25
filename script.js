@@ -1,4 +1,4 @@
-import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, getRooms } from './firebase.js';
+import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, getRooms, listenToRooms } from './firebase.js';
 import { getUserProfile, findUserByUsername } from './user-profile-service.js';
 import './admin-listener.js';
 
@@ -135,22 +135,37 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Cargar salas dinámicamente
+    // Cargar salas dinámicamente con listener en tiempo real
+    let roomsListener = null;
     async function loadRooms() {
         try {
-            const rooms = await getRooms();
-            roomsDropdown.innerHTML = '';
+            // Si ya hay un listener, no crear otro
+            if (roomsListener) return;
             
-            rooms.forEach(room => {
-                const roomElement = document.createElement('div');
-                roomElement.className = 'room-item';
-                roomElement.setAttribute('data-room', room.id);
-                roomElement.innerHTML = `${room.name} <span class="room-users">(${room.userCount || 0})</span>`;
-                roomsDropdown.appendChild(roomElement);
+            roomsListener = listenToRooms(async (rooms) => {
+                roomsDropdown.innerHTML = '';
+                
+                // Asegurar que la sala general esté primero
+                const generalRoom = rooms.find(r => r.id === 'general');
+                if (generalRoom) {
+                    rooms = [generalRoom, ...rooms.filter(r => r.id !== 'general')];
+                }
+                
+                // Obtener conteo de usuarios para cada sala
+                for (const room of rooms) {
+                    const roomElement = document.createElement('div');
+                    roomElement.className = 'room-item';
+                    if (room.id === currentRoom) {
+                        roomElement.classList.add('active');
+                    }
+                    roomElement.setAttribute('data-room', room.id);
+                    roomElement.innerHTML = `${room.name} <span class="room-users">(${room.userCount || 0})</span>`;
+                    roomsDropdown.appendChild(roomElement);
+                }
+                
+                // Actualizar event listeners
+                setupRoomListeners();
             });
-            
-            // Actualizar event listeners
-            setupRoomListeners();
         } catch (error) {
             console.error('Error loading rooms:', error);
         }
@@ -164,6 +179,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 const roomId = this.getAttribute('data-room');
                 const roomDisplayName = this.textContent.split(' (')[0]; // Remover contador de usuarios del nombre
                 currentRoomName.textContent = roomDisplayName;
+                
+                // Remover clase active de todos los items
+                roomItems.forEach(r => r.classList.remove('active'));
+                // Agregar clase active al item seleccionado
+                this.classList.add('active');
                 
                 // Limpiar listeners antes de cambiar sala
                 cleanupListeners();
@@ -453,6 +473,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     let currentUsersListener = null;
+    let previousUsersList = new Map();
     
     function loadUsers() {
         // Limpiar listener anterior si existe
@@ -462,6 +483,30 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Crear nuevo listener para la sala actual
         currentUsersListener = listenToUsers((users) => {
+            // Detectar usuarios que se conectaron
+            users.forEach(user => {
+                if (!previousUsersList.has(user.id) && previousUsersList.size > 0) {
+                    // Usuario se conectó
+                    if (user.id !== currentUser.userId) {
+                        showNotification(`${user.name} se conectó`, 'info');
+                    }
+                }
+            });
+            
+            // Detectar usuarios que se desconectaron
+            previousUsersList.forEach((userData, userId) => {
+                const stillConnected = users.find(u => u.id === userId);
+                if (!stillConnected && userId !== currentUser.userId) {
+                    showNotification(`${userData.name} se desconectó`, 'info');
+                }
+            });
+            
+            // Actualizar lista de usuarios previos
+            previousUsersList.clear();
+            users.forEach(user => {
+                previousUsersList.set(user.id, user);
+            });
+            
             renderUsers(users);
         });
     }
@@ -473,6 +518,19 @@ document.addEventListener('DOMContentLoaded', function() {
         messages.forEach(message => {
             const messageEl = createMessageElement(message);
             chatArea.appendChild(messageEl);
+            
+            // Si el mensaje indica que la sala fue borrada, redirigir
+            if (message.roomDeleted && message.type === 'system') {
+                setTimeout(() => {
+                    if (currentRoom !== 'general') {
+                        showNotification('Has sido movido a la Sala General', 'warning');
+                        changeRoom('general');
+                        currentRoomName.textContent = 'Sala General';
+                        loadMessages();
+                        loadUsers();
+                    }
+                }, 2000);
+            }
         });
         
         chatArea.scrollTop = chatArea.scrollHeight;
@@ -918,6 +976,37 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Limpiar listeners al cerrar la ventana
     window.addEventListener('beforeunload', cleanupListeners);
+    
+    // Manejar cambios de URL (botón atrás/adelante del navegador)
+    window.addEventListener('popstate', (event) => {
+        if (event.state && event.state.room) {
+            const roomId = event.state.room;
+            currentRoomName.textContent = roomId === 'general' ? 'Sala General' : roomId;
+            cleanupListeners();
+            changeRoom(roomId);
+            setTimeout(() => {
+                loadMessages();
+                loadUsers();
+            }, 100);
+        }
+    });
+    
+    // Detectar cuando el usuario sale de la página
+    window.addEventListener('beforeunload', () => {
+        // Firebase ya maneja la desconexión automáticamente con onDisconnect
+    });
+    
+    // Detectar cuando el usuario vuelve a la página (cambio de visibilidad)
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            // Usuario salió de la página (cambió de pestaña, minimizó, etc.)
+            console.log('Usuario salió de la página');
+        } else {
+            // Usuario volvió a la página
+            console.log('Usuario volvió a la página');
+            setUserOnline(); // Asegurar que el estado sea online
+        }
+    });
     
     // Esperar a que termine la carga para inicializar
     setTimeout(() => {

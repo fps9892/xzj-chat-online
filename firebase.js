@@ -1,6 +1,6 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, push, onValue, serverTimestamp, set, onDisconnect, query as dbQuery, limitToLast, remove, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-import { getFirestore, doc, updateDoc, getDoc, setDoc, deleteDoc, collection, query as fsQuery, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirestore, doc, updateDoc, getDoc, setDoc, deleteDoc, collection, query as fsQuery, where, getDocs, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
@@ -35,6 +35,27 @@ if (currentUser && currentUser.userId) {
 }
 
 let currentRoom = 'general';
+
+// Obtener sala desde URL
+function getRoomFromURL() {
+    const path = window.location.pathname;
+    const match = path.match(/\/([^/]+)$/);
+    return match ? match[1] : 'general';
+}
+
+// Actualizar URL sin recargar
+function updateURL(roomId) {
+    const newURL = roomId === 'general' ? '/index.html' : `/index.html/${roomId}`;
+    window.history.pushState({ room: roomId }, '', newURL);
+}
+
+// Inicializar sala desde URL
+if (window.location.pathname !== '/login.html') {
+    const urlRoom = getRoomFromURL();
+    if (urlRoom && urlRoom !== 'index.html') {
+        currentRoom = urlRoom;
+    }
+}
 
 // Mantener estado de autenticación
 let authInitialized = false;
@@ -411,6 +432,9 @@ export function changeRoom(roomName) {
         }
     });
     
+    // Actualizar URL
+    updateURL(roomName);
+    
     setUserOnline();
 }
 
@@ -660,6 +684,33 @@ export async function deleteRoom(roomName) {
         if (roomId === 'general') {
             throw new Error('No se puede borrar la sala general');
         }
+        
+        // Notificar a usuarios en la sala antes de borrar
+        const usersRef = ref(database, `rooms/${roomId}/users`);
+        const usersSnapshot = await get(usersRef);
+        
+        if (usersSnapshot.exists()) {
+            // Enviar mensaje de sistema a la sala antes de borrar
+            const systemMessageData = {
+                text: '⚠️ Esta sala ha sido eliminada. Serás redirigido a la Sala General.',
+                userId: 'system',
+                userName: 'Sistema',
+                userAvatar: 'images/logo.svg',
+                textColor: '#ff4444',
+                timestamp: serverTimestamp(),
+                type: 'system',
+                isGuest: false,
+                role: 'system',
+                firebaseUid: null,
+                roomDeleted: true
+            };
+            
+            const messagesRef = ref(database, `rooms/${roomId}/messages`);
+            await push(messagesRef, systemMessageData);
+        }
+        
+        // Esperar un momento para que los usuarios vean el mensaje
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
         // Borrar de Firestore
         await deleteDoc(doc(db, 'rooms', roomId));
@@ -1049,6 +1100,26 @@ export async function getRooms() {
             userCount: 0
         }];
     }
+}
+
+// Escuchar cambios en salas en tiempo real
+export function listenToRooms(callback) {
+    const roomsRef = collection(db, 'rooms');
+    return onSnapshot(roomsRef, (snapshot) => {
+        const rooms = [];
+        snapshot.forEach((doc) => {
+            const roomData = doc.data();
+            if (roomData.isActive !== false) {
+                rooms.push({
+                    id: doc.id,
+                    name: roomData.name,
+                    createdBy: roomData.createdBy,
+                    createdAt: roomData.createdAt
+                });
+            }
+        });
+        callback(rooms);
+    });
 }
 
 export { currentUser, currentRoom, database, db };
