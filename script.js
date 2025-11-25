@@ -537,6 +537,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         lastMessageCount = messages.length;
+        
+        // Scroll automático al final
+        chatArea.scrollTop = chatArea.scrollHeight;
     }
     
     function renderUsers(users) {
@@ -1205,14 +1208,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 messageInput.value = '';
                 charCounter.textContent = '0/250';
                 charCounter.classList.remove('warning', 'danger');
-                
-                // Scroll al final en móvil para ver el mensaje enviado
-                if (window.innerWidth <= 767) {
-                    const chatArea = document.querySelector('.chat-area');
-                    setTimeout(() => {
-                        chatArea.scrollTop = chatArea.scrollHeight;
-                    }, 100);
-                }
             }).catch(error => {
                 console.error('Error enviando mensaje:', error);
                 showNotification(error.message || 'Error al enviar mensaje', 'error');

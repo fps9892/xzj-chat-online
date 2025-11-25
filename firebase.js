@@ -200,9 +200,21 @@ async function limitMessages() {
     }
 }
 
+let currentMessagesListener = null;
+let activeRoom = null;
+
 export function listenToMessages(callback) {
+    // Limpiar listener anterior si existe
+    if (currentMessagesListener) {
+        currentMessagesListener();
+    }
+    
+    activeRoom = currentRoom;
     const messagesRef = dbQuery(ref(database, `rooms/${currentRoom}/messages`), limitToLast(50));
-    return onValue(messagesRef, (snapshot) => {
+    currentMessagesListener = onValue(messagesRef, (snapshot) => {
+        // Solo procesar si seguimos en la misma sala
+        if (activeRoom !== currentRoom) return;
+        
         const messages = [];
         snapshot.forEach((childSnapshot) => {
             messages.push({
@@ -212,6 +224,8 @@ export function listenToMessages(callback) {
         });
         callback(messages);
     });
+    
+    return currentMessagesListener;
 }
 
 // Detectar tipo de dispositivo
