@@ -405,19 +405,26 @@ export function changeRoom(roomName) {
         const sanitizedUserId = sanitizeUserId(currentUser.userId);
         const oldUserRef = ref(database, `rooms/${currentRoom}/users/${sanitizedUserId}`);
         
+        // Registrar evento de cambio de sala
+        const roomEventRef = ref(database, 'roomEvents');
+        push(roomEventRef, {
+            userId: currentUser.userId,
+            username: currentUser.username,
+            fromRoom: currentRoom,
+            toRoom: roomName,
+            timestamp: serverTimestamp()
+        });
+        
         if (currentUser.isGuest) {
-            // Para invitados, eliminar completamente
             remove(oldUserRef);
         } else {
-            // Para usuarios registrados, marcar como offline
             set(ref(database, `rooms/${currentRoom}/users/${sanitizedUserId}/status`), 'offline');
         }
     }
     
     currentRoom = roomName;
-    previousUsers.clear(); // Limpiar usuarios previos al cambiar sala
+    previousUsers.clear();
     
-    // Limpiar listeners de la sala anterior
     roomUserListeners.forEach((unsubscribe, room) => {
         if (room !== roomName) {
             unsubscribe();
@@ -425,9 +432,7 @@ export function changeRoom(roomName) {
         }
     });
     
-    // Actualizar URL
     updateURL(roomName);
-    
     setUserOnline();
 }
 
@@ -618,26 +623,54 @@ export async function checkModeratorStatus(userId) {
 
 // Verificar si el usuario está baneado
 export async function checkBannedStatus(userId) {
-    if (!userId || currentUser.isGuest) return false;
+    if (!userId) return false;
     
     try {
         const bannedDoc = await getDoc(doc(db, 'banned', userId));
-        return bannedDoc.exists();
+        if (!bannedDoc.exists()) return false;
+        
+        const banData = bannedDoc.data();
+        
+        // Si tiene fecha de expiración, verificar
+        if (banData.expiresAt) {
+            const expiresAt = new Date(banData.expiresAt);
+            if (expiresAt < new Date()) {
+                await deleteDoc(doc(db, 'banned', userId));
+                return false;
+            }
+        }
+        
+        return banData;
     } catch (error) {
         console.error('Error checking banned status:', error);
         return false;
     }
 }
 
-// Crear sala nueva (solo administradores)
+// Obtener nombre de sala por ID
+export async function getRoomName(roomId) {
+    try {
+        const roomDoc = await getDoc(doc(db, 'rooms', roomId));
+        if (roomDoc.exists()) {
+            return roomDoc.data().name;
+        }
+        return roomId === 'general' ? 'Sala General' : roomId;
+    } catch (error) {
+        return roomId;
+    }
+}
+
+// Crear sala nueva (administradores y moderadores)
 export async function createRoom(roomName) {
     if (!currentUser.firebaseUid || currentUser.isGuest) {
         throw new Error('Solo usuarios registrados pueden crear salas');
     }
     
     const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
-    if (!isAdmin) {
-        throw new Error('Solo administradores pueden crear salas');
+    const isModerator = await checkModeratorStatus(currentUser.firebaseUid);
+    
+    if (!isAdmin && !isModerator) {
+        throw new Error('Solo administradores y moderadores pueden crear salas');
     }
     
     if (roomName.length > 10) {
@@ -729,7 +762,7 @@ export async function deleteRoom(roomName) {
 }
 
 // Banear usuario (solo administradores y moderadores)
-export async function banUser(userId, reason = 'Violación de reglas') {
+export async function banUser(userId, reason = 'Violación de reglas', duration = null) {
     if (!currentUser.firebaseUid || currentUser.isGuest) {
         throw new Error('Solo usuarios registrados pueden banear');
     }
@@ -742,16 +775,72 @@ export async function banUser(userId, reason = 'Violación de reglas') {
     }
     
     try {
-        await setDoc(doc(db, 'banned', userId), {
+        const banData = {
             bannedBy: currentUser.firebaseUid,
+            bannedByName: currentUser.username,
             reason: reason,
             bannedAt: new Date().toISOString()
-        });
+        };
         
+        if (duration) {
+            banData.expiresAt = new Date(Date.now() + duration).toISOString();
+        }
+        
+        await setDoc(doc(db, 'banned', userId), banData);
         return true;
     } catch (error) {
         console.error('Error banning user:', error);
         throw error;
+    }
+}
+
+// Mutear usuario temporalmente
+export async function muteUser(userId, duration = 5 * 60 * 1000) {
+    if (!currentUser.firebaseUid || currentUser.isGuest) {
+        throw new Error('Solo usuarios registrados pueden mutear');
+    }
+    
+    const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
+    const isModerator = await checkModeratorStatus(currentUser.firebaseUid);
+    
+    if (!isAdmin && !isModerator) {
+        throw new Error('Solo administradores y moderadores pueden mutear usuarios');
+    }
+    
+    try {
+        await setDoc(doc(db, 'muted', userId), {
+            mutedBy: currentUser.firebaseUid,
+            mutedByName: currentUser.username,
+            mutedAt: new Date().toISOString(),
+            expiresAt: new Date(Date.now() + duration).toISOString()
+        });
+        return true;
+    } catch (error) {
+        console.error('Error muting user:', error);
+        throw error;
+    }
+}
+
+// Verificar si usuario está muteado
+export async function checkMutedStatus(userId) {
+    if (!userId) return false;
+    
+    try {
+        const mutedDoc = await getDoc(doc(db, 'muted', userId));
+        if (!mutedDoc.exists()) return false;
+        
+        const muteData = mutedDoc.data();
+        const expiresAt = new Date(muteData.expiresAt);
+        
+        if (expiresAt < new Date()) {
+            await deleteDoc(doc(db, 'muted', userId));
+            return false;
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Error checking muted status:', error);
+        return false;
     }
 }
 
@@ -934,6 +1023,11 @@ export async function processAdminCommand(message) {
                     throw new Error('Uso: !crearsala <nombre>');
                 }
                 const roomName = args.join(' ');
+                const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
+                const isMod = await checkModeratorStatus(currentUser.firebaseUid);
+                if (!isAdmin && !isMod) {
+                    throw new Error('Solo administradores y moderadores pueden crear salas');
+                }
                 await createRoom(roomName);
                 return { success: true, message: `Sala "${roomName}" creada exitosamente` };
                 

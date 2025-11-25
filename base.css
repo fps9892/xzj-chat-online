@@ -933,6 +933,10 @@ body {
     font-size: 12px;
     padding: 8px 12px;
   }
+  
+  .mobile-user-item {
+    cursor: pointer;
+  }
 }
 
 .message-container {
@@ -1390,40 +1394,45 @@ body {
 }
 
 .mod-tag {
-  background-color: #4834d4;
-  color: #fff;
+  background-color: #ffaa00;
+  color: #000;
   font-size: 8px;
   font-weight: bold;
   padding: 2px 6px;
   border-radius: 10px;
   margin-left: 5px;
   font-family: "Orbitron", monospace;
-  box-shadow: 0 0 5px rgba(72, 52, 212, 0.5);
+  box-shadow: 0 0 5px rgba(255, 170, 0, 0.5);
 }
 
 .user-actions {
-  display: flex;
+  display: none;
   gap: 5px;
   margin-top: 5px;
+  flex-wrap: wrap;
 }
 
-.mod-btn, .ban-btn {
-  padding: 2px 8px;
+.user-item:hover .user-actions {
+  display: flex;
+}
+
+.mod-btn, .ban-btn, .mute-btn {
+  padding: 3px 8px;
   border: none;
   border-radius: 12px;
-  font-size: 0.7em;
+  font-size: 0.65em;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .mod-btn {
-  background: #4834d4;
-  color: white;
+  background: #ffaa00;
+  color: #000;
 }
 
 .mod-btn:hover {
-  background: #3742fa;
+  background: #ffcc00;
   transform: translateY(-1px);
 }
 
@@ -1435,6 +1444,75 @@ body {
 .ban-btn:hover {
   background: #ff2d2d;
   transform: translateY(-1px);
+}
+
+.mute-btn {
+  background: #888;
+  color: white;
+}
+
+.mute-btn:hover {
+  background: #666;
+  transform: translateY(-1px);
+}
+
+.mobile-user-item .user-actions {
+  display: none;
+}
+
+.mobile-user-item.active .user-actions {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.banned-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.98);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.banned-content {
+  text-align: center;
+  padding: 40px;
+  max-width: 500px;
+}
+
+.banned-content h1 {
+  font-family: 'Orbitron', monospace;
+  font-size: 48px;
+  color: #ff4444;
+  margin-bottom: 20px;
+  text-shadow: 0 0 20px #ff4444;
+}
+
+.banned-content p {
+  font-size: 18px;
+  color: #fff;
+  margin-bottom: 15px;
+}
+
+.banned-content .ban-reason {
+  background: rgba(255, 68, 68, 0.1);
+  border: 1px solid #ff4444;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 20px 0;
+  color: #ff4444;
+}
+
+.user-notification.room-change {
+  border-color: #ffaa00;
+  color: #ffaa00;
+  box-shadow: 0 0 20px rgba(255, 170, 0, 0.4);
 }
 
 .pinned-message {

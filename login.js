@@ -1,8 +1,6 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
-import { getDatabase, ref, set } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
@@ -17,44 +15,39 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const storage = getStorage(app);
-const database = getDatabase(app);
-
-// Providers
 const googleProvider = new GoogleAuthProvider();
-const facebookProvider = new FacebookAuthProvider();
+
+let currentCaptcha = '';
+let currentCaptchaGuest = '';
 
 document.addEventListener('DOMContentLoaded', function() {
     const tabs = document.querySelectorAll('.login-tab');
     const forms = document.querySelectorAll('.login-form');
     
-    // Sistema de notificaciones
     function showNotification(message, type) {
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.textContent = message;
         document.body.appendChild(notification);
-        
         setTimeout(() => notification.classList.add('show'), 100);
-        
         setTimeout(() => {
             notification.classList.remove('show');
             setTimeout(() => notification.remove(), 300);
         }, 3000);
     }
 
-    // Tab switching
     tabs.forEach(tab => {
         tab.addEventListener('click', function() {
             tabs.forEach(t => t.classList.remove('active'));
             forms.forEach(f => f.classList.remove('active'));
-            
             this.classList.add('active');
-            document.getElementById(this.dataset.tab + '-form').classList.add('active');
+            const form = document.getElementById(this.dataset.tab + '-form');
+            form.classList.add('active');
+            if (this.dataset.tab === 'register') generateCaptcha();
+            if (this.dataset.tab === 'guest') generateCaptchaGuest();
         });
     });
 
-    // Generate unique user ID
     function generateUserId() {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         let result = '';
@@ -64,21 +57,12 @@ document.addEventListener('DOMContentLoaded', function() {
         return result.replace(/[^a-zA-Z0-9_-]/g, '');
     }
 
-    // Check username availability
-    async function isUsernameAvailable(username) {
-        const q = query(collection(db, 'users'), where('username', '==', username));
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.empty;
-    }
-
-    // Convert file to base64
     function fileToBase64(file) {
         return new Promise((resolve, reject) => {
-            if (file.size > 1024 * 1024) { // 1MB
+            if (file.size > 1024 * 1024) {
                 reject(new Error('La imagen debe ser menor a 1MB'));
                 return;
             }
-            
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result);
             reader.onerror = reject;
@@ -86,7 +70,82 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // CAPTCHA
+    function generateCaptcha() {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        currentCaptcha = '';
+        for (let i = 0; i < 6; i++) {
+            currentCaptcha += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        document.getElementById('captcha-text').textContent = currentCaptcha;
+    }
 
+    function generateCaptchaGuest() {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        currentCaptchaGuest = '';
+        for (let i = 0; i < 6; i++) {
+            currentCaptchaGuest += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        document.getElementById('captcha-text-guest').textContent = currentCaptchaGuest;
+    }
+
+    document.getElementById('captcha-refresh')?.addEventListener('click', generateCaptcha);
+    document.getElementById('captcha-refresh-guest')?.addEventListener('click', generateCaptchaGuest);
+
+    // Password strength
+    const passwordInput = document.getElementById('reg-password');
+    const strengthBar = document.querySelector('.strength-bar');
+    const passwordCounter = document.querySelector('.password-counter');
+
+    passwordInput?.addEventListener('input', function() {
+        const password = this.value;
+        const length = password.length;
+        passwordCounter.textContent = `${length}/6`;
+
+        if (length === 0) {
+            strengthBar.className = 'strength-bar';
+        } else if (length < 6) {
+            strengthBar.className = 'strength-bar weak';
+        } else if (length < 10) {
+            const hasNumber = /\d/.test(password);
+            const hasSpecial = /[!@#$%^&*]/.test(password);
+            strengthBar.className = hasNumber || hasSpecial ? 'strength-bar medium' : 'strength-bar weak';
+        } else {
+            const hasNumber = /\d/.test(password);
+            const hasSpecial = /[!@#$%^&*]/.test(password);
+            const hasUpper = /[A-Z]/.test(password);
+            strengthBar.className = (hasNumber && hasSpecial && hasUpper) ? 'strength-bar strong' : 'strength-bar medium';
+        }
+    });
+
+    // Welcome animation
+    function showWelcome() {
+        const overlay = document.createElement('div');
+        overlay.className = 'welcome-overlay';
+        overlay.innerHTML = `
+            <div class="welcome-content">
+                <h1>¡Bienvenido a FYZAR CHAT!</h1>
+                <p>Disfruta de múltiples salas</p>
+                <p>Personaliza tu perfil</p>
+                <p>Conecta con otros usuarios</p>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        for (let i = 0; i < 50; i++) {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + '%';
+            confetti.style.background = ['#00ff00', '#00ffff', '#ff00ff'][Math.floor(Math.random() * 3)];
+            confetti.style.animationDelay = Math.random() * 0.5 + 's';
+            overlay.appendChild(confetti);
+        }
+
+        setTimeout(() => {
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.remove(), 500);
+        }, 3000);
+    }
 
     // Login
     document.getElementById('login-submit').addEventListener('click', async function() {
@@ -99,7 +158,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         try {
-            // Find user by username
             const q = query(collection(db, 'users'), where('username', '==', username));
             const querySnapshot = await getDocs(q);
             
@@ -110,6 +168,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const userDoc = querySnapshot.docs[0];
             const userData = userDoc.data();
+            
+            // Check if banned
+            const bannedDoc = await getDoc(doc(db, 'banned', userData.firebaseUid));
+            if (bannedDoc.exists()) {
+                const banData = bannedDoc.data();
+                showNotification(`Estás baneado. Razón: ${banData.reason || 'No especificada'}`, 'error');
+                return;
+            }
             
             const userCredential = await signInWithEmailAndPassword(auth, userData.email, password);
             userData.firebaseUid = userCredential.user.uid;
@@ -123,19 +189,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // Register
     document.getElementById('register-submit').addEventListener('click', async function() {
         const username = document.getElementById('reg-username').value.trim();
-        const email = document.getElementById('reg-email').value.trim();
+        const email = document.getElementById('reg-email').value.trim() || `${generateUserId()}@fyzar.temp`;
         const password = document.getElementById('reg-password').value;
         const confirmPassword = document.getElementById('reg-confirm').value;
         const description = document.getElementById('reg-description').value.trim();
+        const country = document.getElementById('reg-country').value;
         const avatarFile = document.getElementById('reg-avatar').files[0];
+        const captchaInput = document.getElementById('captcha-input').value.trim();
 
-        if (!username || !email || !password || !confirmPassword) {
-            showNotification('Por favor completa todos los campos obligatorios', 'error');
+        if (!username || !password || !confirmPassword) {
+            showNotification('Por favor completa los campos obligatorios', 'error');
             return;
         }
 
-        if (username.length > 10) {
-            showNotification('El nombre de usuario no puede tener más de 10 caracteres', 'error');
+        if (captchaInput !== currentCaptcha) {
+            showNotification('Código CAPTCHA incorrecto', 'error');
+            generateCaptcha();
             return;
         }
 
@@ -169,7 +238,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 username: username,
                 email: email,
                 avatar: avatarUrl,
-                description: description || 'Usuario registrado',
+                description: description || 'Nuevo usuario',
+                country: country || 'No especificado',
                 createdAt: now.toISOString(),
                 lastSeen: now.toISOString(),
                 role: 'user',
@@ -182,15 +252,14 @@ document.addEventListener('DOMContentLoaded', function() {
             await setDoc(doc(db, 'users', userCredential.user.uid), userData);
             localStorage.setItem('currentUser', JSON.stringify(userData));
             showNotification('Cuenta creada exitosamente', 'success');
+            showWelcome();
             
             setTimeout(() => {
                 window.location.href = 'index.html';
-            }, 1500);
+            }, 3500);
         } catch (error) {
             if (error.code === 'auth/email-already-in-use') {
                 showNotification('El email ya está registrado', 'error');
-            } else if (error.code === 'auth/weak-password') {
-                showNotification('La contraseña es muy débil', 'error');
             } else {
                 showNotification('Error al crear cuenta: ' + error.message, 'error');
             }
@@ -200,14 +269,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Guest login
     document.getElementById('guest-submit').addEventListener('click', async function() {
         const nickname = document.getElementById('guest-nickname').value.trim();
+        const captchaInput = document.getElementById('captcha-input-guest').value.trim();
 
         if (!nickname) {
             showNotification('Por favor ingresa un nickname', 'error');
             return;
         }
 
-        if (nickname.length > 10) {
-            showNotification('El nickname no puede tener más de 10 caracteres', 'error');
+        if (captchaInput !== currentCaptchaGuest) {
+            showNotification('Código CAPTCHA incorrecto', 'error');
+            generateCaptchaGuest();
             return;
         }
 
@@ -227,13 +298,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 lastSeen: now.toISOString()
             };
 
-            // Guardar en Firestore en la colección `guests`
             await setDoc(doc(db, 'guests', userId), guestUser);
-            
             localStorage.setItem('currentUser', JSON.stringify(guestUser));
             window.location.href = 'index.html';
         } catch (error) {
-            console.error('Error completo:', error);
             showNotification('Error al entrar como invitado: ' + error.message, 'error');
         }
     });
@@ -244,12 +312,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const result = await signInWithPopup(auth, googleProvider);
             const user = result.user;
             
-            // Check if user exists
             const userDoc = await getDoc(doc(db, 'users', user.uid));
             
             let userData;
             if (!userDoc.exists()) {
-                // Create new user
                 const userId = generateUserId();
                 const username = user.displayName ? user.displayName.substring(0, 10) : 'GoogleUser';
                 
@@ -281,46 +347,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Facebook login
-    document.getElementById('facebook-login').addEventListener('click', async function() {
-        try {
-            const result = await signInWithPopup(auth, facebookProvider);
-            const user = result.user;
-            
-            // Check if user exists
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
-            
-            let userData;
-            if (!userDoc.exists()) {
-                // Create new user
-                const userId = generateUserId();
-                const username = user.displayName ? user.displayName.substring(0, 10) : 'FacebookUser';
-                
-                const now = new Date();
-                userData = {
-                    userId: userId,
-                    username: username,
-                    email: user.email,
-                    avatar: user.photoURL || 'images/profileuser.jpg',
-                    description: 'Usuario de Facebook',
-                    createdAt: now.toISOString(),
-                    lastSeen: now.toISOString(),
-                    role: 'user',
-                    isGuest: false,
-                    textColor: '#ffffff',
-                    background: 'default',
-                    firebaseUid: user.uid
-                };
-                
-                await setDoc(doc(db, 'users', user.uid), userData);
-            } else {
-                userData = userDoc.data();
-            }
-            
-            localStorage.setItem('currentUser', JSON.stringify(userData));
-            window.location.href = 'index.html';
-        } catch (error) {
-            showNotification('Error con Facebook: ' + error.message, 'error');
-        }
-    });
+    // Initialize
+    generateCaptcha();
+    generateCaptchaGuest();
 });

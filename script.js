@@ -483,6 +483,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentUsersListener = null;
     let previousUsersList = new Map();
     let userConnectionStatus = new Map();
+    let roomEventsListener = null;
     
     function loadUsers() {
         if (currentUsersListener) {
@@ -506,7 +507,7 @@ document.addEventListener('DOMContentLoaded', function() {
             previousUsersList.forEach((userData, userId) => {
                 const stillInRoom = users.find(u => u.id === userId);
                 if (!stillInRoom && userId !== currentUser.userId) {
-                    showUserNotification(`${userData.name} salió de la sala`, 'leave');
+                    // No mostrar notificación aquí, se maneja con roomEvents
                     userConnectionStatus.delete(userId);
                 }
             });
@@ -517,6 +518,35 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             renderUsers(users);
+        });
+        
+        // Escuchar eventos de cambio de sala
+        listenToRoomEvents();
+    }
+    
+    function listenToRoomEvents() {
+        const { ref, onValue, query: dbQuery, limitToLast } = await import('./firebase.js').then(m => ({
+            ref: m.database ? (path => ({ ref: () => {} })) : null,
+            onValue: () => {},
+            query: () => {},
+            limitToLast: () => {}
+        }));
+        
+        import('./firebase.js').then(({ database }) => {
+            const { ref, onValue, query: dbQuery, limitToLast } = require('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
+            const eventsRef = dbQuery(ref(database, 'roomEvents'), limitToLast(10));
+            
+            roomEventsListener = onValue(eventsRef, (snapshot) => {
+                snapshot.forEach((childSnapshot) => {
+                    const event = childSnapshot.val();
+                    if (event.fromRoom === currentRoom && event.userId !== currentUser.userId) {
+                        import('./firebase.js').then(async ({ getRoomName }) => {
+                            const toRoomName = await getRoomName(event.toRoom);
+                            showUserNotification(`${event.username} se fue a ${toRoomName}`, 'room-change');
+                        });
+                    }
+                });
+            });
         });
     }
     
@@ -801,6 +831,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (user.role === 'Administrador') displayName += ' (Admin)';
         else if (user.role === 'Moderador') displayName += ' (Mod)';
         
+        const canModerate = (currentUser.isAdmin || currentUser.isModerator) && user.id !== currentUser.userId && !user.isGuest;
+        
         const userEl = createElement(`
             <div class="user-item" data-user-id="${user.id}">
                 <div class="user-avatar">
@@ -808,19 +840,69 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span class="online-indicator"></span>
                 </div>
                 <span class="user-name">${displayName}</span>
-                ${(currentUser.isAdmin || currentUser.isModerator) && user.id !== currentUser.userId ? `
+                ${canModerate ? `
                     <div class="user-actions">
-                        ${currentUser.isAdmin ? `<button class="mod-btn" onclick="toggleModerator('${user.id}')">Mod</button>` : ''}
-                        <button class="ban-btn" onclick="banUser('${user.id}')">Ban</button>
+                        ${currentUser.isAdmin ? `<button class="mod-btn" data-action="mod" data-user-id="${user.firebaseUid || user.id}">Mod</button>` : ''}
+                        <button class="mute-btn" data-action="mute" data-user-id="${user.firebaseUid || user.id}">Mute</button>
+                        <button class="ban-btn" data-action="ban" data-user-id="${user.firebaseUid || user.id}">Ban</button>
                     </div>
                 ` : ''}
             </div>
         `);
         
-        userEl.addEventListener('click', async () => {
+        // Click en nombre para ver perfil
+        userEl.querySelector('.user-name').addEventListener('click', async (e) => {
+            e.stopPropagation();
             const userProfile = await getUserProfile(user.firebaseUid || user.id, user.isGuest);
             showUserProfile(userProfile || user);
         });
+        
+        // Botones de moderación
+        if (canModerate) {
+            userEl.querySelectorAll('[data-action]').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const action = btn.dataset.action;
+                    const targetUserId = btn.dataset.userId;
+                    
+                    if (action === 'ban') {
+                        const reason = prompt('Razón del baneo:', 'Violación de reglas');
+                        if (reason !== null) {
+                            try {
+                                const { banUser } = await import('./firebase.js');
+                                await banUser(targetUserId, reason);
+                                showNotification('Usuario baneado exitosamente', 'success');
+                            } catch (error) {
+                                showNotification(error.message, 'error');
+                            }
+                        }
+                    } else if (action === 'mute') {
+                        try {
+                            const { muteUser } = await import('./firebase.js');
+                            await muteUser(targetUserId, 5 * 60 * 1000); // 5 minutos
+                            showNotification('Usuario muteado por 5 minutos', 'success');
+                        } catch (error) {
+                            showNotification(error.message, 'error');
+                        }
+                    } else if (action === 'mod') {
+                        try {
+                            const { checkModeratorStatus, grantModeratorRole, revokeModerator } = await import('./firebase.js');
+                            const isMod = await checkModeratorStatus(targetUserId);
+                            if (isMod) {
+                                await revokeModerator(targetUserId);
+                                showNotification('Permisos de moderador revocados', 'success');
+                            } else {
+                                await grantModeratorRole(targetUserId);
+                                showNotification('Permisos de moderador otorgados', 'success');
+                            }
+                        } catch (error) {
+                            showNotification(error.message, 'error');
+                        }
+                    }
+                });
+            });
+        }
+        
         return userEl;
     }
     
@@ -993,6 +1075,37 @@ document.addEventListener('DOMContentLoaded', function() {
     
     async function initializeApp() {
         validateCurrentUser();
+        
+        // Verificar si el usuario está baneado
+        if (!currentUser.isGuest && currentUser.firebaseUid) {
+            const { checkBannedStatus } = await import('./firebase.js');
+            const banData = await checkBannedStatus(currentUser.firebaseUid);
+            
+            if (banData) {
+                const bannedOverlay = document.getElementById('bannedOverlay');
+                const banReasonText = document.getElementById('ban-reason-text');
+                const banDuration = document.getElementById('ban-duration');
+                
+                banReasonText.textContent = banData.reason || 'No especificada';
+                
+                if (banData.expiresAt) {
+                    const expiresDate = new Date(banData.expiresAt);
+                    const now = new Date();
+                    const diffMs = expiresDate - now;
+                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                    const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                    
+                    banDuration.textContent = `Expira en: ${diffHours}h ${diffMins}m`;
+                } else {
+                    banDuration.textContent = 'Baneo permanente';
+                }
+                
+                bannedOverlay.style.display = 'flex';
+                document.getElementById('loadingScreen').style.display = 'none';
+                return;
+            }
+        }
+        
         await updateUserRole();
         updateUserHeader();
         updateAdminUI();

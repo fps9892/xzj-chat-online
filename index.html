@@ -19,6 +19,19 @@
     <link rel="stylesheet" href="resolutions/desktop.css" />
   </head>
   <body>
+    <!-- Pantalla de Usuario Baneado -->
+    <div class="banned-overlay" id="bannedOverlay" style="display: none;">
+      <div class="banned-content">
+        <h1>⛔ BANEADO</h1>
+        <p>Tu cuenta ha sido suspendida</p>
+        <div class="ban-reason">
+          <strong>Razón:</strong> <span id="ban-reason-text">No especificada</span>
+        </div>
+        <p id="ban-duration"></p>
+        <p>Si crees que esto es un error, contacta a un administrador</p>
+      </div>
+    </div>
+    
     <!-- Pantalla de Carga Profesional -->
     <div class="loading-screen" id="loadingScreen">
       <div class="loading-content">
