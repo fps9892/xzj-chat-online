@@ -1298,9 +1298,9 @@ export async function processAdminCommand(message) {
     try {
         switch (command) {
             case '!anuncio':
-                const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
-                const isMod = await checkModeratorStatus(currentUser.firebaseUid);
-                if (!isAdmin && !isMod) {
+                const isAdminAnuncio = await checkAdminStatus(currentUser.firebaseUid);
+                const isModAnuncio = await checkModeratorStatus(currentUser.firebaseUid);
+                if (!isAdminAnuncio && !isModAnuncio) {
                     throw new Error('Solo administradores y moderadores pueden enviar anuncios');
                 }
                 if (args.length === 0) {
@@ -1315,9 +1315,9 @@ export async function processAdminCommand(message) {
                     throw new Error('Uso: !crearsala <nombre>');
                 }
                 const roomName = args.join(' ');
-                const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
-                const isMod = await checkModeratorStatus(currentUser.firebaseUid);
-                if (!isAdmin && !isMod) {
+                const isAdminSala = await checkAdminStatus(currentUser.firebaseUid);
+                const isModSala = await checkModeratorStatus(currentUser.firebaseUid);
+                if (!isAdminSala && !isModSala) {
                     throw new Error('Solo administradores y moderadores pueden crear salas');
                 }
                 await createRoom(roomName);
