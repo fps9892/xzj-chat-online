@@ -1465,3 +1465,45 @@ body {
 .message.system .message-content::after {
   display: none;
 }
+
+/* Animaciones RGB para anuncios */
+.announcement-box {
+  animation: rgbBorder 3s linear infinite, pulse 2s ease-in-out infinite;
+}
+
+.announcement-text {
+  animation: textGlow 2s ease-in-out infinite;
+}
+
+@keyframes rgbBorder {
+  0% { 
+    border-color: #00ff00; 
+    box-shadow: 0 0 50px rgba(0, 255, 0, 0.6), inset 0 0 30px rgba(0, 255, 0, 0.2); 
+  }
+  33% { 
+    border-color: #00ffff; 
+    box-shadow: 0 0 50px rgba(0, 255, 255, 0.6), inset 0 0 30px rgba(0, 255, 255, 0.2); 
+  }
+  66% { 
+    border-color: #00ff88; 
+    box-shadow: 0 0 50px rgba(0, 255, 136, 0.6), inset 0 0 30px rgba(0, 255, 136, 0.2); 
+  }
+  100% { 
+    border-color: #00ff00; 
+    box-shadow: 0 0 50px rgba(0, 255, 0, 0.6), inset 0 0 30px rgba(0, 255, 0, 0.2); 
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+}
+
+@keyframes textGlow {
+  0%, 100% { 
+    text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00; 
+  }
+  50% { 
+    text-shadow: 0 0 30px #00ff00, 0 0 40px #00ff00, 0 0 50px #00ff00; 
+  }
+}
