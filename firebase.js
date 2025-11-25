@@ -242,14 +242,8 @@ export function setUserOnline() {
     
     if (currentUser.isGuest) {
         onDisconnect(userRef).remove();
-        onDisconnect(ref(database, `deviceCounts/${deviceType}`)).transaction((current) => {
-            return Math.max(0, (current || 1) - 1);
-        });
     } else {
         onDisconnect(userStatusRef).set('offline');
-        onDisconnect(ref(database, `deviceCounts/${deviceType}`)).transaction((current) => {
-            return Math.max(0, (current || 1) - 1);
-        });
     }
 }
 
