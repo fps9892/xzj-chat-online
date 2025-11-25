@@ -1,9 +1,8 @@
 #chat-area {
-  overflow-y: auto;
+  overflow: hidden; /* Oculta el scrollbar */
   max-height: 400px; /* Ajusta según tu diseño */
   padding: 10px;
   box-sizing: border-box;
-  scroll-behavior: smooth; /* Desplazamiento suave */
 }
 
 @media (max-width: 768px) {
