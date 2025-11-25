@@ -516,22 +516,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function renderMessages(messages) {
         const chatArea = document.querySelector('.chat-area');
-        const wasAtBottom = chatArea.scrollHeight - chatArea.scrollTop - chatArea.clientHeight < 100;
-        const previousScrollHeight = chatArea.scrollHeight;
-        
         chatArea.innerHTML = '';
         
         messages.forEach((message, index) => {
             const messageEl = createMessageElement(message);
             chatArea.appendChild(messageEl);
-            
-            // Marcar mensajes nuevos
-            if (index >= lastMessageCount && lastMessageCount > 0) {
-                markAsNewMessage(messageEl);
-                if (!wasAtBottom) {
-                    showNewMessagesIndicator();
-                }
-            }
             
             // Si el mensaje indica que la sala fue borrada, redirigir
             if (message.roomDeleted && message.type === 'system') {
@@ -548,13 +537,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         lastMessageCount = messages.length;
-        
-        // Mantener scroll apropiadamente
-        requestAnimationFrame(() => {
-            if (wasAtBottom) {
-                chatArea.scrollTop = chatArea.scrollHeight;
-            }
-        });
     }
     
     function renderUsers(users) {
@@ -1219,16 +1201,18 @@ document.addEventListener('DOMContentLoaded', function() {
     function sendMessageHandler() {
         const message = messageInput.value.trim();
         if (message) {
-            // Efecto de partículas al enviar
-            const sendBtn = document.querySelector('.send-icon');
-            if (sendBtn) {
-                createParticleBurst(sendBtn);
-            }
-            
             sendMessage(message).then(() => {
                 messageInput.value = '';
                 charCounter.textContent = '0/250';
                 charCounter.classList.remove('warning', 'danger');
+                
+                // Scroll al final en móvil para ver el mensaje enviado
+                if (window.innerWidth <= 767) {
+                    const chatArea = document.querySelector('.chat-area');
+                    setTimeout(() => {
+                        chatArea.scrollTop = chatArea.scrollHeight;
+                    }, 100);
+                }
             }).catch(error => {
                 console.error('Error enviando mensaje:', error);
                 showNotification(error.message || 'Error al enviar mensaje', 'error');

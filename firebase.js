@@ -360,33 +360,29 @@ export function listenToUsers(callback) {
     return unsubscribe;
 }
 
-// Función para enviar notificación de usuario que se une como mensaje del sistema
-async function showJoinNotification(username) {
-    try {
-        const systemMessageData = {
-            text: `👋 ${username} se unió a la sala`,
-            userId: 'system',
-            userName: 'Sistema',
-            userAvatar: 'images/logo.svg',
-            textColor: '#00ff88',
-            timestamp: serverTimestamp(),
-            type: 'system',
-            isGuest: false,
-            role: 'system',
-            firebaseUid: null
-        };
-        
-        const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
-        await push(messagesRef, systemMessageData);
-    } catch (error) {
-        console.error('Error sending join notification:', error);
-    }
+// Notificación flotante para conexión
+function showJoinNotification(username) {
+    showFloatingNotification(`👋 ${username} se conectó`, 'info');
 }
 
-// Función para enviar notificación de usuario que se va - DESACTIVADA
-async function showLeaveNotification(username) {
-    // Notificaciones de salida desactivadas
-    return;
+// Notificación flotante para desconexión
+function showLeaveNotification(username) {
+    showFloatingNotification(`👋 ${username} se desconectó`, 'info');
+}
+
+// Mostrar notificación flotante temporal
+function showFloatingNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `floating-notification ${type}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => notification.classList.add('show'), 100);
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
 }
 
 export function changeRoom(roomName) {
@@ -902,6 +898,14 @@ export async function processAdminCommand(message) {
     
     try {
         switch (command) {
+            case '!anuncio':
+                if (args.length === 0) {
+                    throw new Error('Uso: !anuncio <mensaje>');
+                }
+                const announcement = args.join(' ');
+                showAnnouncement(announcement);
+                return { success: true, message: 'Anuncio enviado' };
+                
             case '!crearsala':
                 if (args.length === 0) {
                     throw new Error('Uso: !crearsala <nombre>');
@@ -945,6 +949,25 @@ export async function processAdminCommand(message) {
     } catch (error) {
         return { success: false, message: error.message };
     }
+}
+
+// Mostrar anuncio en centro de pantalla
+function showAnnouncement(message) {
+    const announcement = document.createElement('div');
+    announcement.className = 'announcement-overlay';
+    announcement.innerHTML = `
+        <div class="announcement-box">
+            <div class="announcement-text">${message}</div>
+        </div>
+    `;
+    document.body.appendChild(announcement);
+    
+    setTimeout(() => announcement.classList.add('show'), 100);
+    
+    setTimeout(() => {
+        announcement.classList.remove('show');
+        setTimeout(() => announcement.remove(), 500);
+    }, 5000);
 }
 
 // Actualizar rol del usuario y obtener datos de Firestore
@@ -1105,4 +1128,4 @@ export function listenToRooms(callback) {
     });
 }
 
-export { currentUser, currentRoom, database, db };
+export { currentUser, currentRoom, database, db, showAnnouncement };
