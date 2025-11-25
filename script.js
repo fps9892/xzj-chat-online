@@ -197,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 previousUsersList.clear();
                 
                 // Cambiar sala y recargar datos
-                changeRoom(roomId);
+                changeRoom(roomId, false);
                 clearSkeletons();
                 
                 // Pequeño delay para asegurar que el cambio de sala se procese
@@ -526,7 +526,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     async function listenToRoomEvents() {
         try {
-            const { database, getRoomName } = await import('./firebase.js');
+            const { database, getRoomName, currentUser } = await import('./firebase.js');
             const { ref, onValue, query: dbQuery, limitToLast } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
             
             const eventsRef = dbQuery(ref(database, 'roomEvents'), limitToLast(10));
@@ -534,9 +534,22 @@ document.addEventListener('DOMContentLoaded', function() {
             roomEventsListener = onValue(eventsRef, (snapshot) => {
                 snapshot.forEach(async (childSnapshot) => {
                     const event = childSnapshot.val();
-                    if (event.fromRoom === currentRoom && event.userId !== currentUser.userId) {
+                    
+                    // Evento de cambio de sala (usuario se fue a otra sala)
+                    if (event.type === 'room-change' && event.fromRoom === currentRoom && event.userId !== currentUser.userId) {
                         const toRoomName = await getRoomName(event.toRoom);
                         showUserNotification(`${event.username} se fue a ${toRoomName}`, 'room-change');
+                    }
+                    
+                    // Evento de entrada a sala (usuario se unió)
+                    if (event.type === 'join' && event.toRoom === currentRoom) {
+                        if (event.userId === currentUser.userId) {
+                            // Notificación personal de bienvenida
+                            showUserNotification(`¡Bienvenido ${event.username}!`, 'welcome');
+                        } else {
+                            // Notificación para otros usuarios
+                            showUserNotification(`${event.username} se ha unido a la sala`, 'join');
+                        }
                     }
                 });
             });
@@ -549,7 +562,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const notification = document.createElement('div');
         notification.className = `user-notification ${type}`;
         
-        const icon = type === 'join' || type === 'online' ? '🟢' : '🔴';
+        let icon = '🟢';
+        if (type === 'leave' || type === 'offline') icon = '🔴';
+        else if (type === 'room-change') icon = '🟡';
+        else if (type === 'welcome') icon = '🎉';
+        
         notification.innerHTML = `<span class="notif-icon">${icon}</span><span>${message}</span>`;
         
         document.body.appendChild(notification);
@@ -577,7 +594,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(() => {
                     if (currentRoom !== 'general') {
                         showNotification('Has sido movido a la Sala General', 'warning');
-                        changeRoom('general');
+                        changeRoom('general', false);
                         currentRoomName.textContent = 'Sala General';
                         loadMessages();
                         loadUsers();
@@ -1129,7 +1146,7 @@ document.addEventListener('DOMContentLoaded', function() {
         initAdminListener();
         
         setTimeout(() => {
-            setUserOnline();
+            changeRoom(currentRoom, true);
             loadMessages();
             loadUsers();
         }, 500);
@@ -1155,7 +1172,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const roomId = event.state.room;
             currentRoomName.textContent = roomId === 'general' ? 'Sala General' : roomId;
             cleanupListeners();
-            changeRoom(roomId);
+            changeRoom(roomId, false);
             setTimeout(() => {
                 loadMessages();
                 loadUsers();

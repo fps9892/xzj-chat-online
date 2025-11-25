@@ -430,7 +430,7 @@ function showFloatingNotification(message, type = 'info') {
     }, 3000);
 }
 
-export function changeRoom(roomName) {
+export function changeRoom(roomName, isInitialJoin = false) {
     // Limpiar estado del usuario en la sala anterior
     if (currentRoom && currentRoom !== roomName) {
         const sanitizedUserId = sanitizeUserId(currentUser.userId);
@@ -443,7 +443,8 @@ export function changeRoom(roomName) {
             username: currentUser.username,
             fromRoom: currentRoom,
             toRoom: roomName,
-            timestamp: serverTimestamp()
+            timestamp: serverTimestamp(),
+            type: 'room-change'
         });
         
         if (currentUser.isGuest) {
@@ -451,6 +452,16 @@ export function changeRoom(roomName) {
         } else {
             set(ref(database, `rooms/${currentRoom}/users/${sanitizedUserId}/status`), 'offline');
         }
+    } else if (isInitialJoin) {
+        // Primera entrada al chat - registrar como join
+        const roomEventRef = ref(database, 'roomEvents');
+        push(roomEventRef, {
+            userId: currentUser.userId,
+            username: currentUser.username,
+            toRoom: roomName,
+            timestamp: serverTimestamp(),
+            type: 'join'
+        });
     }
     
     currentRoom = roomName;
