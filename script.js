@@ -1,4 +1,4 @@
-import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, currentRoom, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, getRooms, listenToRooms, listenToAnnouncements, showAnnouncement } from './firebase.js';
+import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, currentRoom, updateUserData, changePassword, sendImage, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, getRooms, listenToRooms, listenToAnnouncements, showAnnouncement, listenToUserStatus } from './firebase.js';
 import { getUserProfile, findUserByUsername, animateMessageDeletion, initAdminListener } from './core.js';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -1184,6 +1184,33 @@ document.addEventListener('DOMContentLoaded', function() {
     listenToAnnouncements((message) => {
         showAnnouncement(message);
     });
+    
+    // Escuchar cambios en estado de baneo/mute
+    if (!currentUser.isGuest && currentUser.firebaseUid) {
+        listenToUserStatus((status) => {
+            if (status.type === 'banned') {
+                window.location.replace('banned.html');
+            } else if (status.type === 'muted') {
+                messageInput.disabled = true;
+                messageInput.placeholder = 'Estás muteado';
+                imageBtn.style.pointerEvents = 'none';
+                imageBtn.style.opacity = '0.5';
+                emoteBtn.style.pointerEvents = 'none';
+                emoteBtn.style.opacity = '0.5';
+                sendIcon.style.pointerEvents = 'none';
+                sendIcon.style.opacity = '0.5';
+            } else if (status.type === 'unmuted') {
+                messageInput.disabled = false;
+                messageInput.placeholder = 'Escribe tu mensaje...';
+                imageBtn.style.pointerEvents = 'auto';
+                imageBtn.style.opacity = '1';
+                emoteBtn.style.pointerEvents = 'auto';
+                emoteBtn.style.opacity = '1';
+                sendIcon.style.pointerEvents = 'auto';
+                sendIcon.style.opacity = '1';
+            }
+        });
+    }
     
     // Esperar a que termine la carga para inicializar
     setTimeout(() => {
