@@ -1856,8 +1856,21 @@ document.addEventListener('DOMContentLoaded', function() {
         const existingPanel = document.querySelector('.moderation-panel');
         if (existingPanel) existingPanel.remove();
         
-        const users = await listenToUsers((users) => users);
-        const onlineUsers = users.filter(u => !u.isGuest && u.id !== currentUser.userId);
+        const usersRef = ref(database, `rooms/${currentRoom}/users`);
+        const snapshot = await new Promise(resolve => {
+            onValue(usersRef, resolve, { onlyOnce: true });
+        });
+        
+        const users = [];
+        if (snapshot.exists()) {
+            snapshot.forEach(child => {
+                const userData = child.val();
+                if (userData.status === 'online' && !userData.isGuest && userData.userId !== currentUser.userId) {
+                    users.push(userData);
+                }
+            });
+        }
+        const onlineUsers = users;
         
         const panel = createElement(`
             <div class="moderation-panel ban-panel">
@@ -1975,8 +1988,21 @@ document.addEventListener('DOMContentLoaded', function() {
         const existingPanel = document.querySelector('.moderation-panel');
         if (existingPanel) existingPanel.remove();
         
-        const users = await listenToUsers((users) => users);
-        const onlineUsers = users.filter(u => !u.isGuest && u.id !== currentUser.userId);
+        const usersRef = ref(database, `rooms/${currentRoom}/users`);
+        const snapshot = await new Promise(resolve => {
+            onValue(usersRef, resolve, { onlyOnce: true });
+        });
+        
+        const users = [];
+        if (snapshot.exists()) {
+            snapshot.forEach(child => {
+                const userData = child.val();
+                if (userData.status === 'online' && !userData.isGuest && userData.userId !== currentUser.userId) {
+                    users.push(userData);
+                }
+            });
+        }
+        const onlineUsers = users;
         
         const panel = createElement(`
             <div class="moderation-panel mute-panel">

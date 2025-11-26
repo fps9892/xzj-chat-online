@@ -24,8 +24,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 10000;
-  transition: opacity 0.5s ease, visibility 0.5s ease;
+  z-index: 999999;
+  transition: opacity 0.3s ease;
 }
 
 .loading-screen.hidden {
@@ -33,13 +33,24 @@ body {
   visibility: hidden;
 }
 
-.loading-screen canvas {
+.loading-screen::before {
+  content: '';
   position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 50px,
+    rgba(0, 255, 0, 0.03) 50px,
+    rgba(0, 255, 0, 0.03) 51px
+  );
+  animation: moveLines 3s linear infinite;
+}
+
+@keyframes moveLines {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(51px); }
 }
 
 .loading-content {
@@ -53,90 +64,35 @@ body {
 }
 
 .neon-loader {
-  width: 80px;
-  height: 80px;
-  border: 4px solid transparent;
-  border-top: 4px solid #00ff00;
-  border-right: 4px solid #00ff00;
+  width: 60px;
+  height: 60px;
+  border: 3px solid rgba(0, 255, 0, 0.2);
+  border-top: 3px solid #00ff00;
   border-radius: 50%;
-  animation: neonSpin 1s linear infinite, pulse 2s ease-in-out infinite;
-  position: relative;
-  box-shadow: 0 0 30px #00ff00, inset 0 0 30px #00ff00;
-}
-
-.neon-loader::before {
-  content: "";
-  position: absolute;
-  top: -8px;
-  left: -8px;
-  right: -8px;
-  bottom: -8px;
-  border: 3px solid transparent;
-  border-top: 3px solid #00cc00;
-  border-bottom: 3px solid #00ff00;
-  border-radius: 50%;
-  animation: neonSpin 1.5s linear infinite reverse;
-}
-
-.neon-loader::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 40px;
-  height: 40px;
-  border: 2px solid transparent;
-  border-left: 2px solid #00ff00;
-  border-radius: 50%;
-  animation: neonSpin 0.8s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
 .loading-text {
   font-family: "Orbitron", monospace;
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 700;
   color: #00ff00;
-  text-shadow: 0 0 20px #00ff00, 0 0 40px #00ff00;
-  letter-spacing: 4px;
-  animation: textGlow 2s ease-in-out infinite;
+  letter-spacing: 3px;
 }
 
 .loading-progress {
-  width: 300px;
-  height: 6px;
+  width: 250px;
+  height: 4px;
   background-color: #111;
-  border-radius: 3px;
+  border-radius: 2px;
   overflow: hidden;
-  box-shadow: inset 0 0 10px #00ff00, 0 0 10px rgba(0, 255, 0, 0.3);
-  border: 1px solid rgba(0, 255, 0, 0.3);
+  border: 1px solid #222;
 }
 
 .progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, #00ff00, #00cc00, #00ff00);
-  border-radius: 3px;
-  animation: progressGlow 2s ease-in-out infinite;
-  box-shadow: 0 0 10px #00ff00;
-}
-
-@keyframes progressGlow {
-  0%,
-  100% {
-    box-shadow: 0 0 10px #00ff00;
-  }
-  50% {
-    box-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00;
-  }
-}
-
-@keyframes neonSpin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  background: #00ff00;
+  border-radius: 2px;
 }
 
 .header {
@@ -330,49 +286,19 @@ body {
 }
 
 .room-header {
-  border-bottom-left-radius: 50px;
-  border-bottom-right-radius: 50px;
   background-color: #000;
-  border-bottom: 1px solid rgba(0, 255, 0, 0.1);
+  border-bottom: 1px solid rgba(0, 255, 0, 0.2);
   margin-top: 55px;
   text-align: center;
-  overflow: hidden;
+  padding: 12px 0;
 }
 
 .current-room-name {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: bold;
   font-family: "Orbitron", monospace;
-  color: #fff;
-  letter-spacing: 5px;
-  display: inline-block;
-  white-space: nowrap;
-  overflow: hidden;
-  width: 0;
-  border-right: 2px solid transparent;
-}
-
-.current-room-name.animate {
-  animation: typing 2s steps(30) 15s forwards, blink 0.7s step-end 15s infinite;
-}
-
-@keyframes typing {
-  from {
-    width: 0;
-  }
-  to {
-    width: 100%;
-  }
-}
-
-@keyframes blink {
-  50% {
-    border-color: transparent;
-  }
-  0%,
-  100% {
-    border-color: #00ff00;
-  }
+  color: #00ff00;
+  letter-spacing: 3px;
 }
 
 .room-user-count {
