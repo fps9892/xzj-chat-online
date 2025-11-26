@@ -881,10 +881,12 @@ document.addEventListener('DOMContentLoaded', function() {
             roleTag = '<span class="mod-tag">MOD</span>';
         }
         
+        const replyLabel = message.replyTo && message.replyTo.text ? (isOwn ? 'Respondiste a' : 'Respondió a') : '';
         const replyPreview = message.replyTo && message.replyTo.text ? `
             <div class="reply-preview">
                 <img src="/images/reply.svg" class="reply-icon" />
                 <div class="reply-content">
+                    <span class="reply-label">${replyLabel}</span>
                     <span class="reply-username">${message.replyTo.userName || 'Usuario'}</span>
                     <span class="reply-text">${message.replyTo.text.substring(0, 50)}${message.replyTo.text.length > 50 ? '...' : ''}</span>
                 </div>
@@ -1090,9 +1092,13 @@ document.addEventListener('DOMContentLoaded', function() {
     function createUserElement(user) {
         let displayName = user.name;
         let userNumId = '';
+        let roleTag = '';
         
-        if (user.role === 'Administrador') displayName += ' (Admin)';
-        else if (user.role === 'Moderador') displayName += ' (Mod)';
+        if (user.role === 'Administrador') {
+            roleTag = '<span class="admin-tag">ADMIN</span>';
+        } else if (user.role === 'Moderador') {
+            roleTag = '<span class="mod-tag">MOD</span>';
+        }
         
         // Asignar ID numérico fijo para admins/mods
         if ((currentUser.isAdmin || currentUser.isModerator) && !user.isGuest) {
@@ -1111,7 +1117,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <img src="${user.avatar}" alt="${user.name}">
                     <span class="online-indicator"></span>
                 </div>
-                <span class="user-name">${userNumId}${displayName}</span>
+                <span class="user-name">${userNumId}${displayName}${roleTag}</span>
                 ${canModerate ? `
                     <div class="user-actions">
                         ${currentUser.isAdmin ? `<button class="mod-btn" data-action="mod" data-user-id="${user.firebaseUid || user.id}">Mod</button>` : ''}

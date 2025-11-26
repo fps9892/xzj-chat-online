@@ -100,6 +100,13 @@
   overflow: hidden;
 }
 
+.reply-label {
+  font-size: 10px;
+  color: #888;
+  font-family: "Inter", sans-serif;
+  font-style: italic;
+}
+
 .reply-username {
   font-weight: bold;
   color: #00ff00;
