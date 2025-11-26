@@ -1905,6 +1905,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (reason !== null) {
                     try {
                         await banUserFirebase(userId, reason);
+                        
+                        const messageRef = push(ref(database, `rooms/${currentRoom}/messages`));
+                        await set(messageRef, {
+                            text: `${username} ha sido baneado. Razón: ${reason}`,
+                            type: 'system',
+                            timestamp: Date.now(),
+                            id: messageRef.key
+                        });
+                        
                         showNotification(`${username} ha sido baneado`, 'success');
                         panel.remove();
                         
@@ -1974,6 +1983,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         const { deleteDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
                         const { db } = await import('./firebase.js');
                         await deleteDoc(doc(db, 'banned', userId));
+                        
+                        const messageRef = push(ref(database, `rooms/${currentRoom}/messages`));
+                        await set(messageRef, {
+                            text: `${username} ha sido desbaneado`,
+                            type: 'system',
+                            timestamp: Date.now(),
+                            id: messageRef.key
+                        });
+                        
                         showNotification(`${username} ha sido desbaneado`, 'success');
                         panel.remove();
                     } catch (error) {
@@ -2042,6 +2060,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     try {
                         const { muteUser } = await import('./firebase.js');
                         await muteUser(userId, parseInt(minutes) * 60 * 1000);
+                        
+                        const messageRef = push(ref(database, `rooms/${currentRoom}/messages`));
+                        await set(messageRef, {
+                            text: `${username} ha sido muteado por ${minutes} minutos`,
+                            type: 'system',
+                            timestamp: Date.now(),
+                            id: messageRef.key
+                        });
+                        
                         showNotification(`${username} ha sido muteado por ${minutes} minutos`, 'success');
                         panel.remove();
                     } catch (error) {
@@ -2107,6 +2134,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         const { deleteDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
                         const { db } = await import('./firebase.js');
                         await deleteDoc(doc(db, 'muted', userId));
+                        
+                        const messageRef = push(ref(database, `rooms/${currentRoom}/messages`));
+                        await set(messageRef, {
+                            text: `${username} ha sido desmuteado`,
+                            type: 'system',
+                            timestamp: Date.now(),
+                            id: messageRef.key
+                        });
+                        
                         showNotification(`${username} ha sido desmuteado`, 'success');
                         panel.remove();
                     } catch (error) {

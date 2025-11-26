@@ -1089,9 +1089,23 @@ export async function banUser(userId, reason = 'Violación de reglas', duration 
             }
         }
         
+        // Obtener nombre del usuario baneado
+        let bannedUsername = 'Usuario';
+        const bannedUserDoc = await getDoc(doc(db, 'users', userId));
+        if (bannedUserDoc.exists()) {
+            bannedUsername = bannedUserDoc.data().username || 'Usuario';
+        } else {
+            const bannedGuestDoc = await getDoc(doc(db, 'guests', userId));
+            if (bannedGuestDoc.exists()) {
+                bannedUsername = bannedGuestDoc.data().username || bannedGuestDoc.data().name || 'Invitado';
+            }
+        }
+        
         const banData = {
             bannedBy: currentUser.firebaseUid,
             bannedByName: currentUser.username,
+            username: bannedUsername,
+            name: bannedUsername,
             reason: reason,
             bannedAt: new Date().toISOString(),
             ip: userIP
@@ -1165,10 +1179,24 @@ export async function muteUser(userId, duration = 5 * 60 * 1000) {
     }
     
     try {
+        // Obtener nombre del usuario muteado
+        let mutedUsername = 'Usuario';
+        const mutedUserDoc = await getDoc(doc(db, 'users', userId));
+        if (mutedUserDoc.exists()) {
+            mutedUsername = mutedUserDoc.data().username || 'Usuario';
+        } else {
+            const mutedGuestDoc = await getDoc(doc(db, 'guests', userId));
+            if (mutedGuestDoc.exists()) {
+                mutedUsername = mutedGuestDoc.data().username || mutedGuestDoc.data().name || 'Invitado';
+            }
+        }
+        
         // Funciona tanto para usuarios registrados como invitados
         await setDoc(doc(db, 'muted', userId), {
             mutedBy: currentUser.firebaseUid,
             mutedByName: currentUser.username,
+            username: mutedUsername,
+            name: mutedUsername,
             mutedAt: new Date().toISOString(),
             expiresAt: new Date(Date.now() + duration).toISOString()
         });
