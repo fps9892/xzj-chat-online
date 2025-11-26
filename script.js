@@ -1,6 +1,7 @@
 import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, currentRoom, updateUserData, changePassword, sendImage, sendAudio, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, getRooms, listenToRooms, listenToAnnouncements, showAnnouncement, listenToUserStatus, processEmotes, extractYouTubeId, checkPrivateRoomAccess, requestPrivateRoomAccess, listenToRoomAccessNotifications, database, ref, onValue, set, push, serverTimestamp } from './firebase.js';
 import { AudioRecorder, formatTime, blobToBase64 } from './audio-recorder.js';
 import { getUserProfile, findUserByUsername, animateMessageDeletion, initAdminListener } from './core.js';
+import { setupMessageOptions, replyingTo, clearReply } from './message-options.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     // Elementos de la pantalla de carga
@@ -852,6 +853,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function createMessageElement(message) {
         const isOwn = message.userId === currentUser.userId;
+        const isReplyToMe = message.replyTo && message.replyTo.userId === currentUser.userId;
         const time = message.timestamp ? new Date(message.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
         
         // Manejar mensajes del sistema
@@ -878,6 +880,16 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (message.role === 'Moderador') {
             roleTag = '<span class="mod-tag">MOD</span>';
         }
+        
+        const replyPreview = message.replyTo ? `
+            <div class="reply-preview">
+                <img src="/images/reply.svg" class="reply-icon" />
+                <div class="reply-content">
+                    <span class="reply-username">${message.replyTo.userName}</span>
+                    <span class="reply-text">${message.replyTo.text.substring(0, 50)}${message.replyTo.text.length > 50 ? '...' : ''}</span>
+                </div>
+            </div>
+        ` : '';
         
         const messageEl = message.type === 'emote' ? 
             createElement(`
@@ -1039,7 +1051,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Añadir funcionalidad de click en nickname
+        // Configurar menú de opciones
+        if (message.type !== 'audio' && message.type !== 'image' && message.type !== 'emote') {
+            setupMessageOptions(messageEl, message, currentUser, sendMessage, deleteMessage, showNotification);
+        }
+        
         const clickableUsername = messageEl.querySelector('.clickable-username');
         if (clickableUsername) {
             clickableUsername.addEventListener('click', async () => {
@@ -1809,11 +1825,11 @@ document.addEventListener('DOMContentLoaded', function() {
     function sendMessageHandler() {
         const message = messageInput.value.trim();
         if (message) {
-            // Cerrar lista de comandos si existe
             const commandList = document.querySelector('.private-command-message');
             if (commandList) commandList.remove();
             
-            sendMessage(message).then((result) => {
+            sendMessage(message, 'text', null, null, replyingTo).then((result) => {
+                clearReply();
                 // Si se creó sala privada, recargar
                 if (result && result.roomChanged) {
                     setTimeout(() => {

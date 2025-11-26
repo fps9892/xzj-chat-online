@@ -170,6 +170,12 @@ service cloud.firestore {
 
 ## Características Soportadas
 
+### Sistema de Respuestas
+- **Responder mensajes**: Menú de 3 puntos con opciones copiar, responder y eliminar
+- **Vista previa**: Muestra mensaje original con icono reply.svg
+- **Color violeta**: Mensajes de respuesta aparecen en violeta para el destinatario
+- **Banner de respuesta**: Indica a qué mensaje se está respondiendo
+
 ### Salas Privadas
 - **Creación**: Comando `!crearprivada` crea sala con ID único
 - **Acceso**: Solo dueño y usuarios aceptados pueden ver mensajes
@@ -200,3 +206,4 @@ service cloud.firestore {
 2. **Índices**: `roomEvents` indexado por `timestamp` para mejor rendimiento
 3. **Salas privadas**: Verificación de acceso en cliente mediante `checkPrivateRoomAccess()`
 4. **Invitados**: Usan `userId` en lugar de `firebaseUid` para todas las operaciones
+5. **Respuestas**: Campo `replyTo` en mensajes almacena información del mensaje original

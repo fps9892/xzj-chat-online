@@ -1,0 +1,181 @@
+/* Menú de opciones de mensaje */
+.message-options-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 24px;
+  height: 24px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 10;
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.message-container:hover .message-options-btn {
+  opacity: 1;
+}
+
+.message-options-menu {
+  position: absolute;
+  top: 30px;
+  right: 5px;
+  background: #000;
+  border: 1px solid #00ff00;
+  border-radius: 8px;
+  padding: 5px 0;
+  min-width: 120px;
+  z-index: 100;
+  box-shadow: 0 4px 15px rgba(0, 255, 0, 0.3);
+}
+
+.message-option-item {
+  padding: 10px 15px;
+  cursor: pointer;
+  color: #fff;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.message-option-item:hover {
+  background: rgba(0, 255, 0, 0.1);
+}
+
+.message-option-item.delete {
+  color: #ff4444;
+}
+
+.message-option-item.delete:hover {
+  background: rgba(255, 68, 68, 0.1);
+}
+
+/* Vista previa de respuesta */
+.reply-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(0, 255, 0, 0.1);
+  border-left: 3px solid #00ff00;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.reply-icon {
+  width: 16px;
+  height: 16px;
+  filter: invert(1);
+}
+
+.reply-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  overflow: hidden;
+}
+
+.reply-username {
+  font-weight: bold;
+  color: #00ff00;
+  font-family: "Orbitron", monospace;
+  font-size: 11px;
+}
+
+.reply-text {
+  color: #888;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Mensaje con respuesta para el destinatario */
+.message.reply-to-me .message-content {
+  background: #8b00ff !important;
+  border-left: 4px solid #ff00ff;
+}
+
+.message.reply-to-me.sent .message-content {
+  background: #8b00ff !important;
+}
+
+/* Banner de respuesta en input */
+.reply-banner {
+  position: fixed;
+  bottom: 75px;
+  left: 20px;
+  right: 20px;
+  background: rgba(0, 255, 0, 0.1);
+  border: 1px solid #00ff00;
+  border-radius: 8px;
+  padding: 10px 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 999;
+}
+
+.reply-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.reply-banner-icon {
+  width: 20px;
+  height: 20px;
+  filter: invert(1);
+}
+
+.reply-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.reply-banner-username {
+  font-weight: bold;
+  color: #00ff00;
+  font-size: 12px;
+  font-family: "Orbitron", monospace;
+}
+
+.reply-banner-message {
+  color: #888;
+  font-size: 11px;
+}
+
+.reply-banner-close {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 5px;
+}
+
+@media (max-width: 767px) {
+  .reply-banner {
+    bottom: 90px;
+    left: 10px;
+    right: 10px;
+  }
+  
+  .message-options-btn {
+    opacity: 1;
+  }
+}

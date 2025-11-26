@@ -141,7 +141,7 @@ export function extractYouTubeId(url) {
 }
 
 // Funciones para mensajes
-export async function sendMessage(text, type = 'text', imageData = null, audioDuration = null) {
+export async function sendMessage(text, type = 'text', imageData = null, audioDuration = null, replyTo = null) {
     console.log('Sending message:', { text, type, imageData });
     
     // Verificar si el usuario está baneado o muteado (incluye invitados)
@@ -232,7 +232,8 @@ export async function sendMessage(text, type = 'text', imageData = null, audioDu
         type: type,
         isGuest: currentUser.isGuest || false,
         role: currentUser.role || 'Usuario',
-        firebaseUid: currentUser.firebaseUid || null
+        firebaseUid: currentUser.firebaseUid || null,
+        replyTo: replyTo || null
     };
     
     // Añadir datos de imagen si es tipo imagen o emote
