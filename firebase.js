@@ -1066,42 +1066,49 @@ export async function deleteRoom(roomName) {
             throw new Error('No tienes permisos para borrar esta sala');
         }
         
-        // Notificar a usuarios en la sala antes de borrar
+        // Notificar a usuarios en la sala con temporizador de 15 segundos
         const usersRef = ref(database, `rooms/${roomId}/users`);
         const usersSnapshot = await get(usersRef);
         
         if (usersSnapshot.exists()) {
-            // Enviar mensaje de sistema a la sala antes de borrar
-            const systemMessageData = {
-                text: '⚠️ Esta sala ha sido eliminada. Serás redirigido a la Sala General.',
+            // Enviar mensaje de advertencia con temporizador
+            const warningMessageData = {
+                text: '⚠️ Esta sala será eliminada en 15 segundos. Prepárate para ser redirigido a la Sala General.',
                 userId: 'system',
                 userName: 'Sistema',
                 userAvatar: 'images/logo.svg',
-                textColor: '#ff4444',
+                textColor: '#ff9900',
                 timestamp: serverTimestamp(),
                 type: 'system',
                 isGuest: false,
                 role: 'system',
-                firebaseUid: null,
-                roomDeleted: true
+                firebaseUid: null
             };
             
             const messagesRef = ref(database, `rooms/${roomId}/messages`);
-            await push(messagesRef, systemMessageData);
+            await push(messagesRef, warningMessageData);
+            
+            // Iniciar temporizador de 15 segundos
+            const roomDeletedRef = ref(database, `roomDeleted/${roomId}`);
+            await set(roomDeletedRef, {
+                deleting: true,
+                countdown: 15,
+                timestamp: serverTimestamp()
+            });
+            
+            // Esperar 15 segundos
+            await new Promise(resolve => setTimeout(resolve, 15000));
+            
+            // Marcar sala como eliminada para forzar redirección
+            await set(roomDeletedRef, {
+                deleted: true,
+                forceReload: true,
+                timestamp: serverTimestamp()
+            });
+            
+            // Esperar para que la notificación se procese
+            await new Promise(resolve => setTimeout(resolve, 500));
         }
-        
-        // Esperar un momento para que los usuarios vean el mensaje
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Notificar a todos los usuarios que la sala fue borrada
-        const roomDeletedRef = ref(database, `roomDeleted/${roomId}`);
-        await set(roomDeletedRef, {
-            deleted: true,
-            timestamp: serverTimestamp()
-        });
-        
-        // Esperar para que la notificación se procese
-        await new Promise(resolve => setTimeout(resolve, 500));
         
         // Borrar de Firestore
         await deleteDoc(doc(db, 'rooms', roomId));
@@ -2030,4 +2037,4 @@ export async function getUserCountForRoom(roomId) {
     }
 }
 
-export { currentUser, currentRoom, database, db, ref, onValue };
+export { currentUser, currentRoom, database, db, ref, onValue, set, push, serverTimestamp };

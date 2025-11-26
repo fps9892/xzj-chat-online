@@ -1,4 +1,4 @@
-import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, currentRoom, updateUserData, changePassword, sendImage, sendAudio, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, getRooms, listenToRooms, listenToAnnouncements, showAnnouncement, listenToUserStatus, processEmotes, extractYouTubeId, checkPrivateRoomAccess, requestPrivateRoomAccess, listenToRoomAccessNotifications, database, ref, onValue } from './firebase.js';
+import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, currentRoom, updateUserData, changePassword, sendImage, sendAudio, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, getRooms, listenToRooms, listenToAnnouncements, showAnnouncement, listenToUserStatus, processEmotes, extractYouTubeId, checkPrivateRoomAccess, requestPrivateRoomAccess, listenToRoomAccessNotifications, database, ref, onValue, set, push, serverTimestamp } from './firebase.js';
 import { AudioRecorder, formatTime, blobToBase64 } from './audio-recorder.js';
 import { getUserProfile, findUserByUsername, animateMessageDeletion, initAdminListener } from './core.js';
 
@@ -1457,24 +1457,41 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Escuchar cuando una sala es borrada
     const roomDeletedRef = ref(database, `roomDeleted/${currentRoom}`);
+    let countdownInterval = null;
+    
     onValue(roomDeletedRef, (snapshot) => {
-        if (snapshot.exists() && snapshot.val().deleted) {
-            // Sala fue borrada, redirigir a general
-            showNotification('La sala ha sido eliminada. Redirigiendo a Sala General...', 'warning');
-            setTimeout(() => {
-                const roomNameEl = document.querySelector('.current-room-name');
-                if (roomNameEl) roomNameEl.textContent = 'Sala General';
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            
+            // Si la sala fue marcada para eliminación, mostrar temporizador
+            if (data.deleting && !data.deleted) {
+                let countdown = data.countdown || 15;
+                showNotification(`⚠️ Esta sala será eliminada en ${countdown} segundos`, 'warning');
                 
-                cleanupListeners();
-                previousUsersList.clear();
-                isInitialLoad = true;
-                lastMessageCount = 0;
+                // Limpiar intervalo anterior si existe
+                if (countdownInterval) clearInterval(countdownInterval);
                 
-                changeRoom('general', false).then(() => {
-                    loadMessages();
-                    loadUsers();
-                });
-            }, 1500);
+                // Actualizar contador cada segundo
+                countdownInterval = setInterval(() => {
+                    countdown--;
+                    if (countdown > 0) {
+                        showNotification(`⚠️ Esta sala será eliminada en ${countdown} segundos`, 'warning');
+                    } else {
+                        clearInterval(countdownInterval);
+                    }
+                }, 1000);
+            }
+            
+            // Si la sala fue eliminada, forzar recarga
+            if (data.deleted && data.forceReload) {
+                if (countdownInterval) clearInterval(countdownInterval);
+                showNotification('La sala ha sido eliminada. Redirigiendo...', 'error');
+                
+                // Forzar recarga de página para llevar a index.html
+                setTimeout(() => {
+                    window.location.href = '/index.html';
+                }, 500);
+            }
         }
     });
     
