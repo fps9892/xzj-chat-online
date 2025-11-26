@@ -1158,6 +1158,33 @@ export async function banUser(userId, reason = 'Violación de reglas', duration 
             });
         }
         
+        // Obtener nombre del usuario baneado
+        let bannedUsername = 'Usuario';
+        const userDoc = await getDoc(doc(db, 'users', userId));
+        if (userDoc.exists()) {
+            bannedUsername = userDoc.data().username || 'Usuario';
+        } else {
+            const guestDoc = await getDoc(doc(db, 'guests', userId));
+            if (guestDoc.exists()) {
+                bannedUsername = guestDoc.data().username || 'Invitado';
+            }
+        }
+        
+        // Enviar mensaje al chat
+        const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
+        await push(messagesRef, {
+            text: `${bannedUsername} fue baneado por ${currentUser.username}. Razón: ${reason}`,
+            userId: 'system',
+            userName: 'Sistema',
+            userAvatar: 'images/logo.svg',
+            textColor: '#ff4444',
+            timestamp: serverTimestamp(),
+            type: 'system',
+            isGuest: false,
+            role: 'system',
+            firebaseUid: null
+        });
+        
         return true;
     } catch (error) {
         console.error('Error banning user:', error);
