@@ -1126,18 +1126,6 @@ export async function banUser(userId, reason = 'Violación de reglas', duration 
             });
         }
         
-        // Obtener nombre del usuario baneado
-        let bannedUsername = 'Usuario';
-        const bannedUserDoc = await getDoc(doc(db, 'users', userId));
-        if (bannedUserDoc.exists()) {
-            bannedUsername = bannedUserDoc.data().username || 'Usuario';
-        } else {
-            const bannedGuestDoc = await getDoc(doc(db, 'guests', userId));
-            if (bannedGuestDoc.exists()) {
-                bannedUsername = bannedGuestDoc.data().username || 'Invitado';
-            }
-        }
-        
         // Enviar mensaje al chat
         const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
         await push(messagesRef, {
