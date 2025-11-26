@@ -1165,10 +1165,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function createMobileUserElement(user) {
-        let displayName = user.name;
-        if (user.role === 'Administrador') displayName += ' (Admin)';
-        else if (user.role === 'Moderador') displayName += ' (Mod)';
-        else if (user.isGuest || user.role === 'guest') displayName += ' (invitado)';
+        let roleTag = '';
+        if (user.role === 'Administrador') {
+            roleTag = '<span class="admin-tag">ADMIN</span>';
+        } else if (user.role === 'Moderador') {
+            roleTag = '<span class="mod-tag">MOD</span>';
+        }
         
         const userEl = createElement(`
             <div class="mobile-user-item" data-user-id="${user.id}">
@@ -1176,7 +1178,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <img src="${user.avatar}" alt="${user.name}" onerror="this.src='/images/profileuser.jpg'">
                     <span class="mobile-online-indicator"></span>
                 </div>
-                <span class="mobile-user-name">${displayName}</span>
+                <span class="mobile-user-name">${user.name}${roleTag}</span>
             </div>
         `);
         

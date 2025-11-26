@@ -168,6 +168,33 @@
     white-space: nowrap;
     overflow: hidden;
     font-family: "Inter", sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .mobile-user-item .admin-tag {
+    background-color: #ff0000;
+    color: #fff;
+    font-size: 7px;
+    font-weight: bold;
+    padding: 1px 4px;
+    border-radius: 8px;
+    font-family: "Orbitron", monospace;
+    box-shadow: 0 0 4px rgba(255, 0, 0, 0.5);
+    flex-shrink: 0;
+  }
+
+  .mobile-user-item .mod-tag {
+    background-color: #ff8800;
+    color: #fff;
+    font-size: 7px;
+    font-weight: bold;
+    padding: 1px 4px;
+    border-radius: 8px;
+    font-family: "Orbitron", monospace;
+    box-shadow: 0 0 4px rgba(255, 136, 0, 0.5);
+    flex-shrink: 0;
   }
 
   .mobile-user-item::after {

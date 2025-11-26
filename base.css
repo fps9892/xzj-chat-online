@@ -137,6 +137,20 @@ body {
   height: 40px;
   border-radius: 100%;
   border: 2px solid #00ff00;
+  position: relative;
+}
+
+.profile-image::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  background: #00ff00;
+  border: 2px solid #000;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #00ff00;
 }
 
 .username {
@@ -281,7 +295,8 @@ body {
   background-color: #000;
   border-bottom: 1px solid #00ff00;
   margin-top: 55px;
-  text-align: center; /* Centra el texto dentro de su contenedor */
+  text-align: center;
+  overflow: hidden;
 }
 
 .current-room-name {
@@ -289,8 +304,21 @@ body {
   font-weight: bold;
   font-family: "Orbitron", monospace;
   color: #fff;
-  /* --- NUEVOS ESTILOS --- */
-  letter-spacing: 5px; /* Espaciado entre letras (ajusta el valor si lo necesitas) */
+  letter-spacing: 5px;
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 2px solid #00ff00;
+  animation: typing 2s steps(30) forwards, blink 0.7s step-end infinite;
+}
+
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes blink {
+  50% { border-color: transparent; }
 }
 
 .chat-area {
@@ -1506,15 +1534,15 @@ body {
 }
 
 .mod-tag {
-  background-color: #ffaa00;
-  color: #000;
+  background-color: #ff8800;
+  color: #fff;
   font-size: 8px;
   font-weight: bold;
   padding: 2px 6px;
   border-radius: 10px;
   margin-left: 5px;
   font-family: "Orbitron", monospace;
-  box-shadow: 0 0 5px rgba(255, 170, 0, 0.5);
+  box-shadow: 0 0 5px rgba(255, 136, 0, 0.5);
 }
 
 .user-actions {
