@@ -2030,4 +2030,4 @@ export async function getUserCountForRoom(roomId) {
     }
 }
 
-export { currentUser, currentRoom, database, db };
+export { currentUser, currentRoom, database, db, ref, onValue };
