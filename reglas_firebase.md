@@ -1,4 +1,4 @@
-# 🔥 Reglas de Firebase - FYZAR CHAT v3.8
+# 🔥 Reglas de Firebase - FYZAR CHAT v3.8.1
 
 ## 📋 Firestore Database Rules
 

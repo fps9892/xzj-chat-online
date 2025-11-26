@@ -1,7 +1,8 @@
-import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, currentRoom, updateUserData, changePassword, sendImage, sendAudio, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, getRooms, listenToRooms, listenToAnnouncements, showAnnouncement, listenToUserStatus, processEmotes, extractYouTubeId, checkPrivateRoomAccess, requestPrivateRoomAccess, listenToRoomAccessNotifications, database, ref, onValue, set, push, serverTimestamp } from './firebase.js';
+import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, currentRoom, updateUserData, changePassword, sendImage, sendAudio, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, muteUser, getRooms, listenToRooms, listenToAnnouncements, showAnnouncement, listenToUserStatus, processEmotes, extractYouTubeId, checkPrivateRoomAccess, requestPrivateRoomAccess, listenToRoomAccessNotifications, database, ref, onValue, set, push, serverTimestamp, db } from './firebase.js';
 import { AudioRecorder, formatTime, blobToBase64 } from './audio-recorder.js';
 import { getUserProfile, findUserByUsername, animateMessageDeletion, initAdminListener } from './core.js';
 import { setupMessageOptions, replyingTo, clearReply } from './message-options.js';
+import { showBanPanel, showUnbanPanel, showMutePanel, showUnmutePanel, guestNumericIds, currentGuestId } from './moderation-panels.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     // Elementos de la pantalla de carga
@@ -1050,7 +1051,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let userNumericIds = new Map();
     let guestNumericIds = new Map();
     let currentNumericId = 1;
-    let currentGuestId = 100;
+    let currentGuestId = 1000;
     
     function createUserElement(user) {
         let displayName = user.name;
@@ -1873,8 +1874,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (snapshot.exists()) {
             snapshot.forEach(child => {
                 const userData = child.val();
-                if (userData.status === 'online' && userData.userId !== currentUser.userId) {
+                const userKey = child.key;
+                if (userData.status === 'online' && userKey !== currentUser.userId) {
                     if (userData.role !== 'Administrador') {
+                        userData.userId = userKey;
+                        userData.name = userData.name || 'Usuario';
                         users.push(userData);
                     }
                 }
@@ -2037,8 +2041,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (snapshot.exists()) {
             snapshot.forEach(child => {
                 const userData = child.val();
-                if (userData.status === 'online' && userData.userId !== currentUser.userId) {
+                const userKey = child.key;
+                if (userData.status === 'online' && userKey !== currentUser.userId) {
                     if (userData.role !== 'Administrador') {
+                        userData.userId = userKey;
+                        userData.name = userData.name || 'Usuario';
                         users.push(userData);
                     }
                 }
