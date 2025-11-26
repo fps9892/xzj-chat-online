@@ -276,6 +276,8 @@ body {
 }
 
 .room-header {
+  border-bottom-left-radius: 50px;
+  border-bottom-right-radius: 50px;
   background-color: #000;
   border-bottom: 1px solid #00ff00;
   margin-top: 55px;
@@ -283,7 +285,7 @@ body {
 }
 
 .current-room-name {
-  font-size: 8px;
+  font-size: 12px;
   font-weight: bold;
   font-family: "Orbitron", monospace;
   color: #fff;
