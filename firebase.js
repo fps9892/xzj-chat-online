@@ -1605,29 +1605,29 @@ export async function processAdminCommand(message) {
                 if (args.length === 0) {
                     throw new Error('Uso: !crearsala <nombre>');
                 }
-                const roomName = args.join(' ');
+                const newRoomName = args.join(' ');
                 const isAdminSala = await checkAdminStatus(currentUser.firebaseUid);
                 const isModSala = await checkModeratorStatus(currentUser.firebaseUid);
                 if (!isAdminSala && !isModSala) {
                     throw new Error('Solo administradores y moderadores pueden crear salas');
                 }
-                await createRoom(roomName);
-                return { success: true, message: `Sala "${roomName}" creada exitosamente` };
+                await createRoom(newRoomName);
+                return { success: true, message: `Sala "${newRoomName}" creada exitosamente` };
                 
             case '!crearprivada':
                 const privateRoomId = await createPrivateRoom();
                 const roomDoc = await getDoc(doc(db, 'rooms', privateRoomId));
-                const roomName = roomDoc.exists() ? roomDoc.data().name : privateRoomId;
+                const privateRoomName = roomDoc.exists() ? roomDoc.data().name : privateRoomId;
                 
                 // Actualizar UI y cambiar sala
                 if (typeof document !== 'undefined') {
                     const roomNameEl = document.querySelector('.current-room-name');
-                    if (roomNameEl) roomNameEl.textContent = roomName;
-                    document.title = `${roomName} - FYZAR CHAT`;
+                    if (roomNameEl) roomNameEl.textContent = privateRoomName;
+                    document.title = `${privateRoomName} - FYZAR CHAT`;
                 }
                 
                 await changeRoom(privateRoomId, false);
-                return { success: true, message: `Sala privada creada: ${roomName}`, roomChanged: true };
+                return { success: true, message: `Sala privada creada: ${privateRoomName}`, roomChanged: true };
                 
             case '!aceptar':
                 if (args.length === 0) {
