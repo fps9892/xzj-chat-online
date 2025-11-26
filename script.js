@@ -1923,15 +1923,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (confirm(`¿Estás seguro de eliminar la sala "${roomName}"?`)) {
                     try {
                         const { deleteRoom } = await import('./firebase.js');
+                        
+                        // Reemplazar icono con temporizador
+                        btn.innerHTML = '<span class="delete-countdown">15</span>';
+                        btn.disabled = true;
+                        btn.style.pointerEvents = 'none';
+                        
+                        let countdown = 15;
+                        const countdownInterval = setInterval(() => {
+                            countdown--;
+                            const countdownEl = btn.querySelector('.delete-countdown');
+                            if (countdownEl) {
+                                countdownEl.textContent = countdown;
+                            }
+                            if (countdown <= 0) {
+                                clearInterval(countdownInterval);
+                            }
+                        }, 1000);
+                        
                         await deleteRoom(roomId);
                         showNotification(`⏳ La sala "${roomName}" será eliminada en 15 segundos`, 'success');
-                        btn.closest('.room-management-item').remove();
                         
-                        if (panel.querySelectorAll('.room-management-item').length === 0) {
-                            panel.remove();
-                        }
+                        setTimeout(() => {
+                            btn.closest('.room-management-item').remove();
+                            if (panel.querySelectorAll('.room-management-item').length === 0) {
+                                panel.remove();
+                            }
+                        }, 15000);
                     } catch (error) {
                         showNotification(error.message, 'error');
+                        btn.innerHTML = '<img src="/images/trash.svg" alt="Delete" />';
+                        btn.disabled = false;
+                        btn.style.pointerEvents = 'auto';
                     }
                 }
             });
