@@ -136,6 +136,14 @@ service cloud.firestore {
         ".read": true,
         ".write": true
       }
+    },
+    "roomDeleted": {
+      ".read": true,
+      ".write": true,
+      "$roomId": {
+        ".read": true,
+        ".write": true
+      }
     }
   }
 }
@@ -144,4 +152,5 @@ service cloud.firestore {
 ## Cambios importantes:
 
 1. **Firestore - rooms**: `allow delete: if true;` - Permite que cualquier usuario con permisos (dueño, admin, mod) pueda borrar salas
-2. **Realtime Database**: Añadida sección `roomAccessNotifications` para notificaciones de acceso a salas privadas
+2. **Realtime Database - roomAccessNotifications**: Notificaciones de acceso a salas privadas
+3. **Realtime Database - roomDeleted**: Sistema de temporizador de 15 segundos antes de eliminar salas

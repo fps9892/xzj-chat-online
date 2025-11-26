@@ -263,8 +263,6 @@ Firebase Console → Realtime Database → Rules
 ```
 
 **Nota**: La sección `roomDeleted` permite el sistema de temporizador de 15 segundos antes de eliminar salas, notificando a todos los usuarios en tiempo real.
-
-```
 ```
 
 ### 2. Iniciar el Proyecto
