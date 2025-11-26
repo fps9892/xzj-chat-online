@@ -82,7 +82,7 @@
   }
 
   .user-count.loading::after {
-    content: '';
+    content: "";
     display: inline-block;
     width: 12px;
     height: 12px;
@@ -95,8 +95,12 @@
   }
 
   @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 
   .users-list {

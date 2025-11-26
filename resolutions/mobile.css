@@ -443,3 +443,26 @@
     text-shadow: 0 0 30px #00ff00, 0 0 40px #00ff00, 0 0 50px #00ff00;
   }
 }
+
+/* Paneles de moderación en móvil */
+@media (max-width: 767px) {
+  .moderation-panel {
+    width: 95%;
+    bottom: 110px;
+    padding: 15px;
+  }
+  
+  .moderation-user-name {
+    font-size: 13px;
+  }
+  
+  .moderation-action-btn {
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+  
+  .moderation-action-btn img {
+    width: 14px;
+    height: 14px;
+  }
+}

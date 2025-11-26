@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
-<svg fill="#000000" width="800px" height="800px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg">
-<title>ban</title>
-<path d="M16 0.75c-8.422 0-15.25 6.828-15.25 15.25s6.828 15.25 15.25 15.25c8.422 0 15.25-6.828 15.25-15.25v0c-0.010-8.418-6.832-15.24-15.249-15.25h-0.001zM28.75 16c0 0.002 0 0.003 0 0.005 0 3.029-1.062 5.81-2.834 7.991l0.018-0.023-18.012-17.829c2.181-1.802 5.006-2.895 8.086-2.895 7.037 0 12.742 5.705 12.742 12.742 0 0.003 0 0.006 0 0.009v-0zM3.25 16c0-0.003 0-0.007 0-0.011 0-3.079 1.096-5.901 2.92-8.099l-0.017 0.021 18.034 17.85c-2.199 1.859-5.067 2.989-8.198 2.989-7.035 0-12.739-5.703-12.739-12.739 0-0.004 0-0.008 0-0.012v0.001z"></path>
+<?xml version="1.0" encoding="utf-8"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+<svg width="800px" height="800px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M15 16L20 21M20 16L15 21M4 21C4 17.134 7.13401 14 11 14M15 7C15 9.20914 13.2091 11 11 11C8.79086 11 7 9.20914 7 7C7 4.79086 8.79086 3 11 3C13.2091 3 15 4.79086 15 7Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
