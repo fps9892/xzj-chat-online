@@ -156,16 +156,47 @@ service cloud.firestore {
 }
 ```
 
-## Cambios importantes:
+## Instrucciones de Aplicación
 
-1. **Firestore - banned/muted**: `allow write: if true;` - Permite banear/mutear usuarios registrados e invitados
-2. **Firestore - rooms**: `allow create/update/delete: if true;` - Permisos completos para gestión de salas públicas y privadas
-3. **Firestore - polls**: Colección de encuestas con permisos de lectura pública y escritura para usuarios autenticados
-4. **Realtime Database - roomAccessNotifications**: Notificaciones de acceso a salas privadas
-5. **Realtime Database - roomDeleted**: Sistema de temporizador de 15 segundos antes de eliminar salas
-6. **Realtime Database - roomEvents**: Eventos de entrada/salida de salas con índice por timestamp
+### 1. Firestore Database Rules
+1. Ve a Firebase Console → Firestore Database → Rules
+2. Copia y pega las reglas de Firestore de arriba
+3. Haz clic en "Publicar"
 
-## Notas:
-- Las salas privadas funcionan con `acceptedUsers` y `pendingUsers` en Firestore
-- Los invitados pueden solicitar acceso a salas privadas usando su `userId`
-- El sistema verifica acceso mediante `checkPrivateRoomAccess()`
+### 2. Realtime Database Rules
+1. Ve a Firebase Console → Realtime Database → Rules
+2. Copia y pega las reglas de Realtime Database de arriba
+3. Haz clic en "Publicar"
+
+## Características Soportadas
+
+### Salas Privadas
+- **Creación**: Comando `!crearprivada` crea sala con ID único
+- **Acceso**: Solo dueño y usuarios aceptados pueden ver mensajes
+- **Solicitudes**: Sistema de `pendingUsers` y `acceptedUsers` en Firestore
+- **Notificaciones**: Realtime Database notifica cuando usuario es aceptado
+- **Comando aceptar**: `!aceptar` muestra lista numerada de usuarios pendientes
+
+### Sistema de Moderación
+- **Baneo**: Por userId e IP, temporal o permanente
+- **Muteo**: Temporal con expiración automática
+- **Protección**: Administradores no pueden ser baneados/muteados
+- **Invitados**: Pueden ser baneados/muteados usando su userId
+
+### Encuestas
+- **Creación**: Solo usuarios registrados
+- **Votación**: 1 voto por usuario registrado
+- **Eliminación**: Solo administradores
+- **Expiración**: Auto-eliminación después de 30 minutos
+
+### Notificaciones
+- **Entrada/Salida**: Eventos en tiempo real sin duplicados
+- **Cambio de sala**: Muestra sala destino
+- **Filtro de tiempo**: Solo eventos de últimos 5 segundos
+
+## Notas Importantes
+
+1. **Permisos abiertos**: `banned`, `muted`, `rooms` tienen `allow write: if true` para soportar invitados
+2. **Índices**: `roomEvents` indexado por `timestamp` para mejor rendimiento
+3. **Salas privadas**: Verificación de acceso en cliente mediante `checkPrivateRoomAccess()`
+4. **Invitados**: Usan `userId` en lugar de `firebaseUid` para todas las operaciones

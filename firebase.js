@@ -394,6 +394,7 @@ export function listenToDeviceCounts(callback) {
 }
 
 let roomUserListeners = new Map();
+let previousUsers = new Set();
 
 export function listenToUsers(callback) {
     const usersRef = ref(database, `rooms/${currentRoom}/users`);
