@@ -933,20 +933,24 @@ body {
 
 .room-loader p {
   color: #00ff00;
-  font-family: 'Orbitron', monospace;
+  font-family: "Orbitron", monospace;
   font-size: 14px;
 }
 
 .room-loader small {
   color: #888;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 12px;
   margin-top: -5px;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Notificaciones de usuario diferenciadas */
@@ -2102,7 +2106,7 @@ body {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.7);
-  z-index: 2000;
+  z-index: 110000;
   opacity: 0;
   visibility: hidden;
   transition: all 0.3s ease;
