@@ -64,26 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
         simulateLoading();
     }, 1000);
     
-    // Efectos adicionales de carga
-    function addLoadingEffects() {
-        const logo = document.querySelector('.loading-logo');
-        const loader = document.querySelector('.neon-loader');
-        
-        // Efecto de rotación aleatoria del logo
-        setInterval(() => {
-            const randomRotation = Math.random() * 10 - 5; // -5 a 5 grados
-            logo.style.transform = `rotate(${randomRotation}deg)`;
-        }, 2000);
-        
-        // Cambio de velocidad del loader
-        let speed = 1.2;
-        setInterval(() => {
-            speed = Math.random() * 0.8 + 0.8; // 0.8 a 1.6 segundos
-            loader.style.animationDuration = speed + 's';
-        }, 3000);
-    }
-    
-    addLoadingEffects();
+
     const messageInput = document.querySelector('.message-input');
     const charCounter = document.querySelector('.char-counter');
     const sendIcon = document.querySelector('.send-icon');
@@ -2129,23 +2110,24 @@ document.addEventListener('DOMContentLoaded', function() {
             const moderationPanel = document.querySelector('.moderation-panel');
             if (moderationPanel) moderationPanel.remove();
             
-            // Detectar comandos de moderación
-            if (message === '!ban' && (currentUser.isAdmin || currentUser.isModerator)) {
+            // Detectar comandos de moderación (case insensitive)
+            const lowerMessage = message.toLowerCase();
+            if (lowerMessage === '!ban' && (currentUser.isAdmin || currentUser.isModerator)) {
                 showBanPanel();
                 messageInput.value = '';
                 return;
             }
-            if (message === '!unban' && (currentUser.isAdmin || currentUser.isModerator)) {
+            if (lowerMessage === '!unban' && (currentUser.isAdmin || currentUser.isModerator)) {
                 showUnbanPanel();
                 messageInput.value = '';
                 return;
             }
-            if (message === '!mute' && (currentUser.isAdmin || currentUser.isModerator)) {
+            if (lowerMessage === '!mute' && (currentUser.isAdmin || currentUser.isModerator)) {
                 showMutePanel();
                 messageInput.value = '';
                 return;
             }
-            if (message === '!unmute' && (currentUser.isAdmin || currentUser.isModerator)) {
+            if (lowerMessage === '!unmute' && (currentUser.isAdmin || currentUser.isModerator)) {
                 showUnmutePanel();
                 messageInput.value = '';
                 return;
