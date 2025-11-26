@@ -1,4 +1,4 @@
-# Reglas de Firebase para FYZAR CHAT v3.6
+# Reglas de Firebase para FYZAR CHAT v3.7
 
 ## Firestore Database Rules
 
@@ -66,6 +66,13 @@ service cloud.firestore {
       allow create: if isAuthenticated() || true;
       allow update: if isAuthenticated() || true;
       allow delete: if true;
+    }
+
+    match /polls/{pollId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated();
     }
 
     match /{document=**} {
@@ -152,5 +159,6 @@ service cloud.firestore {
 ## Cambios importantes:
 
 1. **Firestore - rooms**: `allow delete: if true;` - Permite que cualquier usuario con permisos (dueño, admin, mod) pueda borrar salas
-2. **Realtime Database - roomAccessNotifications**: Notificaciones de acceso a salas privadas
-3. **Realtime Database - roomDeleted**: Sistema de temporizador de 15 segundos antes de eliminar salas
+2. **Firestore - polls**: Colección de encuestas con permisos de lectura pública y escritura para usuarios autenticados
+3. **Realtime Database - roomAccessNotifications**: Notificaciones de acceso a salas privadas
+4. **Realtime Database - roomDeleted**: Sistema de temporizador de 15 segundos antes de eliminar salas

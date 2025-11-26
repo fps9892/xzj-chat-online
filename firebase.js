@@ -388,33 +388,26 @@ export function listenToDeviceCounts(callback) {
     });
 }
 
-let previousUsers = new Map(); // Cambiar a Map para almacenar datos del usuario
-let roomUserListeners = new Map(); // Para manejar listeners por sala
+let roomUserListeners = new Map();
 
 export function listenToUsers(callback) {
     const usersRef = ref(database, `rooms/${currentRoom}/users`);
     
-    // Limpiar listener anterior si existe
     if (roomUserListeners.has(currentRoom)) {
         roomUserListeners.get(currentRoom)();
     }
     
     const unsubscribe = onValue(usersRef, (snapshot) => {
         const users = [];
-        const currentUsers = new Map();
         const deviceCounts = { desktop: 0, mobile: 0, tablet: 0 };
         
         snapshot.forEach((childSnapshot) => {
             const userData = childSnapshot.val();
             if (userData.status === 'online') {
                 const userId = childSnapshot.key;
-                currentUsers.set(userId, userData);
-                
-                // Contar dispositivos
                 const deviceType = userData.deviceType || 'desktop';
                 deviceCounts[deviceType]++;
                 
-                // Actualizar rol basado en datos existentes
                 let userRole = userData.role || 'Usuario';
                 if (userData.isGuest) {
                     userRole = 'guest';
@@ -426,41 +419,14 @@ export function listenToUsers(callback) {
                     role: userRole,
                     firebaseUid: userData.firebaseUid || null
                 });
-                
-                // Notificar si es un nuevo usuario (solo si no es el primer carga)
-                if (!previousUsers.has(userId) && previousUsers.size > 0) {
-                    showJoinNotification(userData.name || 'Usuario');
-                }
             }
         });
         
-        // Detectar usuarios que se fueron y enviar notificación
-        if (previousUsers.size > 0) {
-            previousUsers.forEach((userData, userId) => {
-                if (!currentUsers.has(userId)) {
-                    showLeaveNotification(userData.name || 'Usuario');
-                }
-            });
-        }
-        
-        previousUsers = currentUsers;
         callback(users, deviceCounts);
     });
     
-    // Guardar el listener para poder limpiarlo después
     roomUserListeners.set(currentRoom, unsubscribe);
-    
     return unsubscribe;
-}
-
-// Notificación flotante para conexión (no se usa, se maneja en script.js)
-function showJoinNotification(username) {
-    // Desactivado - se maneja en script.js
-}
-
-// Notificación flotante para desconexión (no se usa, se maneja en script.js)
-function showLeaveNotification(username) {
-    // Desactivado - se maneja en script.js
 }
 
 // Mostrar notificación flotante temporal

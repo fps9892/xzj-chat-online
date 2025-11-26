@@ -244,8 +244,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 chatArea.innerHTML = '<div class="room-loader"><div class="loader-spinner"></div><p>Cargando sala...</p></div>';
                 
                 cleanupListeners();
-                previousUsersList.clear();
-                isInitialLoad = true;
+                processedEvents.clear();
                 lastMessageCount = 0;
                 
                 changeRoom(roomId, false).then(() => {
@@ -667,33 +666,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let currentUsersListener = null;
     let currentTypingListener = null;
-    let previousUsersList = new Map();
     let roomEventsListener = null;
-    let isInitialLoad = true;
+    let processedEvents = new Set();
     
     function loadUsers() {
         if (currentUsersListener) {
             currentUsersListener();
         }
         
-        isInitialLoad = true;
-        
         currentUsersListener = listenToUsers((users) => {
-            if (!isInitialLoad) {
-                users.forEach(user => {
-                    if (!previousUsersList.has(user.id) && user.id !== currentUser.userId) {
-                        showUserNotification(`${user.name} entró a la sala`, 'join');
-                    }
-                });
-            }
-            
-            previousUsersList.clear();
-            users.forEach(user => {
-                previousUsersList.set(user.id, user);
-            });
-            
             renderUsers(users);
-            isInitialLoad = false;
         });
         
         listenToRoomEvents();
@@ -704,27 +686,27 @@ document.addEventListener('DOMContentLoaded', function() {
             const { database, getRoomName, currentUser } = await import('./firebase.js');
             const { ref, onValue, query: dbQuery, limitToLast } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
             
-            const eventsRef = dbQuery(ref(database, 'roomEvents'), limitToLast(10));
+            const eventsRef = dbQuery(ref(database, 'roomEvents'), limitToLast(5));
             
             roomEventsListener = onValue(eventsRef, (snapshot) => {
                 snapshot.forEach(async (childSnapshot) => {
                     const event = childSnapshot.val();
+                    const eventId = childSnapshot.key;
                     
-                    // Evento de cambio de sala (usuario se fue a otra sala)
+                    if (processedEvents.has(eventId)) return;
+                    processedEvents.add(eventId);
+                    
+                    const eventTime = event.timestamp || 0;
+                    const now = Date.now();
+                    if (now - eventTime > 5000) return;
+                    
                     if (event.type === 'room-change' && event.fromRoom === currentRoom && event.userId !== currentUser.userId) {
                         const toRoomName = await getRoomName(event.toRoom);
                         showUserNotification(`${event.username} se fue a ${toRoomName}`, 'room-change');
                     }
                     
-                    // Evento de entrada a sala (usuario se unió)
-                    if (event.type === 'join' && event.toRoom === currentRoom) {
-                        if (event.userId === currentUser.userId) {
-                            // Notificación personal de bienvenida
-                            showUserNotification(`¡Bienvenido ${event.username}!`, 'welcome');
-                        } else {
-                            // Notificación para otros usuarios
-                            showUserNotification(`${event.username} se ha unido a la sala`, 'join');
-                        }
+                    if (event.type === 'join' && event.toRoom === currentRoom && event.userId !== currentUser.userId) {
+                        showUserNotification(`${event.username} entró a la sala`, 'join');
                     }
                 });
             });

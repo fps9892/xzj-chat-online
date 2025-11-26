@@ -1,4 +1,4 @@
-# 🚀 FYZAR CHAT v3.6
+# 🚀 FYZAR CHAT v3.7
 
 ## 📋 Resumen de Cambios
 
@@ -18,7 +18,27 @@
 
 ---
 
-## 🎨 Nuevas Características v3.6
+## 🎨 Nuevas Características v3.7
+
+### Sistema de Encuestas
+
+- **Crear Encuestas**: Usuarios registrados pueden crear encuestas con hasta 6 opciones
+- **Votación**: Solo usuarios registrados pueden votar (1 voto por encuesta)
+- **Resultados en Tiempo Real**: Porcentajes y barras de progreso actualizadas
+- **Por Sala**: Encuestas específicas para cada sala
+- **Panel Dedicado**: Interfaz con tabs "Activas" y "Crear"
+- **Responsive**: Adaptado para móvil, tablet y desktop
+
+### Notificaciones Corregidas
+
+- **Sin Repeticiones**: Notificaciones basadas en eventos reales, no en historial
+- **Filtro de Tiempo**: Solo eventos de los últimos 5 segundos
+- **Sin Duplicados**: Sistema de eventos procesados para evitar repeticiones
+- **Optimizadas**: Eliminadas notificaciones de usuarios inactivos
+
+---
+
+## 🎨 Características v3.6
 
 ### Login Mejorado
 
@@ -312,6 +332,7 @@ node server.js
 - ✅ CAPTCHA en registro e invitado
 - ✅ `!crearprivada` - Crear sala privada con acceso controlado
 - ✅ `!aceptar` - Aceptar usuarios en sala privada (solo dueño)
+- ✅ Ver encuestas activas en la sala
 
 ### Para Usuarios Registrados
 
@@ -320,6 +341,8 @@ node server.js
 - ✅ Persistencia de datos
 - ✅ Validación de contraseña con indicador
 - ✅ Fondo personalizado del chat
+- ✅ Crear encuestas (hasta 6 opciones)
+- ✅ Votar en encuestas (1 voto por encuesta)
 
 ### Para Moderadores ⭐
 
@@ -489,7 +512,7 @@ showUserNotification(`${username} se fue a ${roomName}`, "room-change");
 ## 📞 Información del Proyecto
 
 - **Proyecto**: fyzar-80936
-- **Versión**: 3.6
+- **Versión**: 3.7
 - **Estado**: ✅ Listo para producción
 - **Calidad**: ⭐⭐⭐⭐⭐
 
@@ -497,7 +520,7 @@ showUserNotification(`${username} se fue a ${roomName}`, "room-change");
 
 ## 🎉 ¡Listo!
 
-Tu proyecto FYZAR CHAT v3.6 incluye:
+Tu proyecto FYZAR CHAT v3.7 incluye:
 
 - ✅ Sistema completo de moderación
 - ✅ Baneo y muteo temporal/permanente
@@ -512,8 +535,10 @@ Tu proyecto FYZAR CHAT v3.6 incluye:
 - ✅ Responsive design optimizado
 - ✅ Animaciones profesionales RGB
 - ✅ Seguridad de nivel empresarial
+- ✅ Sistema de encuestas con votación en tiempo real
+- ✅ Notificaciones optimizadas sin repeticiones
 
-**¡Disfruta tu chat profesional con moderación avanzada!** 🚀
+**¡Disfruta tu chat profesional con moderación avanzada y encuestas interactivas!** 🚀
 
 ---
 

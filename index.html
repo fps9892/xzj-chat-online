@@ -143,6 +143,12 @@
         title="Enviar imagen"
       />
       <img
+        src="/images/encuestas.svg"
+        alt="Polls"
+        class="polls-btn"
+        title="Encuestas"
+      />
+      <img
         src="/images/microphone.svg"
         alt="Voice Message"
         class="mic-btn"
@@ -213,10 +219,41 @@
     <!-- Overlay para cerrar panel -->
     <div class="audio-panel-overlay" id="audioPanelOverlay"></div>
 
+    <!-- Panel de Encuestas -->
+    <div class="polls-panel-overlay" id="pollsPanelOverlay">
+      <div class="polls-panel" id="pollsPanel">
+        <div class="polls-panel-header">
+          <h2>Encuestas</h2>
+          <img src="/images/close.svg" alt="Close" class="close-polls-panel" />
+        </div>
+        <div class="polls-panel-tabs">
+          <button class="polls-tab active" data-tab="active">Activas</button>
+          <button class="polls-tab" data-tab="create">Crear</button>
+        </div>
+        <div class="polls-panel-content">
+          <div class="polls-list active" data-section="active">
+            <div class="empty-polls">No hay encuestas activas</div>
+          </div>
+          <div class="polls-create" data-section="create">
+            <div class="create-poll-form">
+              <input type="text" class="poll-question" placeholder="Pregunta de la encuesta" maxlength="100" />
+              <div class="poll-options">
+                <input type="text" class="poll-option" placeholder="Opción 1" maxlength="50" />
+                <input type="text" class="poll-option" placeholder="Opción 2" maxlength="50" />
+              </div>
+              <button class="add-option-btn">+ Añadir opción</button>
+              <button class="create-poll-btn">Crear Encuesta</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script type="module" src="/main.js"></script>
     <script type="module" src="/script.js"></script>
     <script type="module" src="/level-init.js"></script>
     <script type="module" src="/emote-manager.js"></script>
+    <script type="module" src="/polls.js"></script>
     <!-- Panel de Salas -->
     <div class="rooms-panel-overlay" id="roomsPanelOverlay">
       <div class="rooms-panel" id="roomsPanel">
