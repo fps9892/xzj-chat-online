@@ -1160,13 +1160,13 @@ export async function banUser(userId, reason = 'Violación de reglas', duration 
         
         // Obtener nombre del usuario baneado
         let bannedUsername = 'Usuario';
-        const userDoc = await getDoc(doc(db, 'users', userId));
-        if (userDoc.exists()) {
-            bannedUsername = userDoc.data().username || 'Usuario';
+        const bannedUserDoc = await getDoc(doc(db, 'users', userId));
+        if (bannedUserDoc.exists()) {
+            bannedUsername = bannedUserDoc.data().username || 'Usuario';
         } else {
-            const guestDoc = await getDoc(doc(db, 'guests', userId));
-            if (guestDoc.exists()) {
-                bannedUsername = guestDoc.data().username || 'Invitado';
+            const bannedGuestDoc = await getDoc(doc(db, 'guests', userId));
+            if (bannedGuestDoc.exists()) {
+                bannedUsername = bannedGuestDoc.data().username || 'Invitado';
             }
         }
         
