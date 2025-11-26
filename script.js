@@ -160,61 +160,60 @@ document.addEventListener('DOMContentLoaded', function() {
     let roomsListener = null;
     async function loadRooms() {
         try {
-            // Si ya hay un listener, no crear otro
             if (roomsListener) return;
             
             roomsListener = listenToRooms(async (rooms) => {
-                roomsDropdown.innerHTML = '';
+                publicRoomsList.innerHTML = '';
+                privateRoomsList.innerHTML = '';
                 
-                // Separar salas públicas y privadas
                 const publicRooms = rooms.filter(r => r.isPrivate !== true);
                 const privateRooms = rooms.filter(r => r.isPrivate === true);
                 
-                // Ordenar salas públicas (general primero, luego por fecha - más reciente abajo)
                 const generalRoom = publicRooms.find(r => r.id === 'general');
                 const otherPublicRooms = publicRooms.filter(r => r.id !== 'general').sort((a, b) => {
                     return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
                 });
                 const sortedPublicRooms = generalRoom ? [generalRoom, ...otherPublicRooms] : otherPublicRooms;
                 
-                // Ordenar salas privadas por fecha (más reciente abajo)
                 const sortedPrivateRooms = privateRooms.sort((a, b) => {
                     return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
                 });
                 
-                // Sección de salas públicas
-                const publicHeader = document.createElement('div');
-                publicHeader.className = 'room-section-header';
-                publicHeader.textContent = 'Salas Públicas';
-                roomsDropdown.appendChild(publicHeader);
-                
-                for (const room of sortedPublicRooms) {
-                    const roomElement = document.createElement('div');
-                    roomElement.className = 'room-item';
-                    if (room.id === currentRoom) {
-                        roomElement.classList.add('active');
+                // Renderizar salas públicas
+                if (sortedPublicRooms.length === 0) {
+                    publicRoomsList.innerHTML = '<div class="empty-rooms">No hay salas públicas</div>';
+                } else {
+                    for (const room of sortedPublicRooms) {
+                        const roomElement = document.createElement('div');
+                        roomElement.className = 'room-item-panel';
+                        if (room.id === currentRoom) roomElement.classList.add('active');
+                        roomElement.setAttribute('data-room', room.id);
+                        roomElement.innerHTML = `
+                            <div class="room-item-name">
+                                <span class="room-item-icon">🌐</span>
+                                <span>${room.name}</span>
+                            </div>
+                        `;
+                        publicRoomsList.appendChild(roomElement);
                     }
-                    roomElement.setAttribute('data-room', room.id);
-                    roomElement.innerHTML = room.name;
-                    roomsDropdown.appendChild(roomElement);
                 }
                 
-                // Sección de salas privadas (solo si hay salas privadas)
-                if (sortedPrivateRooms.length > 0) {
-                    const privateHeader = document.createElement('div');
-                    privateHeader.className = 'room-section-header';
-                    privateHeader.textContent = 'Salas Privadas';
-                    roomsDropdown.appendChild(privateHeader);
-                    
+                // Renderizar salas privadas
+                if (sortedPrivateRooms.length === 0) {
+                    privateRoomsList.innerHTML = '<div class="empty-rooms">No hay salas privadas</div>';
+                } else {
                     for (const room of sortedPrivateRooms) {
                         const roomElement = document.createElement('div');
-                        roomElement.className = 'room-item private-room';
-                        if (room.id === currentRoom) {
-                            roomElement.classList.add('active');
-                        }
+                        roomElement.className = 'room-item-panel private';
+                        if (room.id === currentRoom) roomElement.classList.add('active');
                         roomElement.setAttribute('data-room', room.id);
-                        roomElement.innerHTML = `🔒 ${room.name}`;
-                        roomsDropdown.appendChild(roomElement);
+                        roomElement.innerHTML = `
+                            <div class="room-item-name">
+                                <span class="room-item-icon">🔒</span>
+                                <span>${room.name}</span>
+                            </div>
+                        `;
+                        privateRoomsList.appendChild(roomElement);
                     }
                 }
                 
