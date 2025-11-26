@@ -80,7 +80,7 @@
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    border: 1px solid #fff;
+    border: 1px solid #00ff00;
     border-radius: 6px;
     padding: 5px 8px;
     cursor: pointer;
@@ -321,12 +321,12 @@
     overflow: hidden;
     word-break: break-word;
   }
-  
+
   .message-text.expanded {
     display: block;
     -webkit-line-clamp: unset;
   }
-  
+
   .see-more {
     color: #00ff00;
     cursor: pointer;
@@ -336,25 +336,26 @@
     font-weight: bold;
     text-decoration: underline;
   }
-  
+
   .see-more:active {
     color: #00cc00;
   }
-  
+
   /* Anuncios en móvil */
   .announcement-overlay {
     padding: 15px;
   }
-  
+
   .announcement-box {
     padding: 25px 20px;
     max-width: 90%;
     border: 3px solid #00ff00;
     border-radius: 15px;
     animation: rgbBorder 3s linear infinite, pulse 2s ease-in-out infinite;
-    box-shadow: 0 0 30px rgba(0, 255, 0, 0.6), inset 0 0 20px rgba(0, 255, 0, 0.2);
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.6),
+      inset 0 0 20px rgba(0, 255, 0, 0.2);
   }
-  
+
   .announcement-text {
     font-size: 15px;
     animation: textGlow 2s ease-in-out infinite;
@@ -362,18 +363,44 @@
 }
 
 @keyframes rgbBorder {
-  0% { border-color: #00ff00; box-shadow: 0 0 30px rgba(0, 255, 0, 0.6), inset 0 0 20px rgba(0, 255, 0, 0.2); }
-  33% { border-color: #00ffff; box-shadow: 0 0 30px rgba(0, 255, 255, 0.6), inset 0 0 20px rgba(0, 255, 255, 0.2); }
-  66% { border-color: #00ff88; box-shadow: 0 0 30px rgba(0, 255, 136, 0.6), inset 0 0 20px rgba(0, 255, 136, 0.2); }
-  100% { border-color: #00ff00; box-shadow: 0 0 30px rgba(0, 255, 0, 0.6), inset 0 0 20px rgba(0, 255, 0, 0.2); }
+  0% {
+    border-color: #00ff00;
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.6),
+      inset 0 0 20px rgba(0, 255, 0, 0.2);
+  }
+  33% {
+    border-color: #00ffff;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.6),
+      inset 0 0 20px rgba(0, 255, 255, 0.2);
+  }
+  66% {
+    border-color: #00ff88;
+    box-shadow: 0 0 30px rgba(0, 255, 136, 0.6),
+      inset 0 0 20px rgba(0, 255, 136, 0.2);
+  }
+  100% {
+    border-color: #00ff00;
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.6),
+      inset 0 0 20px rgba(0, 255, 0, 0.2);
+  }
 }
 
 @keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.02); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
 }
 
 @keyframes textGlow {
-  0%, 100% { text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00; }
-  50% { text-shadow: 0 0 30px #00ff00, 0 0 40px #00ff00, 0 0 50px #00ff00; }
+  0%,
+  100% {
+    text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00;
+  }
+  50% {
+    text-shadow: 0 0 30px #00ff00, 0 0 40px #00ff00, 0 0 50px #00ff00;
+  }
 }
