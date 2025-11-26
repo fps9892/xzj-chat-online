@@ -3,8 +3,14 @@
 ## 🆕 Nuevos Comandos v3.8
 
 ### Para Administradores y Moderadores:
-- `!versalas` - Muestra panel visual para gestionar y eliminar salas
-- `!borrar <nombre>` - Elimina sala con notificación privada (15 segundos)
+- `!versalas` - Muestra panel visual para gestionar y eliminar salas (no envía mensaje al chat)
+- `!borrar <nombre>` - Elimina sala con notificación despegable temporal (15 segundos, no envía mensaje al chat)
+
+### Mejoras de Comandos:
+- Los comandos `!versalas` y `!borrar` no generan mensajes en el chat
+- Notificaciones privadas solo visibles para quien ejecuta el comando
+- Panel de gestión se cierra automáticamente cuando no quedan salas
+- Búsqueda de salas mejorada (acepta nombre o ID)
 
 ## 📋 Firestore Database Rules
 

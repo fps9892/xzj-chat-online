@@ -127,6 +127,11 @@ export async function sendMessage(text, type = 'text', imageData = null, audioDu
     if (text && text.startsWith('!')) {
         const commandResult = await processAdminCommand(text);
         if (commandResult) {
+            // Comandos especiales que no envían mensaje
+            if (commandResult.showRoomsPanel || commandResult.showDeleteNotification) {
+                return commandResult;
+            }
+            
             if (commandResult.success) {
                 // Si es mensaje privado, solo visible para el usuario
                 if (commandResult.privateMessage) {
@@ -146,7 +151,7 @@ export async function sendMessage(text, type = 'text', imageData = null, audioDu
                     
                     document.body.appendChild(tempMessage);
                     setTimeout(() => tempMessage.remove(), 30000);
-                    return;
+                    return commandResult;
                 }
                 
                 // Enviar mensaje de confirmación del sistema
