@@ -29,19 +29,19 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    match /banned/{firebaseUid} {
+    match /banned/{userId} {
       allow read: if true;
-      allow write: if isAdmin() || isModerator();
+      allow write: if true;
     }
 
     match /bannedIPs/{ipAddress} {
       allow read: if true;
-      allow write: if isAdmin() || isModerator();
+      allow write: if true;
     }
 
-    match /muted/{firebaseUid} {
+    match /muted/{userId} {
       allow read: if true;
-      allow write: if isAdmin() || isModerator();
+      allow write: if true;
     }
 
     match /users/{firebaseUid} {
@@ -63,8 +63,8 @@ service cloud.firestore {
 
     match /rooms/{roomId} {
       allow read: if true;
-      allow create: if isAuthenticated() || true;
-      allow update: if isAuthenticated() || true;
+      allow create: if true;
+      allow update: if true;
       allow delete: if true;
     }
 
@@ -158,7 +158,8 @@ service cloud.firestore {
 
 ## Cambios importantes:
 
-1. **Firestore - rooms**: `allow delete: if true;` - Permite que cualquier usuario con permisos (dueño, admin, mod) pueda borrar salas
-2. **Firestore - polls**: Colección de encuestas con permisos de lectura pública y escritura para usuarios autenticados
-3. **Realtime Database - roomAccessNotifications**: Notificaciones de acceso a salas privadas
-4. **Realtime Database - roomDeleted**: Sistema de temporizador de 15 segundos antes de eliminar salas
+1. **Firestore - banned/muted**: `allow write: if true;` - Permite banear/mutear tanto usuarios registrados como invitados
+2. **Firestore - rooms**: `allow create/update/delete: if true;` - Permisos completos para gestión de salas
+3. **Firestore - polls**: Colección de encuestas con permisos de lectura pública y escritura para usuarios autenticados
+4. **Realtime Database - roomAccessNotifications**: Notificaciones de acceso a salas privadas
+5. **Realtime Database - roomDeleted**: Sistema de temporizador de 15 segundos antes de eliminar salas
