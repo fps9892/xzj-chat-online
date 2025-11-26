@@ -277,7 +277,7 @@ body {
 
 .room-header {
   background-color: #000;
-  border-bottom: 1px solid #fff;
+  border-bottom: 1px solid #00ff00;
   margin-top: 55px;
   text-align: center; /* Centra el texto dentro de su contenedor */
 }
