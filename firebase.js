@@ -1915,7 +1915,8 @@ export async function getRooms() {
                     id: doc.id,
                     name: roomData.name,
                     createdBy: roomData.createdBy,
-                    createdAt: roomData.createdAt
+                    createdAt: roomData.createdAt,
+                    isPrivate: roomData.isPrivate || false
                 });
             }
         });

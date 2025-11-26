@@ -188,12 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         roomElement.className = 'room-item-panel';
                         if (room.id === currentRoom) roomElement.classList.add('active');
                         roomElement.setAttribute('data-room', room.id);
-                        roomElement.innerHTML = `
-                            <div class="room-item-name">
-                                <span class="room-item-icon">🌐</span>
-                                <span>${room.name}</span>
-                            </div>
-                        `;
+                        roomElement.textContent = room.name;
                         publicRoomsList.appendChild(roomElement);
                     }
                 }
