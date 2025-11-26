@@ -3,7 +3,7 @@ export let replyingTo = null;
 
 export function setupMessageOptions(messageEl, message, currentUser, sendMessage, deleteMessage, showNotification) {
     const optionsBtn = messageEl.querySelector('.message-options-btn');
-    if (!optionsBtn) return;
+    if (!optionsBtn || !message.text) return;
 
     optionsBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -22,7 +22,7 @@ export function setupMessageOptions(messageEl, message, currentUser, sendMessage
         copyOption.className = 'message-option-item';
         copyOption.innerHTML = '📋 Copiar';
         copyOption.addEventListener('click', () => {
-            navigator.clipboard.writeText(message.text).then(() => {
+            navigator.clipboard.writeText(message.text || '').then(() => {
                 showNotification('Mensaje copiado', 'success');
                 menu.remove();
             });
@@ -63,10 +63,12 @@ export function setupMessageOptions(messageEl, message, currentUser, sendMessage
 }
 
 export function setReplyTo(message) {
+    if (!message.text) return;
+    
     replyingTo = {
         id: message.id,
         userId: message.userId,
-        userName: message.userName,
+        userName: message.userName || 'Usuario',
         text: message.text
     };
     

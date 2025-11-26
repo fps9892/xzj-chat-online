@@ -881,11 +881,11 @@ document.addEventListener('DOMContentLoaded', function() {
             roleTag = '<span class="mod-tag">MOD</span>';
         }
         
-        const replyPreview = message.replyTo ? `
+        const replyPreview = message.replyTo && message.replyTo.text ? `
             <div class="reply-preview">
                 <img src="/images/reply.svg" class="reply-icon" />
                 <div class="reply-content">
-                    <span class="reply-username">${message.replyTo.userName}</span>
+                    <span class="reply-username">${message.replyTo.userName || 'Usuario'}</span>
                     <span class="reply-text">${message.replyTo.text.substring(0, 50)}${message.replyTo.text.length > 50 ? '...' : ''}</span>
                 </div>
             </div>

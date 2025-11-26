@@ -250,9 +250,16 @@ export async function sendMessage(text, type = 'text', imageData = null, audioDu
     
     // Verificar que no hay valores undefined
     Object.keys(messageData).forEach(key => {
-        if (messageData[key] === undefined || messageData[key] === null) {
-            console.warn(`Campo de mensaje ${key} es undefined`);
-            messageData[key] = key === 'text' ? '' : 'default';
+        if (messageData[key] === undefined) {
+            if (key === 'replyTo') {
+                delete messageData[key];
+            } else if (key === 'text') {
+                messageData[key] = '';
+            } else if (messageData[key] === null) {
+                // null es válido, no hacer nada
+            } else {
+                messageData[key] = 'default';
+            }
         }
     });
     
