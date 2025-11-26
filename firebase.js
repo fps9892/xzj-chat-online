@@ -1115,6 +1115,11 @@ export async function banUser(userId, reason = 'Violación de reglas', duration 
         throw new Error('Solo administradores y moderadores pueden banear usuarios');
     }
     
+    const targetIsAdmin = await checkAdminStatus(userId);
+    if (targetIsAdmin) {
+        throw new Error('No puedes banear a un administrador');
+    }
+    
     try {
         let userIP = 'unknown';
         
@@ -1171,6 +1176,11 @@ export async function muteUser(userId, duration = 5 * 60 * 1000) {
     
     if (!isAdmin && !isModerator) {
         throw new Error('Solo administradores y moderadores pueden mutear usuarios');
+    }
+    
+    const targetIsAdmin = await checkAdminStatus(userId);
+    if (targetIsAdmin) {
+        throw new Error('No puedes mutear a un administrador');
     }
     
     try {
