@@ -1401,9 +1401,9 @@ document.addEventListener('DOMContentLoaded', function() {
         updateGuestUI();
         initAdminListener();
         
-        const hash = window.location.hash.substring(1) || 'general';
+        const roomHash = window.location.hash.substring(1) || 'general';
         setTimeout(() => {
-            changeRoom(hash, true);
+            changeRoom(roomHash, true);
             loadMessages();
             loadUsers();
             setupRoomDeletedListener();
