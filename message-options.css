@@ -79,11 +79,21 @@
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: rgba(0, 255, 0, 0.1);
-  border-left: 3px solid #00ff00;
+  background: rgba(0, 0, 0, 0.3);
+  border-left: 3px solid #000;
   border-radius: 6px;
   margin-bottom: 8px;
   font-size: 12px;
+}
+
+.message.sent .reply-preview {
+  background: rgba(0, 0, 0, 0.4);
+  border-left-color: #000;
+}
+
+.message.received .reply-preview {
+  background: rgba(0, 255, 0, 0.1);
+  border-left-color: #00ff00;
 }
 
 .reply-icon {
@@ -102,24 +112,37 @@
 
 .reply-label {
   font-size: 10px;
-  color: #888;
+  color: #000;
   font-family: "Inter", sans-serif;
   font-style: italic;
+  font-weight: bold;
+}
+
+.message.received .reply-label {
+  color: #888;
 }
 
 .reply-username {
   font-weight: bold;
-  color: #00ff00;
+  color: #000;
   font-family: "Orbitron", monospace;
   font-size: 11px;
 }
 
+.message.received .reply-username {
+  color: #00ff00;
+}
+
 .reply-text {
-  color: #888;
+  color: #333;
   font-size: 11px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.message.received .reply-text {
+  color: #888;
 }
 
 /* Mensaje con respuesta para el destinatario */
