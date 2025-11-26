@@ -1080,6 +1080,7 @@ body {
 
 .message-content {
   padding: 12px 16px;
+  padding-right: 36px;
   border-radius: 18px;
   font-size: 14px;
   line-height: 1.4;
@@ -1116,9 +1117,11 @@ body {
 
 .message-text {
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
 .message-text.expanded {
@@ -1126,20 +1129,36 @@ body {
   -webkit-line-clamp: unset;
 }
 
+@media (max-width: 767px) {
+  .message-text {
+    -webkit-line-clamp: 4;
+  }
+}
+
 .see-more {
   color: #00ff00;
   cursor: pointer;
   font-size: 12px;
-  display: block;
+  display: inline-block;
   margin-top: 5px;
+  font-weight: bold;
+  user-select: none;
 }
 
 .see-more:hover {
   text-decoration: underline;
+  color: #00cc00;
 }
 
 .see-more.hidden {
   display: none;
+}
+
+@media (max-width: 767px) {
+  .see-more {
+    font-size: 13px;
+    padding: 2px 0;
+  }
 }
 
 .message.sent .message-content:not(.emote-content)::after {

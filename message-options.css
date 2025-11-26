@@ -1,32 +1,45 @@
 /* Menú de opciones de mensaje */
 .message-options-btn {
   position: absolute;
-  top: 5px;
-  right: 5px;
-  width: 24px;
-  height: 24px;
-  background: rgba(0, 0, 0, 0.7);
+  top: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.3s;
+  opacity: 0.7;
+  transition: all 0.3s;
   z-index: 10;
   color: #fff;
-  font-size: 18px;
+  font-size: 14px;
   font-weight: bold;
+  border: none;
 }
 
-.message-container:hover .message-options-btn {
+.message-options-btn:hover {
   opacity: 1;
+  background: rgba(0, 255, 0, 0.3);
+  transform: scale(1.1);
+}
+
+@media (max-width: 767px) {
+  .message-options-btn {
+    opacity: 1;
+    width: 22px;
+    height: 22px;
+    font-size: 16px;
+  }
 }
 
 .message-options-menu {
   position: absolute;
-  top: 30px;
-  right: 5px;
+  top: 28px;
+  right: 8px;
   background: #000;
   border: 1px solid #00ff00;
   border-radius: 8px;

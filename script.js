@@ -579,9 +579,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Funcionalidad "ver más" para mensajes largos
     function getCharacterLimit() {
         const width = window.innerWidth;
-        if (width <= 767) return 100; // Móvil
-        if (width <= 1023) return 200; // Tablet
-        return 200; // Desktop
+        if (width <= 767) return 150; // Móvil
+        if (width <= 1023) return 250; // Tablet
+        return 300; // Desktop
     }
     
     function initializeMessages() {
@@ -929,7 +929,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                 ${roleTag}
                                 <span class="message-time">${time}</span>
                             `}
-                            ${message.type !== 'audio' && message.type !== 'image' && message.type !== 'emote' && message.text ? '<button class="message-options-btn">⋮</button>' : ''}
                         </div>
                         ${message.type === 'audio' ? 
                             `<div class="audio-message">
@@ -948,8 +947,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         `<div class="message-content">
                             ${message.type === 'image' ? 
                                 `<img src="${message.imageData}" alt="Imagen" class="message-image" onclick="showImageModal('${message.imageData}')" />` :
-                                `${replyPreview}<div class="message-text copyable-text">${processEmotes(message.text)}</div>
-                                ${message.text.length > getCharacterLimit() ? '<span class="see-more">ver más</span>' : ''}
+                                `${message.text ? '<button class="message-options-btn">⋮</button>' : ''}${replyPreview}<div class="message-text copyable-text">${processEmotes(message.text)}</div>
+                                ${message.text && message.text.length > getCharacterLimit() ? '<span class="see-more">ver más</span>' : ''}
                                 ${(() => {
                                     const youtubeId = extractYouTubeId(message.text);
                                     return youtubeId ? `<div class="youtube-embed"><iframe width="100%" height="200" src="https://www.youtube.com/embed/${youtubeId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>` : '';
