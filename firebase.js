@@ -636,11 +636,7 @@ export function listenToTyping(callback) {
         const typingUsers = [];
         snapshot.forEach((childSnapshot) => {
             const data = childSnapshot.val();
-            const userId = childSnapshot.key;
-            // No mostrar si es el usuario actual
-            if (userId !== sanitizeUserId(currentUser.userId)) {
-                typingUsers.push(data.userName);
-            }
+            typingUsers.push(data.userName);
         });
         callback(typingUsers);
     });

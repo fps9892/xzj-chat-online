@@ -1711,18 +1711,14 @@ document.addEventListener('DOMContentLoaded', function() {
         currentTypingListener = listenToTyping((typingUsers) => {
             const sidebarTypingIndicator = document.querySelector('.sidebar-typing-indicator');
             
-            // Incluir usuario actual si está escribiendo
-            const isCurrentUserTyping = messageInput.value.length > 0;
-            const allTypingUsers = isCurrentUserTyping ? [currentUser.username, ...typingUsers] : typingUsers;
-            
-            if (allTypingUsers.length > 0) {
+            if (typingUsers.length > 0) {
                 let message;
-                if (allTypingUsers.length === 1) {
-                    message = `${allTypingUsers[0]} está escribiendo...`;
-                } else if (allTypingUsers.length === 2) {
-                    message = `${allTypingUsers[0]} y ${allTypingUsers[1]} están escribiendo...`;
+                if (typingUsers.length === 1) {
+                    message = `${typingUsers[0]} está escribiendo...`;
+                } else if (typingUsers.length === 2) {
+                    message = `${typingUsers[0]} y ${typingUsers[1]} están escribiendo...`;
                 } else {
-                    message = `${allTypingUsers[0]}, ${allTypingUsers[1]} y ${allTypingUsers.length - 2} más están escribiendo...`;
+                    message = `${typingUsers[0]}, ${typingUsers[1]} y ${typingUsers.length - 2} más están escribiendo...`;
                 }
                 typingIndicator.textContent = message;
                 typingIndicator.style.display = 'block';
@@ -1825,6 +1821,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 messageInput.value = '';
                 charCounter.textContent = '0/250';
                 charCounter.classList.remove('warning', 'danger');
+                setTypingStatus(false);
+                clearTimeout(typingTimeout);
             }).catch(error => {
                 console.error('Error enviando mensaje:', error);
                 showNotification(error.message || 'Error al enviar mensaje', 'error');
