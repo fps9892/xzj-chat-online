@@ -1,6 +1,16 @@
-# 🚀 FYZAR CHAT v3.7
+# 🚀 FYZAR CHAT v3.8
 
 ## 📋 Resumen de Cambios
+
+### ✅ Nuevo en v3.8
+
+1. **Sistema de Routing con Hash** - Cada sala tiene su URL específica (ej: `index.html#general`, `index.html#privada1`)
+2. **Verificación de Autenticación** - `/index.html` verifica autenticación antes de cargar
+3. **Redirección Automática** - Usuarios no autenticados son redirigidos a `/login.html`
+4. **Navegación con URL** - Botones atrás/adelante del navegador funcionan correctamente
+5. **Links Compartibles** - Comparte links directos a salas específicas
+
+## 📋 Resumen de Cambios Anteriores
 
 ### ✅ Tareas Completadas
 
@@ -109,6 +119,20 @@
 ---
 
 ## 🚀 Inicio Rápido
+
+### Sistema de URLs
+
+- `/` o `/index.html` → Verifica autenticación y redirige
+- `/index.html#general` → Sala General (URL por defecto después del login)
+- `/index.html#privada1` → Sala Privada 1
+- `/login.html` → Pantalla de login/registro
+
+**Flujo de autenticación:**
+1. Usuario accede a `/index.html`
+2. Script `auth-check.js` verifica si hay sesión activa
+3. Si NO está autenticado → Redirige a `/login.html`
+4. Si está autenticado sin hash → Redirige a `/index.html#general`
+5. Si está autenticado con hash → Carga la sala especificada
 
 ### 1. Aplicar Reglas de Firebase
 
@@ -512,7 +536,7 @@ showUserNotification(`${username} se fue a ${roomName}`, "room-change");
 ## 📞 Información del Proyecto
 
 - **Proyecto**: fyzar-80936
-- **Versión**: 3.7
+- **Versión**: 3.8
 - **Estado**: ✅ Listo para producción
 - **Calidad**: ⭐⭐⭐⭐⭐
 
@@ -520,7 +544,7 @@ showUserNotification(`${username} se fue a ${roomName}`, "room-change");
 
 ## 🎉 ¡Listo!
 
-Tu proyecto FYZAR CHAT v3.7 incluye:
+Tu proyecto FYZAR CHAT v3.8 incluye:
 
 - ✅ Sistema completo de moderación
 - ✅ Baneo y muteo temporal/permanente
@@ -537,8 +561,11 @@ Tu proyecto FYZAR CHAT v3.7 incluye:
 - ✅ Seguridad de nivel empresarial
 - ✅ Sistema de encuestas con votación en tiempo real
 - ✅ Notificaciones optimizadas sin repeticiones
+- ✅ Sistema de routing con hash para URLs específicas por sala
+- ✅ Verificación de autenticación automática
+- ✅ Links compartibles a salas específicas
 
-**¡Disfruta tu chat profesional con moderación avanzada y encuestas interactivas!** 🚀
+**¡Disfruta tu chat profesional con moderación avanzada, encuestas interactivas y URLs compartibles!** 🚀
 
 ---
 

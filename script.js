@@ -189,7 +189,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     for (const room of sortedPublicRooms) {
                         const roomElement = document.createElement('div');
                         roomElement.className = 'room-item-panel';
-                        if (room.id === currentRoom) roomElement.classList.add('active');
+                        const currentHash = window.location.hash.substring(1);
+                        if (room.id === currentHash) roomElement.classList.add('active');
                         roomElement.setAttribute('data-room', room.id);
                         roomElement.innerHTML = `
                             <span class="room-name">${room.name}</span>
@@ -207,7 +208,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     for (const room of sortedPrivateRooms) {
                         const roomElement = document.createElement('div');
                         roomElement.className = 'room-item-panel private';
-                        if (room.id === currentRoom) roomElement.classList.add('active');
+                        const currentHash = window.location.hash.substring(1);
+                        if (room.id === currentHash) roomElement.classList.add('active');
                         roomElement.setAttribute('data-room', room.id);
                         roomElement.innerHTML = `
                             <div class="room-item-name">
@@ -262,29 +264,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 
-                const roomDisplayName = this.textContent.trim();
-                currentRoomName.textContent = roomDisplayName;
-                originalTitle = `${roomDisplayName} - FYZAR CHAT`;
-                document.title = originalTitle;
-                unreadMessages = 0;
-                
-                roomItems.forEach(r => r.classList.remove('active'));
-                this.classList.add('active');
-                
-                const chatArea = document.querySelector('.chat-area');
-                chatArea.innerHTML = '<div class="room-loader"><div class="loader-spinner"></div><p>Cargando sala...</p></div>';
-                
-                cleanupListeners();
-                processedEvents.clear();
-                lastMessageCount = 0;
-                
-                changeRoom(roomId, false).then(() => {
-                    loadMessages();
-                    loadUsers();
-                    startTypingListener();
-                });
-                
-                roomsPanelOverlay.classList.remove('active');
+                window.location.hash = roomId;
             });
         });
     }
@@ -1358,6 +1338,18 @@ document.addEventListener('DOMContentLoaded', function() {
     async function initializeApp() {
         validateCurrentUser();
         
+        const hash = window.location.hash.substring(1);
+        if (hash) {
+            currentRoom = hash;
+            const roomDisplayName = hash === 'general' ? 'Sala General' : hash;
+            currentRoomName.textContent = roomDisplayName;
+            originalTitle = `${roomDisplayName} - FYZAR CHAT`;
+            document.title = originalTitle;
+        } else {
+            window.location.replace('/index.html#general');
+            return;
+        }
+        
         // Cargar fondo guardado
         const savedBackground = localStorage.getItem('chatBackground');
         if (savedBackground) {
@@ -1431,17 +1423,40 @@ document.addEventListener('DOMContentLoaded', function() {
     // Limpiar listeners al cerrar la ventana
     window.addEventListener('beforeunload', cleanupListeners);
     
-    // Manejar cambios de URL (botón atrás/adelante del navegador)
-    window.addEventListener('popstate', (event) => {
-        if (event.state && event.state.room) {
-            const roomId = event.state.room;
-            currentRoomName.textContent = roomId === 'general' ? 'Sala General' : roomId;
+    // Manejar cambios de URL (botón atrás/adelante del navegador y cambios de hash)
+    window.addEventListener('hashchange', () => {
+        const hash = window.location.hash.substring(1);
+        if (hash && hash !== currentRoom) {
+            const roomId = hash;
+            const roomDisplayName = roomId === 'general' ? 'Sala General' : roomId;
+            
+            currentRoomName.textContent = roomDisplayName;
+            originalTitle = `${roomDisplayName} - FYZAR CHAT`;
+            document.title = originalTitle;
+            unreadMessages = 0;
+            
+            document.querySelectorAll('.room-item-panel').forEach(r => {
+                if (r.getAttribute('data-room') === roomId) {
+                    r.classList.add('active');
+                } else {
+                    r.classList.remove('active');
+                }
+            });
+            
+            const chatArea = document.querySelector('.chat-area');
+            chatArea.innerHTML = '<div class="room-loader"><div class="loader-spinner"></div><p>Cargando sala...</p></div>';
+            
             cleanupListeners();
-            changeRoom(roomId, false);
-            setTimeout(() => {
+            processedEvents.clear();
+            lastMessageCount = 0;
+            
+            changeRoom(roomId, false).then(() => {
                 loadMessages();
                 loadUsers();
-            }, 100);
+                startTypingListener();
+            });
+            
+            roomsPanelOverlay.classList.remove('active');
         }
     });
     

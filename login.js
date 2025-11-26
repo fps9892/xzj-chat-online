@@ -300,7 +300,7 @@ document.addEventListener('DOMContentLoaded', function() {
             await setDoc(doc(db, 'users', userData.firebaseUid), { ip: userIP }, { merge: true });
             
             localStorage.setItem('currentUser', JSON.stringify(userData));
-            window.location.href = 'index.html';
+            window.location.href = 'index.html#general';
         } catch (error) {
             showNotification('Credenciales incorrectas', 'error');
         }
@@ -385,7 +385,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showWelcome();
             
             setTimeout(() => {
-                window.location.href = 'index.html';
+                window.location.href = 'index.html#general';
             }, 3500);
         } catch (error) {
             if (error.code === 'auth/email-already-in-use') {
@@ -463,7 +463,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             await setDoc(doc(db, 'guests', userId), guestUser);
             localStorage.setItem('currentUser', JSON.stringify(guestUser));
-            window.location.href = 'index.html';
+            window.location.href = 'index.html#general';
         } catch (error) {
             showNotification('Error al entrar como invitado: ' + error.message, 'error');
         }
@@ -522,7 +522,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             localStorage.setItem('currentUser', JSON.stringify(userData));
-            window.location.href = 'index.html';
+            window.location.href = 'index.html#general';
         } catch (error) {
             showNotification('Error con Google: ' + error.message, 'error');
         }
