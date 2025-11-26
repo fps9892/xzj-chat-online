@@ -2302,6 +2302,33 @@ body {
   font-size: 14px;
 }
 
+.private-command-message {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.95);
+  border: 2px solid #ffaa00;
+  padding: 20px;
+  border-radius: 12px;
+  color: #fff;
+  font-family: monospace;
+  white-space: pre-wrap;
+  z-index: 9999;
+  max-width: 90%;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+@media (max-width: 767px) {
+  .private-command-message {
+    bottom: 90px;
+    max-width: 95%;
+    font-size: 13px;
+    padding: 15px;
+  }
+}
+
 /* Responsive para tablet */
 @media (max-width: 1024px) and (min-width: 768px) {
   .rooms-panel {

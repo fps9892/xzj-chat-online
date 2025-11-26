@@ -1799,6 +1799,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const message = messageInput.value.trim();
         if (message) {
+            // Cerrar lista de comandos si existe
+            const commandList = document.querySelector('.private-command-message');
+            if (commandList) commandList.remove();
+            
             sendMessage(message).then(() => {
                 messageInput.value = '';
                 charCounter.textContent = '0/250';

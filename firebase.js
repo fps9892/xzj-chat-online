@@ -1543,11 +1543,13 @@ export async function getConnectedUsersList() {
             snapshot.forEach((childSnapshot) => {
                 const userData = childSnapshot.val();
                 if (userData.status === 'online') {
+                    const userId = childSnapshot.key;
+                    const firebaseUid = userData.firebaseUid || userId;
                     users.push({
                         numId: index++,
-                        userId: childSnapshot.key,
+                        userId: userId,
                         username: userData.name,
-                        firebaseUid: userData.firebaseUid || childSnapshot.key,
+                        firebaseUid: firebaseUid,
                         isGuest: userData.isGuest || false
                     });
                 }
@@ -1656,7 +1658,8 @@ export async function processAdminCommand(message) {
                     }
                     let userList = '📋 Lista de usuarios:\n';
                     users.forEach(u => {
-                        userList += `${u.numId}. ${u.username}\n`;
+                        const guestLabel = u.isGuest ? ' (invitado)' : '';
+                        userList += `${u.numId}. ${u.username}${guestLabel}\n`;
                     });
                     userList += '\nUso: !ban <número> [razón]';
                     return { success: true, message: userList, privateMessage: true };
