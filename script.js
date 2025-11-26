@@ -1048,7 +1048,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     let userNumericIds = new Map();
+    let guestNumericIds = new Map();
     let currentNumericId = 1;
+    let currentGuestId = 100;
     
     function createUserElement(user) {
         let displayName = user.name;
@@ -1061,13 +1063,23 @@ document.addEventListener('DOMContentLoaded', function() {
             roleTag = '<span class="mod-tag">MOD</span>';
         }
         
-        // Asignar ID numérico fijo para admins/mods
-        if ((currentUser.isAdmin || currentUser.isModerator) && !user.isGuest) {
-            if (!userNumericIds.has(user.firebaseUid || user.id)) {
-                userNumericIds.set(user.firebaseUid || user.id, currentNumericId++);
+        // Asignar ID numérico para admins/mods
+        if (currentUser.isAdmin || currentUser.isModerator) {
+            if (user.isGuest) {
+                // ID de 3 dígitos para invitados
+                if (!guestNumericIds.has(user.firebaseUid || user.id)) {
+                    guestNumericIds.set(user.firebaseUid || user.id, currentGuestId++);
+                }
+                const guestId = guestNumericIds.get(user.firebaseUid || user.id);
+                userNumId = `<span class="user-id guest-id">#${guestId}</span>`;
+            } else {
+                // ID corto para usuarios registrados
+                if (!userNumericIds.has(user.firebaseUid || user.id)) {
+                    userNumericIds.set(user.firebaseUid || user.id, currentNumericId++);
+                }
+                const numId = userNumericIds.get(user.firebaseUid || user.id);
+                userNumId = `<span class="user-id">#${numId}</span>`;
             }
-            const numId = userNumericIds.get(user.firebaseUid || user.id);
-            userNumId = `<span class="user-id">#${numId}</span>`;
         }
         
         const canModerate = (currentUser.isAdmin || currentUser.isModerator) && user.id !== currentUser.userId && !user.isGuest;
@@ -1877,12 +1889,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     <button class="close-moderation-panel">×</button>
                 </div>
                 <div class="moderation-list">
-                    ${users.map((user, index) => `
+                    ${users.map((user, index) => {
+                        let userId = '';
+                        if (user.isGuest) {
+                            if (!guestNumericIds.has(user.firebaseUid || user.userId)) {
+                                guestNumericIds.set(user.firebaseUid || user.userId, currentGuestId++);
+                            }
+                            userId = `#${guestNumericIds.get(user.firebaseUid || user.userId)}`;
+                        } else {
+                            userId = `#${index + 1}`;
+                        }
+                        return `
                         <div class="moderation-user-item">
                             <div class="moderation-user-info">
                                 <img src="${user.avatar}" class="moderation-user-avatar" alt="${user.name}" />
-                                <span class="moderation-user-name">${index + 1}. ${user.name}</span>
-                            </div>
+                                <span class="moderation-user-name">${userId} ${user.name}${user.isGuest ? ' (invitado)' : ''}</span>
+                            </div>`;
+                    }).join('')}
                             <button class="moderation-action-btn ban-action-btn" data-user-id="${user.firebaseUid || user.userId}" data-username="${user.name}" data-is-guest="${user.isGuest}">
                                 <img src="/images/ban.svg" alt="Ban" />
                                 Banear
@@ -2031,12 +2054,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     <button class="close-moderation-panel">×</button>
                 </div>
                 <div class="moderation-list">
-                    ${users.map((user, index) => `
+                    ${users.map((user, index) => {
+                        let userId = '';
+                        if (user.isGuest) {
+                            if (!guestNumericIds.has(user.firebaseUid || user.userId)) {
+                                guestNumericIds.set(user.firebaseUid || user.userId, currentGuestId++);
+                            }
+                            userId = `#${guestNumericIds.get(user.firebaseUid || user.userId)}`;
+                        } else {
+                            userId = `#${index + 1}`;
+                        }
+                        return `
                         <div class="moderation-user-item">
                             <div class="moderation-user-info">
                                 <img src="${user.avatar}" class="moderation-user-avatar" alt="${user.name}" />
-                                <span class="moderation-user-name">${index + 1}. ${user.name}</span>
-                            </div>
+                                <span class="moderation-user-name">${userId} ${user.name}${user.isGuest ? ' (invitado)' : ''}</span>
+                            </div>`;
+                    }).join('')}
                             <button class="moderation-action-btn mute-action-btn" data-user-id="${user.firebaseUid || user.userId}" data-username="${user.name}" data-is-guest="${user.isGuest}">
                                 <img src="/images/mute.svg" alt="Mute" />
                                 Mutear

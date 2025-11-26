@@ -1575,6 +1575,12 @@ body {
   margin-right: 5px;
 }
 
+.user-id.guest-id {
+  color: #00ffff;
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
 .mod-btn,
 .ban-btn,
 .mute-btn {
