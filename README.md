@@ -146,7 +146,7 @@ service cloud.firestore {
       allow read: if true;
       allow create: if isAuthenticated() || true;
       allow update: if isAuthenticated() || true;
-      allow delete: if isAdmin();
+      allow delete: if true;
     }
 
     match /{document=**} {

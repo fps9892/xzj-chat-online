@@ -564,12 +564,16 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeMessages();
     });
     
+    // Variable global para controlar acceso a sala privada
+    let hasPrivateRoomAccess = false;
+    
     // Funciones de Firebase
     async function loadMessages() {
         // Verificar acceso a sala privada
         const accessCheck = await checkPrivateRoomAccess(currentRoom);
+        hasPrivateRoomAccess = accessCheck.isOwner || accessCheck.hasAccess;
         
-        if (accessCheck.isOwner || accessCheck.hasAccess) {
+        if (hasPrivateRoomAccess) {
             // Usuario tiene acceso, cargar mensajes normalmente
             listenToMessages((messages) => {
                 renderMessages(messages);
@@ -579,12 +583,18 @@ document.addEventListener('DOMContentLoaded', function() {
             // Usuario está pendiente de aprobación
             const chatArea = document.querySelector('.chat-area');
             chatArea.innerHTML = '<div class="room-loader"><div class="loader-spinner"></div><p>Solicitud pendiente de ingreso</p><small>Esperando aprobación del dueño</small></div>';
+            
+            // Deshabilitar controles
+            disableChatControls();
         } else {
             // Usuario no tiene acceso, solicitar acceso
             try {
                 await requestPrivateRoomAccess(currentRoom);
                 const chatArea = document.querySelector('.chat-area');
                 chatArea.innerHTML = '<div class="room-loader"><div class="loader-spinner"></div><p>Solicitud pendiente de ingreso</p><small>Esperando aprobación del dueño</small></div>';
+                
+                // Deshabilitar controles
+                disableChatControls();
             } catch (error) {
                 listenToMessages((messages) => {
                     renderMessages(messages);
@@ -592,6 +602,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         }
+    }
+    
+    // Deshabilitar controles de chat
+    function disableChatControls() {
+        messageInput.disabled = true;
+        messageInput.placeholder = 'Esperando acceso a sala privada...';
+        sendIcon.style.pointerEvents = 'none';
+        sendIcon.style.opacity = '0.5';
+        imageBtn.style.pointerEvents = 'none';
+        imageBtn.style.opacity = '0.5';
+        micBtn.style.pointerEvents = 'none';
+        micBtn.style.opacity = '0.5';
+        emoteBtn.style.pointerEvents = 'none';
+        emoteBtn.style.opacity = '0.5';
+    }
+    
+    // Habilitar controles de chat
+    function enableChatControls() {
+        messageInput.disabled = false;
+        messageInput.placeholder = 'Escribe tu mensaje...';
+        sendIcon.style.pointerEvents = 'auto';
+        sendIcon.style.opacity = '1';
+        imageBtn.style.pointerEvents = 'auto';
+        imageBtn.style.opacity = '1';
+        micBtn.style.pointerEvents = 'auto';
+        micBtn.style.opacity = '1';
+        emoteBtn.style.pointerEvents = 'auto';
+        emoteBtn.style.opacity = '1';
     }
     
     let currentUsersListener = null;
@@ -705,6 +743,8 @@ document.addEventListener('DOMContentLoaded', function() {
             document.title = `(${unreadMessages}) ${originalTitle}`;
         }
         
+        lastMessageCount = messages.length;
+        
         const chatArea = document.querySelector('.chat-area');
         const wasAtBottom = chatArea.scrollHeight - chatArea.scrollTop <= chatArea.clientHeight + 50;
         
@@ -736,14 +776,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Scroll automático solo si estaba cerca del final o es un mensaje nuevo
-        if (wasAtBottom || messages.length > lastMessageCount) {
+        // Scroll automático solo si estaba cerca del final
+        if (wasAtBottom) {
             requestAnimationFrame(() => {
                 chatArea.scrollTop = chatArea.scrollHeight;
             });
         }
-        
-        lastMessageCount = messages.length;
     }
     
     function renderUsers(users) {
@@ -1397,6 +1435,8 @@ document.addEventListener('DOMContentLoaded', function() {
     listenToRoomAccessNotifications((data) => {
         if (data.accepted && data.roomId === currentRoom) {
             // Recargar mensajes cuando el usuario es aceptado
+            hasPrivateRoomAccess = true;
+            enableChatControls();
             loadMessages();
             showNotification('Has sido aceptado en la sala privada', 'success');
         }
@@ -1677,6 +1717,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Enviar mensaje
     function sendMessageHandler() {
+        // Verificar acceso a sala privada
+        if (!hasPrivateRoomAccess) {
+            const accessCheck = checkPrivateRoomAccess(currentRoom);
+            accessCheck.then(check => {
+                if (!check.isOwner && !check.hasAccess) {
+                    showNotification('No tienes acceso a esta sala privada', 'error');
+                    return;
+                }
+            });
+        }
+        
         const message = messageInput.value.trim();
         if (message) {
             sendMessage(message).then(() => {
