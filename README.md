@@ -144,8 +144,8 @@ service cloud.firestore {
 
     match /rooms/{roomId} {
       allow read: if true;
-      allow create: if isAuthenticated() || true;
-      allow update: if isAuthenticated() || true;
+      allow create: if true;
+      allow update: if true;
       allow delete: if true;
     }
 
@@ -231,6 +231,14 @@ Firebase Console → Realtime Database → Rules
       ".read": true,
       ".write": true,
       "$userId": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "roomDeleted": {
+      ".read": true,
+      ".write": true,
+      "$roomId": {
         ".read": true,
         ".write": true
       }

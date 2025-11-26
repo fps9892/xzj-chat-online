@@ -1456,9 +1456,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Escuchar cuando una sala es borrada
-    const { database } = await import('./firebase.js');
-    const { ref, onValue } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
-    
     const roomDeletedRef = ref(database, `roomDeleted/${currentRoom}`);
     onValue(roomDeletedRef, (snapshot) => {
         if (snapshot.exists() && snapshot.val().deleted) {
