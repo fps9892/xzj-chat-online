@@ -929,6 +929,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 ${roleTag}
                                 <span class="message-time">${time}</span>
                             `}
+                            ${message.type !== 'audio' && message.type !== 'image' && message.type !== 'emote' && message.text ? '<button class="message-options-btn">⋮</button>' : ''}
                         </div>
                         ${message.type === 'audio' ? 
                             `<div class="audio-message">
@@ -947,7 +948,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         `<div class="message-content">
                             ${message.type === 'image' ? 
                                 `<img src="${message.imageData}" alt="Imagen" class="message-image" onclick="showImageModal('${message.imageData}')" />` :
-                                `<div class="message-text copyable-text">${processEmotes(message.text)}</div>
+                                `${replyPreview}<div class="message-text copyable-text">${processEmotes(message.text)}</div>
                                 ${message.text.length > getCharacterLimit() ? '<span class="see-more">ver más</span>' : ''}
                                 ${(() => {
                                     const youtubeId = extractYouTubeId(message.text);
