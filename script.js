@@ -1846,7 +1846,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (snapshot.exists()) {
             snapshot.forEach(child => {
                 const userData = child.val();
-                if (userData.status === 'online' && !userData.isGuest && userData.userId !== currentUser.userId) {
+                if (userData.status === 'online' && userData.userId !== currentUser.userId && userData.role !== 'Administrador') {
                     users.push(userData);
                 }
             });
@@ -1978,7 +1978,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (snapshot.exists()) {
             snapshot.forEach(child => {
                 const userData = child.val();
-                if (userData.status === 'online' && !userData.isGuest && userData.userId !== currentUser.userId) {
+                if (userData.status === 'online' && userData.userId !== currentUser.userId && userData.role !== 'Administrador') {
                     users.push(userData);
                 }
             });
