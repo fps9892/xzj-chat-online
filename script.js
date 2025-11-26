@@ -1338,17 +1338,16 @@ document.addEventListener('DOMContentLoaded', function() {
     async function initializeApp() {
         validateCurrentUser();
         
-        const hash = window.location.hash.substring(1);
-        if (hash) {
-            currentRoom = hash;
-            const roomDisplayName = hash === 'general' ? 'Sala General' : hash;
-            currentRoomName.textContent = roomDisplayName;
-            originalTitle = `${roomDisplayName} - FYZAR CHAT`;
-            document.title = originalTitle;
-        } else {
-            window.location.replace('/index.html#general');
-            return;
+        let hash = window.location.hash.substring(1);
+        if (!hash) {
+            hash = 'general';
+            window.location.hash = 'general';
         }
+        
+        const roomDisplayName = hash === 'general' ? 'Sala General' : hash;
+        currentRoomName.textContent = roomDisplayName;
+        originalTitle = `${roomDisplayName} - FYZAR CHAT`;
+        document.title = originalTitle;
         
         // Cargar fondo guardado
         const savedBackground = localStorage.getItem('chatBackground');
@@ -1402,8 +1401,9 @@ document.addEventListener('DOMContentLoaded', function() {
         updateGuestUI();
         initAdminListener();
         
+        const hash = window.location.hash.substring(1) || 'general';
         setTimeout(() => {
-            changeRoom(currentRoom, true);
+            changeRoom(hash, true);
             loadMessages();
             loadUsers();
             setupRoomDeletedListener();

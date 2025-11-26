@@ -34,51 +34,9 @@ if (currentUser && currentUser.userId) {
     currentUser.userId = sanitizeUserId(currentUser.userId);
 }
 
-let currentRoom = 'general';
+let currentRoom = window.location.hash.substring(1) || 'general';
 
-// Obtener sala desde URL
-function getRoomFromURL() {
-    const path = window.location.pathname;
-    const match = path.match(/\/([^/]+)$/);
-    return match ? match[1] : 'general';
-}
 
-// Actualizar URL sin recargar
-function updateURL(roomId) {
-    const newURL = roomId === 'general' ? '/index.html' : `/index.html/${roomId}`;
-    window.history.pushState({ room: roomId }, '', newURL);
-}
-
-// Inicializar sala desde URL con validación
-async function initializeRoomFromURL() {
-    if (window.location.pathname !== '/login.html') {
-        const urlRoom = getRoomFromURL();
-        if (urlRoom && urlRoom !== 'index.html') {
-            try {
-                const roomDoc = await getDoc(doc(db, 'rooms', urlRoom));
-                if (roomDoc.exists()) {
-                    currentRoom = urlRoom;
-                    // Actualizar nombre de sala en el header
-                    const roomData = roomDoc.data();
-                    if (typeof document !== 'undefined') {
-                        const roomNameEl = document.querySelector('.current-room-name');
-                        if (roomNameEl) {
-                            roomNameEl.textContent = roomData.name || 'Sala General';
-                        }
-                    }
-                } else {
-                    currentRoom = 'general';
-                    updateURL('general');
-                }
-            } catch (error) {
-                currentRoom = 'general';
-                updateURL('general');
-            }
-        }
-    }
-}
-
-initializeRoomFromURL();
 
 // Mantener estado de autenticación
 let authInitialized = false;
@@ -473,10 +431,8 @@ export async function changeRoom(roomName, isInitialJoin = false) {
             type: 'room-change'
         });
         
-        // Esperar un momento para que la notificación se procese
         await new Promise(resolve => setTimeout(resolve, 100));
         
-        // Limpiar estado del usuario en la sala anterior
         const oldUserRef = ref(database, `rooms/${currentRoom}/users/${sanitizedUserId}`);
         if (currentUser.isGuest) {
             remove(oldUserRef);
@@ -504,7 +460,6 @@ export async function changeRoom(roomName, isInitialJoin = false) {
         }
     });
     
-    updateURL(roomName);
     setUserOnline();
 }
 
