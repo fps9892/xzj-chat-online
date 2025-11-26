@@ -1846,12 +1846,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (snapshot.exists()) {
             snapshot.forEach(child => {
                 const userData = child.val();
-                if (userData.status === 'online' && userData.userId !== currentUser.userId && userData.role !== 'Administrador') {
-                    users.push(userData);
+                if (userData.status === 'online' && userData.userId !== currentUser.userId) {
+                    if (userData.role !== 'Administrador') {
+                        users.push(userData);
+                    }
                 }
             });
         }
-        const onlineUsers = users;
         
         const panel = createElement(`
             <div class="moderation-panel ban-panel">
@@ -1861,13 +1862,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     <button class="close-moderation-panel">×</button>
                 </div>
                 <div class="moderation-list">
-                    ${onlineUsers.map((user, index) => `
+                    ${users.map((user, index) => `
                         <div class="moderation-user-item">
                             <div class="moderation-user-info">
                                 <img src="${user.avatar}" class="moderation-user-avatar" alt="${user.name}" />
                                 <span class="moderation-user-name">${index + 1}. ${user.name}</span>
                             </div>
-                            <button class="moderation-action-btn ban-action-btn" data-user-id="${user.firebaseUid || user.id}" data-username="${user.name}">
+                            <button class="moderation-action-btn ban-action-btn" data-user-id="${user.isGuest ? user.userId : user.firebaseUid}" data-username="${user.name}">
                                 <img src="/images/ban.svg" alt="Ban" />
                                 Banear
                             </button>
@@ -1912,8 +1913,8 @@ document.addEventListener('DOMContentLoaded', function() {
         for (const doc of bannedSnapshot.docs) {
             const data = doc.data();
             bannedUsers.push({
-                firebaseUid: doc.id,
-                username: data.username || 'Usuario',
+                userId: doc.id,
+                username: data.username || data.name || 'Usuario',
                 reason: data.reason || 'Sin razón',
                 bannedAt: data.bannedAt
             });
@@ -1932,7 +1933,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="moderation-user-info">
                                 <span class="moderation-user-name">${index + 1}. ${user.username}</span>
                             </div>
-                            <button class="moderation-action-btn unban-action-btn" data-user-id="${user.firebaseUid}" data-username="${user.username}">
+                            <button class="moderation-action-btn unban-action-btn" data-user-id="${user.userId}" data-username="${user.username}">
                                 <img src="/images/unban.svg" alt="Unban" />
                                 Desbanear
                             </button>
@@ -1978,12 +1979,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (snapshot.exists()) {
             snapshot.forEach(child => {
                 const userData = child.val();
-                if (userData.status === 'online' && userData.userId !== currentUser.userId && userData.role !== 'Administrador') {
-                    users.push(userData);
+                if (userData.status === 'online' && userData.userId !== currentUser.userId) {
+                    if (userData.role !== 'Administrador') {
+                        users.push(userData);
+                    }
                 }
             });
         }
-        const onlineUsers = users;
         
         const panel = createElement(`
             <div class="moderation-panel mute-panel">
@@ -1993,13 +1995,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     <button class="close-moderation-panel">×</button>
                 </div>
                 <div class="moderation-list">
-                    ${onlineUsers.map((user, index) => `
+                    ${users.map((user, index) => `
                         <div class="moderation-user-item">
                             <div class="moderation-user-info">
                                 <img src="${user.avatar}" class="moderation-user-avatar" alt="${user.name}" />
                                 <span class="moderation-user-name">${index + 1}. ${user.name}</span>
                             </div>
-                            <button class="moderation-action-btn mute-action-btn" data-user-id="${user.firebaseUid || user.id}" data-username="${user.name}">
+                            <button class="moderation-action-btn mute-action-btn" data-user-id="${user.isGuest ? user.userId : user.firebaseUid}" data-username="${user.name}">
                                 <img src="/images/mute.svg" alt="Mute" />
                                 Mutear
                             </button>
@@ -2045,8 +2047,8 @@ document.addEventListener('DOMContentLoaded', function() {
         for (const doc of mutedSnapshot.docs) {
             const data = doc.data();
             mutedUsers.push({
-                firebaseUid: doc.id,
-                username: data.username || 'Usuario',
+                userId: doc.id,
+                username: data.username || data.name || 'Usuario',
                 mutedUntil: data.mutedUntil
             });
         }
@@ -2064,7 +2066,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="moderation-user-info">
                                 <span class="moderation-user-name">${index + 1}. ${user.username}</span>
                             </div>
-                            <button class="moderation-action-btn unmute-action-btn" data-user-id="${user.firebaseUid}" data-username="${user.username}">
+                            <button class="moderation-action-btn unmute-action-btn" data-user-id="${user.userId}" data-username="${user.username}">
                                 <img src="/images/unmute.svg" alt="Unmute" />
                                 Desmutear
                             </button>
