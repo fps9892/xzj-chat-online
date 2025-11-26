@@ -1906,7 +1906,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <span class="room-management-name">${room.name}</span>
                             </div>
                             <div class="room-actions">
-                                <span class="room-user-count-badge" data-room-id="${room.id}">0</span>
+                                <div class="room-user-count-container">
+                                    <img src="/images/users-connected.svg" class="room-user-icon" alt="Users" />
+                                    <span class="room-user-count-badge" data-room-id="${room.id}">0</span>
+                                </div>
                                 <button class="delete-room-btn" data-room-id="${room.id}" data-room-name="${room.name}">
                                     <img src="/images/trash.svg" alt="Delete" />
                                 </button>

@@ -129,17 +129,28 @@
     gap: 10px;
 }
 
-.room-user-count-badge {
+.room-user-count-container {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     background: rgba(0, 255, 136, 0.15);
     border: 1px solid rgba(0, 255, 136, 0.3);
     border-radius: 4px;
     padding: 4px 8px;
+}
+
+.room-user-icon {
+    width: 14px;
+    height: 14px;
+    filter: brightness(0) saturate(100%) invert(79%) sepia(53%) saturate(1000%) hue-rotate(100deg) brightness(100%) contrast(101%);
+}
+
+.room-user-count-badge {
     color: #00ff88;
     font-size: 12px;
     font-weight: 600;
-    min-width: 28px;
+    min-width: 20px;
     text-align: center;
-    transition: all 0.2s;
 }
 
 .delete-room-btn {
@@ -179,6 +190,19 @@
     50% {
         opacity: 0.6;
     }
+}
+
+.rooms-management-footer {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(0, 255, 136, 0.2);
+    text-align: center;
+}
+
+.rooms-management-footer small {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    font-family: monospace;
 }
 
 @media (max-width: 767px) {

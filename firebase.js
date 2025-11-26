@@ -138,19 +138,7 @@ export async function sendMessage(text, type = 'text', imageData = null, audioDu
                     // Mostrar en consola o notificación local
                     console.log('Lista privada:', commandResult.message);
                     // Crear mensaje temporal solo visible para el usuario
-                    const tempMessage = document.createElement('div');
-                    tempMessage.className = 'private-command-message';
-                    tempMessage.style.cssText = 'position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.95); border: 2px solid #ffaa00; padding: 20px; border-radius: 12px; color: #fff; font-family: monospace; white-space: pre-wrap; z-index: 9999; max-width: 90%; max-height: 70vh; overflow-y: auto;';
-                    tempMessage.textContent = commandResult.message;
-                    
-                    const closeBtn = document.createElement('button');
-                    closeBtn.textContent = '×';
-                    closeBtn.style.cssText = 'position: absolute; top: 10px; right: 10px; background: none; border: none; color: #fff; font-size: 24px; cursor: pointer;';
-                    closeBtn.onclick = () => tempMessage.remove();
-                    tempMessage.appendChild(closeBtn);
-                    
-                    document.body.appendChild(tempMessage);
-                    setTimeout(() => tempMessage.remove(), 30000);
+                    showUsersListPanel(commandResult.message, commandResult.command);
                     return commandResult;
                 }
                 
@@ -1655,7 +1643,7 @@ export async function processAdminCommand(message) {
                         userList += `${u.numId}. ${u.username}${guestLabel}\n`;
                     });
                     userList += '\nUso: !ban <número> [razón]';
-                    return { success: true, message: userList, privateMessage: true };
+                    return { success: true, message: userList, privateMessage: true, command: 'ban', users: users };
                 }
                 
                 const banNumId = parseInt(args[0]);
@@ -1687,7 +1675,7 @@ export async function processAdminCommand(message) {
                         userList += `${u.numId}. ${u.username}\n`;
                     });
                     userList += '\nUso: !mute <número> [minutos]';
-                    return { success: true, message: userList, privateMessage: true };
+                    return { success: true, message: userList, privateMessage: true, command: 'mute', users: users };
                 }
                 
                 const muteNumId = parseInt(args[0]);
@@ -1719,7 +1707,7 @@ export async function processAdminCommand(message) {
                         muteList += `${u.numId}. ${u.username}\n`;
                     });
                     muteList += '\nUso: !unmute <número>';
-                    return { success: true, message: muteList, privateMessage: true };
+                    return { success: true, message: muteList, privateMessage: true, command: 'unmute', users: mutedUsers };
                 }
                 
                 const unmuteNumId = parseInt(args[0]);
@@ -1748,7 +1736,7 @@ export async function processAdminCommand(message) {
                         userList += `${u.numId}. ${u.username} - ${u.reason}\n`;
                     });
                     userList += '\nUso: !unban <número>';
-                    return { success: true, message: userList, privateMessage: true };
+                    return { success: true, message: userList, privateMessage: true, command: 'unban', users: bannedUsers };
                 }
                 
                 const unbanNumId = parseInt(args[0]);
@@ -2032,6 +2020,81 @@ export async function getUserCountForRoom(roomId) {
     } catch (error) {
         console.error(`Error getting user count for room ${roomId}:`, error);
         return 0;
+    }
+}
+
+// Mostrar panel de lista de usuarios con estilo similar al panel de salas
+function showUsersListPanel(message, command) {
+    const lines = message.split('\n').filter(line => line.trim());
+    const title = lines[0];
+    const usage = lines[lines.length - 1];
+    const userLines = lines.slice(1, -1);
+    
+    const panel = document.createElement('div');
+    panel.className = 'rooms-management-panel';
+    panel.innerHTML = `
+        <div class="rooms-management-header">
+            <h3>${title}</h3>
+            <button class="close-rooms-management">×</button>
+        </div>
+        <div class="rooms-management-list">
+            ${userLines.map(line => {
+                const match = line.match(/(\d+)\. (.+)/);
+                if (!match) return '';
+                const [, numId, username] = match;
+                return `
+                    <div class="room-management-item">
+                        <div class="room-info">
+                            <span class="room-type-icon">${numId}</span>
+                            <span class="room-management-name">${username}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+        <div class="rooms-management-footer">
+            <small>${usage}</small>
+        </div>
+    `;
+    
+    document.body.appendChild(panel);
+    
+    panel.querySelector('.close-rooms-management').addEventListener('click', () => {
+        panel.remove();
+    });
+    
+    // Auto-actualizar lista si es ban o mute
+    if (command === 'ban' || command === 'mute') {
+        const usersRef = ref(database, `rooms/${currentRoom}/users`);
+        const unsubscribe = onValue(usersRef, async () => {
+            const users = await getConnectedUsersList();
+            const listContainer = panel.querySelector('.rooms-management-list');
+            if (listContainer && users.length > 0) {
+                listContainer.innerHTML = users.map(u => {
+                    const guestLabel = u.isGuest ? ' (invitado)' : '';
+                    return `
+                        <div class="room-management-item">
+                            <div class="room-info">
+                                <span class="room-type-icon">${u.numId}</span>
+                                <span class="room-management-name">${u.username}${guestLabel}</span>
+                            </div>
+                            <div class="room-actions">
+                                <div class="room-user-count-container">
+                                    <img src="/images/users-connected.svg" class="room-user-icon" alt="Online" />
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        });
+        
+        const originalClose = panel.querySelector('.close-rooms-management').onclick;
+        panel.querySelector('.close-rooms-management').onclick = () => {
+            unsubscribe();
+            if (originalClose) originalClose();
+            panel.remove();
+        };
     }
 }
 
