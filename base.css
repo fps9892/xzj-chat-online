@@ -121,8 +121,13 @@ body {
 }
 
 @keyframes progressGlow {
-  0%, 100% { box-shadow: 0 0 10px #00ff00; }
-  50% { box-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00; }
+  0%,
+  100% {
+    box-shadow: 0 0 10px #00ff00;
+  }
+  50% {
+    box-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00;
+  }
 }
 
 @keyframes neonSpin {
@@ -165,7 +170,7 @@ body {
 }
 
 .profile-image::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   right: 0;
@@ -352,13 +357,22 @@ body {
 }
 
 @keyframes typing {
-  from { width: 0; }
-  to { width: 100%; }
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
 }
 
 @keyframes blink {
-  50% { border-color: transparent; }
-  0%, 100% { border-color: #00ff00; }
+  50% {
+    border-color: transparent;
+  }
+  0%,
+  100% {
+    border-color: #00ff00;
+  }
 }
 
 .room-user-count {
@@ -390,8 +404,12 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .chat-area::-webkit-scrollbar {
@@ -425,7 +443,7 @@ body {
 
 .input-area {
   background-color: #000;
-  border-top: 1px solid #fff;
+  border-top: 1px solid #00ff00;
   padding: 15px 20px;
   position: fixed;
   bottom: 0;
@@ -572,7 +590,7 @@ body {
 
 .char-counter {
   font-size: 12px;
-  color: #888;
+  color: #00ff00;
   min-width: 50px;
   font-family: "Orbitron", monospace;
 }
