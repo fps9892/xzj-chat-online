@@ -146,19 +146,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const lastChanges = {};
 
-    // Toggle dropdown de salas
-    roomSelector.addEventListener('click', function(e) {
-        e.stopPropagation();
-        roomsDropdown.classList.toggle('active');
-        mobileUsersDropdown.classList.remove('active');
-    });
+
 
     // Toggle dropdown de usuarios móvil
     if (mobileUsersIndicator) {
         mobileUsersIndicator.addEventListener('click', function(e) {
             e.stopPropagation();
             mobileUsersDropdown.classList.toggle('active');
-            roomsDropdown.classList.remove('active');
         });
     }
 
@@ -1676,7 +1670,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Cerrar dropdowns al hacer click fuera
     document.addEventListener('click', function() {
-        roomsDropdown.classList.remove('active');
         if (mobileUsersDropdown) {
             mobileUsersDropdown.classList.remove('active');
         }
