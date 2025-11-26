@@ -151,8 +151,6 @@ body {
   align-items: center;
   gap: 8px;
   padding: 8px 15px;
-  border: 2px solid #00ff00;
-  border-radius: 20px;
   cursor: pointer;
   background: rgba(0, 255, 0, 0.05);
 }
