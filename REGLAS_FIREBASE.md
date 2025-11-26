@@ -1,5 +1,11 @@
 # 🔥 Reglas de Firebase - FYZAR CHAT v3.8
 
+## 🆕 Nuevos Comandos v3.8
+
+### Para Administradores y Moderadores:
+- `!versalas` - Muestra panel visual para gestionar y eliminar salas
+- `!borrar <nombre>` - Elimina sala con notificación privada (15 segundos)
+
 ## 📋 Firestore Database Rules
 
 ```javascript

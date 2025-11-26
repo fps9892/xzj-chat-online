@@ -1,0 +1,131 @@
+/* Panel de Gestión de Salas */
+.rooms-management-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(22, 33, 62, 0.98);
+    border: 2px solid #00ff88;
+    border-radius: 12px;
+    padding: 20px;
+    z-index: 10000;
+    min-width: 400px;
+    max-width: 90vw;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
+
+.rooms-management-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid rgba(0, 255, 136, 0.3);
+}
+
+.rooms-management-header h3 {
+    margin: 0;
+    color: #00ff88;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.close-rooms-management {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 32px;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s;
+}
+
+.close-rooms-management:hover {
+    color: #ff4444;
+}
+
+.rooms-management-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.room-management-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(0, 255, 136, 0.2);
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.room-management-item:hover {
+    background: rgba(0, 255, 136, 0.1);
+    border-color: #00ff88;
+}
+
+.room-management-name {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.delete-room-btn {
+    background: rgba(255, 68, 68, 0.2);
+    border: 1px solid #ff4444;
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-room-btn:hover {
+    background: #ff4444;
+    transform: scale(1.05);
+}
+
+.delete-room-btn img {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1);
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+    .rooms-management-panel {
+        min-width: 90vw;
+        padding: 15px;
+    }
+    
+    .rooms-management-header h3 {
+        font-size: 18px;
+    }
+    
+    .room-management-name {
+        font-size: 14px;
+    }
+}

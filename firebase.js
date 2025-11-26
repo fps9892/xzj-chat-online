@@ -1578,6 +1578,22 @@ export async function processAdminCommand(message) {
                 await createRoom(newRoomName);
                 return { success: true, message: `Sala "${newRoomName}" creada exitosamente` };
                 
+            case '!versalas':
+                const isAdminVer = await checkAdminStatus(currentUser.firebaseUid);
+                const isModVer = await checkModeratorStatus(currentUser.firebaseUid);
+                if (!isAdminVer && !isModVer) {
+                    throw new Error('Solo administradores y moderadores pueden ver el panel de salas');
+                }
+                
+                const allRooms = await getRooms();
+                const roomsToShow = allRooms.filter(r => r.id !== 'general');
+                
+                if (roomsToShow.length === 0) {
+                    return { success: true, message: 'No hay salas disponibles para eliminar', privateMessage: true };
+                }
+                
+                return { success: true, showRoomsPanel: true, rooms: roomsToShow };
+                
             case '!crearprivada':
                 const privateRoomId = await createPrivateRoom();
                 const roomDoc = await getDoc(doc(db, 'rooms', privateRoomId));
@@ -1627,8 +1643,8 @@ export async function processAdminCommand(message) {
                     throw new Error('Uso: !borrar <nombre_sala>');
                 }
                 const roomToDelete = args.join(' ');
-                await deleteRoom(roomToDelete);
-                return { success: true, message: `Sala "${roomToDelete}" eliminada exitosamente` };
+                deleteRoom(roomToDelete);
+                return { success: true, message: `⏳ La sala "${roomToDelete}" será eliminada en 15 segundos`, privateMessage: true };
                 
             case '!ban':
                 if (args.length === 0) {

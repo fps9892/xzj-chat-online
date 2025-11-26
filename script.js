@@ -1856,9 +1856,19 @@ document.addEventListener('DOMContentLoaded', function() {
             const commandList = document.querySelector('.private-command-message');
             if (commandList) commandList.remove();
             
+            const roomsManagementPanel = document.querySelector('.rooms-management-panel');
+            if (roomsManagementPanel) roomsManagementPanel.remove();
+            
             sendMessage(message, 'text', null, null, replyingTo).then((result) => {
                 clearReply();
-                // Si se creó sala privada, recargar
+                
+                if (result && result.showRoomsPanel) {
+                    showRoomsManagementPanel(result.rooms);
+                    messageInput.value = '';
+                    charCounter.textContent = '0/250';
+                    return;
+                }
+                
                 if (result && result.roomChanged) {
                     setTimeout(() => {
                         loadMessages();
@@ -1876,6 +1886,49 @@ document.addEventListener('DOMContentLoaded', function() {
                 showNotification(error.message || 'Error al enviar mensaje', 'error');
             });
         }
+    }
+    
+    function showRoomsManagementPanel(rooms) {
+        const panel = createElement(`
+            <div class="rooms-management-panel">
+                <div class="rooms-management-header">
+                    <h3>📋 Gestionar Salas</h3>
+                    <button class="close-rooms-management">×</button>
+                </div>
+                <div class="rooms-management-list">
+                    ${rooms.map(room => `
+                        <div class="room-management-item" data-room-id="${room.id}">
+                            <span class="room-management-name">${room.isPrivate ? '🔒' : '🌐'} ${room.name}</span>
+                            <button class="delete-room-btn" data-room-id="${room.id}" data-room-name="${room.name}">
+                                <img src="/images/trash.svg" alt="Delete" />
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `);
+        
+        document.body.appendChild(panel);
+        
+        panel.querySelector('.close-rooms-management').addEventListener('click', () => panel.remove());
+        
+        panel.querySelectorAll('.delete-room-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const roomId = btn.dataset.roomId;
+                const roomName = btn.dataset.roomName;
+                
+                if (confirm(`¿Estás seguro de eliminar la sala "${roomName}"?`)) {
+                    try {
+                        const { deleteRoom } = await import('./firebase.js');
+                        await deleteRoom(roomName);
+                        showNotification(`⏳ La sala "${roomName}" será eliminada en 15 segundos`, 'success');
+                        btn.closest('.room-management-item').remove();
+                    } catch (error) {
+                        showNotification(error.message, 'error');
+                    }
+                }
+            });
+        });
     }
     
     // Funciones globales para botones de moderación
