@@ -297,6 +297,7 @@ body {
   padding: 20px;
   overflow-y: auto;
   position: relative;
+  margin-top: 0;
 }
 
 .chat-area::-webkit-scrollbar {
@@ -2250,9 +2251,26 @@ body {
   font-size: 14px;
   color: #fff;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
+  text-align: left;
+  gap: 10px;
+}
+
+.room-item-panel .room-name {
+  flex: 1;
+}
+
+.room-item-panel .room-user-count {
+  background: rgba(0, 255, 0, 0.2);
+  color: #00ff00;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  min-width: 30px;
   text-align: center;
+  border: 1px solid rgba(0, 255, 0, 0.4);
 }
 
 .room-item-panel:hover {
@@ -2300,6 +2318,84 @@ body {
   color: #888;
   font-family: "Inter", sans-serif;
   font-size: 14px;
+}
+
+/* Banner de Estadísticas de Sala */
+.room-stats-banner {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(0, 255, 0, 0.05), rgba(0, 200, 0, 0.08));
+  border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+  padding: 12px 20px;
+  margin-top: 0;
+  animation: bannerGlow 3s ease-in-out infinite;
+}
+
+@keyframes bannerGlow {
+  0%, 100% {
+    box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.1);
+  }
+  50% {
+    box-shadow: inset 0 0 20px rgba(0, 255, 0, 0.2);
+  }
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Orbitron", monospace;
+  transition: transform 0.3s;
+}
+
+.stat-item:hover {
+  transform: scale(1.05);
+}
+
+.stat-icon {
+  font-size: 18px;
+  filter: drop-shadow(0 0 5px rgba(0, 255, 0, 0.5));
+}
+
+.stat-value {
+  font-size: 16px;
+  font-weight: bold;
+  color: #00ff00;
+  text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+  min-width: 25px;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+@media (max-width: 767px) {
+  .room-stats-banner {
+    padding: 10px 15px;
+    gap: 10px;
+  }
+  
+  .stat-item {
+    flex-direction: column;
+    gap: 3px;
+  }
+  
+  .stat-icon {
+    font-size: 16px;
+  }
+  
+  .stat-value {
+    font-size: 14px;
+  }
+  
+  .stat-label {
+    font-size: 9px;
+  }
 }
 
 .private-command-message {

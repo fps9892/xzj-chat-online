@@ -158,6 +158,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Cargar salas dinámicamente con listener en tiempo real
     let roomsListener = null;
+    let roomUserCountListeners = new Map();
+    
     async function loadRooms() {
         try {
             if (roomsListener) return;
@@ -188,8 +190,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         roomElement.className = 'room-item-panel';
                         if (room.id === currentRoom) roomElement.classList.add('active');
                         roomElement.setAttribute('data-room', room.id);
-                        roomElement.textContent = room.name;
+                        roomElement.innerHTML = `
+                            <span class="room-name">${room.name}</span>
+                            <span class="room-user-count" data-room-id="${room.id}">0</span>
+                        `;
                         publicRoomsList.appendChild(roomElement);
+                        setupRoomUserCountListener(room.id);
                     }
                 }
                 
@@ -207,8 +213,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <span class="room-item-icon">🔒</span>
                                 <span>${room.name}</span>
                             </div>
+                            <span class="room-user-count" data-room-id="${room.id}">0</span>
                         `;
                         privateRoomsList.appendChild(roomElement);
+                        setupRoomUserCountListener(room.id);
                     }
                 }
                 
@@ -218,6 +226,28 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('Error loading rooms:', error);
         }
+    }
+    
+    function setupRoomUserCountListener(roomId) {
+        if (roomUserCountListeners.has(roomId)) return;
+        
+        const usersRef = ref(database, `rooms/${roomId}/users`);
+        const unsubscribe = onValue(usersRef, (snapshot) => {
+            let count = 0;
+            if (snapshot.exists()) {
+                snapshot.forEach((childSnapshot) => {
+                    const userData = childSnapshot.val();
+                    if (userData.status === 'online') count++;
+                });
+            }
+            
+            const countElements = document.querySelectorAll(`.room-user-count[data-room-id="${roomId}"]`);
+            countElements.forEach(el => {
+                el.textContent = count;
+            });
+        });
+        
+        roomUserCountListeners.set(roomId, unsubscribe);
     }
     
     function setupRoomListeners() {
@@ -659,6 +689,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentTypingListener = null;
     let roomEventsListener = null;
     let processedEvents = new Set();
+    let messageCount = 0;
     
     function loadUsers() {
         if (currentUsersListener) {
@@ -667,9 +698,20 @@ document.addEventListener('DOMContentLoaded', function() {
         
         currentUsersListener = listenToUsers((users) => {
             renderUsers(users);
+            updateRoomStats(users.length);
         });
         
         listenToRoomEvents();
+    }
+    
+    function updateRoomStats(activeUsers, typingUsers = 0) {
+        const activeUsersEl = document.getElementById('activeUsersCount');
+        const messagesEl = document.getElementById('messagesCount');
+        const typingEl = document.getElementById('typingCount');
+        
+        if (activeUsersEl) activeUsersEl.textContent = activeUsers;
+        if (messagesEl) messagesEl.textContent = messageCount;
+        if (typingEl) typingEl.textContent = typingUsers;
     }
     
     async function listenToRoomEvents() {
@@ -751,6 +793,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         lastMessageCount = messages.length;
+        messageCount = messages.length;
+        updateRoomStats(document.querySelectorAll('.user-item').length);
         
         const chatArea = document.querySelector('.chat-area');
         const wasAtBottom = chatArea.scrollHeight - chatArea.scrollTop <= chatArea.clientHeight + 50;
@@ -1683,6 +1727,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         currentTypingListener = listenToTyping((typingUsers) => {
             const sidebarTypingIndicator = document.querySelector('.sidebar-typing-indicator');
+            
+            updateRoomStats(document.querySelectorAll('.user-item').length, typingUsers.length);
             
             if (typingUsers.length > 0) {
                 let message;
