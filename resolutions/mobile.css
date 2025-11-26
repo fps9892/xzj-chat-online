@@ -27,8 +27,7 @@
     right: 0;
     z-index: 1000;
     background: transparent;
-    backdrop-filter: blur(10px);
-    border-top: 1px solid rgba(0, 255, 136, 0.3);
+    border-top: 2px solid #00ff00;
     padding: 10px;
   }
 
@@ -101,7 +100,7 @@
   }
 
   .mobile-user-count.loading::after {
-    content: '';
+    content: "";
     display: inline-block;
     width: 10px;
     height: 10px;
