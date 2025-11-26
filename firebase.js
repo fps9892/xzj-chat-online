@@ -1060,8 +1060,10 @@ export async function deleteRoom(roomName) {
         
         // Verificar permisos
         const isOwner = roomData.owner === userId;
-        const isPrivateRoom = roomData.isPrivate === true;
+        const isPrivateRoom = roomData.isPrivate === true || roomData.name.startsWith('Privada');
         
+        // Admins y moderadores pueden borrar cualquier sala
+        // Dueños solo pueden borrar sus salas privadas
         if (!isAdmin && !isModerator && !(isPrivateRoom && isOwner)) {
             throw new Error('No tienes permisos para borrar esta sala');
         }
