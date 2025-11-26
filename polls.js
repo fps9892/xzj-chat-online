@@ -1,6 +1,6 @@
-import { database, db, currentUser, currentRoom } from './firebase.js';
+import { database, db, currentUser, currentRoom, checkAdminStatus } from './firebase.js';
 import { ref, push, onValue, set, serverTimestamp, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-import { doc, setDoc, getDoc, updateDoc, collection, query, where, getDocs, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection, query, where, getDocs, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     const pollsBtn = document.querySelector('.polls-btn');
@@ -92,13 +92,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         try {
             const pollId = `poll-${Date.now()}`;
+            const expiresAt = Date.now() + (30 * 60 * 1000);
             const pollData = {
                 question: question,
                 options: options.map(opt => ({ text: opt, votes: 0 })),
                 createdBy: currentUser.firebaseUid,
                 createdByName: currentUser.username,
                 room: currentRoom,
-                createdAt: new Date().toISOString(),
+                createdAt: Date.now(),
+                expiresAt: expiresAt,
                 voters: []
             };
             
@@ -118,39 +120,58 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Cargar encuestas activas
     async function loadActivePolls() {
         try {
             const pollsQuery = query(collection(db, 'polls'), where('room', '==', currentRoom));
             const pollsSnapshot = await getDocs(pollsQuery);
             
-            if (pollsSnapshot.empty) {
-                pollsList.innerHTML = '<div class="empty-polls">No hay encuestas activas</div>';
-                return;
-            }
-            
             pollsList.innerHTML = '';
+            const now = Date.now();
+            let hasActivePolls = false;
             
-            pollsSnapshot.forEach((docSnapshot) => {
+            for (const docSnapshot of pollsSnapshot.docs) {
                 const pollData = docSnapshot.data();
                 const pollId = docSnapshot.id;
+                
+                if (pollData.expiresAt && pollData.expiresAt < now) {
+                    await deleteDoc(doc(db, 'polls', pollId));
+                    continue;
+                }
+                
+                hasActivePolls = true;
                 renderPoll(pollId, pollData);
-            });
+            }
+            
+            if (!hasActivePolls) {
+                pollsList.innerHTML = '<div class="empty-polls">No hay encuestas activas</div>';
+            }
         } catch (error) {
             console.error('Error loading polls:', error);
             pollsList.innerHTML = '<div class="empty-polls">Error al cargar encuestas</div>';
         }
     }
     
-    // Renderizar encuesta
-    function renderPoll(pollId, pollData) {
+    async function renderPoll(pollId, pollData) {
         const hasVoted = pollData.voters && pollData.voters.includes(currentUser.firebaseUid);
         const totalVotes = pollData.options.reduce((sum, opt) => sum + opt.votes, 0);
+        const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
         
         const pollElement = document.createElement('div');
         pollElement.className = 'poll-item';
+        pollElement.setAttribute('data-poll-id', pollId);
+        
+        const timeLeft = pollData.expiresAt ? Math.max(0, Math.floor((pollData.expiresAt - Date.now()) / 1000)) : 0;
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        
         pollElement.innerHTML = `
-            <div class="poll-question" style="background: transparent; border: none; padding: 0; margin-bottom: 15px; font-size: 16px;">${pollData.question}</div>
+            <div class="poll-header">
+                <div>
+                    <div class="poll-question" style="background: transparent; border: none; padding: 0; margin-bottom: 5px; font-size: 16px;">${pollData.question}</div>
+                    <div class="poll-timer">⏱️ ${minutes}:${seconds.toString().padStart(2, '0')}</div>
+                </div>
+                ${isAdmin ? `<img src="/images/close.svg" class="delete-poll-btn" data-poll-id="${pollId}" />` : ''}
+            </div>
             <div class="poll-options-list">
                 ${pollData.options.map((option, index) => {
                     const percentage = totalVotes > 0 ? Math.round((option.votes / totalVotes) * 100) : 0;
@@ -168,11 +189,36 @@ document.addEventListener('DOMContentLoaded', function() {
         
         pollsList.appendChild(pollElement);
         
-        // Event listeners para votar
         if (!hasVoted && !currentUser.isGuest) {
             pollElement.querySelectorAll('.poll-option-item').forEach(item => {
                 item.addEventListener('click', () => votePoll(pollId, parseInt(item.dataset.optionIndex)));
             });
+        }
+        
+        if (isAdmin) {
+            pollElement.querySelector('.delete-poll-btn').addEventListener('click', () => deletePoll(pollId));
+        }
+        
+        if (timeLeft > 0) {
+            const interval = setInterval(async () => {
+                const newTimeLeft = Math.max(0, Math.floor((pollData.expiresAt - Date.now()) / 1000));
+                const newMinutes = Math.floor(newTimeLeft / 60);
+                const newSeconds = newTimeLeft % 60;
+                
+                const timerEl = pollElement.querySelector('.poll-timer');
+                if (timerEl) {
+                    timerEl.textContent = `⏱️ ${newMinutes}:${newSeconds.toString().padStart(2, '0')}`;
+                }
+                
+                if (newTimeLeft <= 0) {
+                    clearInterval(interval);
+                    await deleteDoc(doc(db, 'polls', pollId));
+                    pollElement.remove();
+                    if (pollsList.children.length === 0) {
+                        pollsList.innerHTML = '<div class="empty-polls">No hay encuestas activas</div>';
+                    }
+                }
+            }, 1000);
         }
     }
     
@@ -214,6 +260,19 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('Error voting:', error);
             showNotification('Error al votar', 'error');
+        }
+    }
+    
+    async function deletePoll(pollId) {
+        if (!confirm('¿Eliminar esta encuesta?')) return;
+        
+        try {
+            await deleteDoc(doc(db, 'polls', pollId));
+            showNotification('Encuesta eliminada', 'success');
+            loadActivePolls();
+        } catch (error) {
+            console.error('Error deleting poll:', error);
+            showNotification('Error al eliminar encuesta', 'error');
         }
     }
     
