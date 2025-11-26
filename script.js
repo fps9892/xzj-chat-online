@@ -166,8 +166,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 publicRoomsList.innerHTML = '';
                 privateRoomsList.innerHTML = '';
                 
-                const publicRooms = rooms.filter(r => r.isPrivate !== true);
-                const privateRooms = rooms.filter(r => r.isPrivate === true);
+                const publicRooms = rooms.filter(r => r.isPrivate !== true && !r.name.startsWith('Privada'));
+                const privateRooms = rooms.filter(r => r.isPrivate === true || r.name.startsWith('Privada'));
                 
                 const generalRoom = publicRooms.find(r => r.id === 'general');
                 const otherPublicRooms = publicRooms.filter(r => r.id !== 'general').sort((a, b) => {
