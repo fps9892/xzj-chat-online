@@ -1406,6 +1406,7 @@ document.addEventListener('DOMContentLoaded', function() {
             changeRoom(currentRoom, true);
             loadMessages();
             loadUsers();
+            setupRoomDeletedListener();
         }, 500);
         
         setTimeout(clearSkeletons, 3000);
@@ -1454,6 +1455,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 loadMessages();
                 loadUsers();
                 startTypingListener();
+                setupRoomDeletedListener();
             });
             
             roomsPanelOverlay.classList.remove('active');
@@ -1521,44 +1523,49 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Escuchar cuando una sala es borrada
-    const roomDeletedRef = ref(database, `roomDeleted/${currentRoom}`);
+    let roomDeletedListener = null;
     let countdownInterval = null;
     
-    onValue(roomDeletedRef, (snapshot) => {
-        if (snapshot.exists()) {
-            const data = snapshot.val();
-            
-            // Si la sala fue marcada para eliminación, mostrar temporizador
-            if (data.deleting && !data.deleted) {
-                let countdown = data.countdown || 15;
-                showNotification(`⚠️ Esta sala será eliminada en ${countdown} segundos`, 'warning');
+    function setupRoomDeletedListener() {
+        if (roomDeletedListener) roomDeletedListener();
+        
+        const currentHash = window.location.hash.substring(1);
+        if (!currentHash) return;
+        
+        const roomDeletedRef = ref(database, `roomDeleted/${currentHash}`);
+        roomDeletedListener = onValue(roomDeletedRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.val();
                 
-                // Limpiar intervalo anterior si existe
-                if (countdownInterval) clearInterval(countdownInterval);
+                if (data.deleting && !data.deleted) {
+                    let countdown = data.countdown || 15;
+                    showNotification(`⚠️ Esta sala será eliminada en ${countdown} segundos`, 'warning');
+                    
+                    if (countdownInterval) clearInterval(countdownInterval);
+                    
+                    countdownInterval = setInterval(() => {
+                        countdown--;
+                        if (countdown > 0) {
+                            showNotification(`⚠️ Esta sala será eliminada en ${countdown} segundos`, 'warning');
+                        } else {
+                            clearInterval(countdownInterval);
+                        }
+                    }, 1000);
+                }
                 
-                // Actualizar contador cada segundo
-                countdownInterval = setInterval(() => {
-                    countdown--;
-                    if (countdown > 0) {
-                        showNotification(`⚠️ Esta sala será eliminada en ${countdown} segundos`, 'warning');
-                    } else {
-                        clearInterval(countdownInterval);
-                    }
-                }, 1000);
+                if (data.deleted && data.forceReload) {
+                    if (countdownInterval) clearInterval(countdownInterval);
+                    if (roomDeletedListener) roomDeletedListener();
+                    showNotification('La sala ha sido eliminada. Redirigiendo...', 'error');
+                    setTimeout(() => {
+                        window.location.hash = 'general';
+                    }, 500);
+                }
             }
-            
-            // Si la sala fue eliminada, forzar recarga
-            if (data.deleted && data.forceReload) {
-                if (countdownInterval) clearInterval(countdownInterval);
-                showNotification('La sala ha sido eliminada. Redirigiendo...', 'error');
-                
-                // Forzar recarga de página para llevar a index.html
-                setTimeout(() => {
-                    window.location.href = '/index.html';
-                }, 500);
-            }
-        }
-    });
+        });
+    }
+    
+    setupRoomDeletedListener();
     
     // Esperar a que termine la carga para inicializar
     setTimeout(() => {
