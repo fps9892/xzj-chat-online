@@ -1671,6 +1671,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Contador de caracteres y indicador de escritura
     let typingTimeout;
+    let typingRefreshInterval;
+    
     messageInput.addEventListener('input', function() {
         const currentLength = this.value.length;
         charCounter.textContent = `${currentLength}/250`;
@@ -1685,11 +1687,23 @@ document.addEventListener('DOMContentLoaded', function() {
         if (currentLength > 0) {
             setTypingStatus(true);
             clearTimeout(typingTimeout);
+            clearInterval(typingRefreshInterval);
+            
+            // Timeout de 30 segundos
             typingTimeout = setTimeout(() => {
                 setTypingStatus(false);
-            }, 2000);
+                clearInterval(typingRefreshInterval);
+            }, 30000);
+            
+            // Refresh cada 25 segundos mientras escribe
+            typingRefreshInterval = setInterval(() => {
+                if (this.value.length > 0) {
+                    setTypingStatus(true);
+                }
+            }, 25000);
         } else {
             setTypingStatus(false);
+            clearInterval(typingRefreshInterval);
         }
     });
     
