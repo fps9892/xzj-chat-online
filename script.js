@@ -1693,23 +1693,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (currentLength > 0) {
             setTypingStatus(true);
             clearTimeout(typingTimeout);
-            clearInterval(typingRefreshInterval);
             
-            // Timeout de 30 segundos
+            // Timeout de 1 segundo
             typingTimeout = setTimeout(() => {
                 setTypingStatus(false);
-                clearInterval(typingRefreshInterval);
-            }, 30000);
-            
-            // Refresh cada 25 segundos mientras escribe
-            typingRefreshInterval = setInterval(() => {
-                if (this.value.length > 0) {
-                    setTypingStatus(true);
-                }
-            }, 25000);
+            }, 1000);
         } else {
             setTypingStatus(false);
-            clearInterval(typingRefreshInterval);
         }
     });
     
@@ -1721,14 +1711,18 @@ document.addEventListener('DOMContentLoaded', function() {
         currentTypingListener = listenToTyping((typingUsers) => {
             const sidebarTypingIndicator = document.querySelector('.sidebar-typing-indicator');
             
-            if (typingUsers.length > 0) {
+            // Incluir usuario actual si está escribiendo
+            const isCurrentUserTyping = messageInput.value.length > 0;
+            const allTypingUsers = isCurrentUserTyping ? [currentUser.username, ...typingUsers] : typingUsers;
+            
+            if (allTypingUsers.length > 0) {
                 let message;
-                if (typingUsers.length === 1) {
-                    message = `${typingUsers[0]} está escribiendo...`;
-                } else if (typingUsers.length === 2) {
-                    message = `${typingUsers[0]} y ${typingUsers[1]} están escribiendo...`;
+                if (allTypingUsers.length === 1) {
+                    message = `${allTypingUsers[0]} está escribiendo...`;
+                } else if (allTypingUsers.length === 2) {
+                    message = `${allTypingUsers[0]} y ${allTypingUsers[1]} están escribiendo...`;
                 } else {
-                    message = `${typingUsers[0]}, ${typingUsers[1]} y ${typingUsers.length - 2} más están escribiendo...`;
+                    message = `${allTypingUsers[0]}, ${allTypingUsers[1]} y ${allTypingUsers.length - 2} más están escribiendo...`;
                 }
                 typingIndicator.textContent = message;
                 typingIndicator.style.display = 'block';
