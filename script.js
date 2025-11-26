@@ -282,11 +282,11 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.add('active');
             
             if (tabType === 'public') {
-                publicRoomsList.style.display = 'flex';
-                privateRoomsList.style.display = 'none';
+                publicRoomsList.classList.add('active');
+                privateRoomsList.classList.remove('active');
             } else {
-                publicRoomsList.style.display = 'none';
-                privateRoomsList.style.display = 'flex';
+                publicRoomsList.classList.remove('active');
+                privateRoomsList.classList.add('active');
             }
         });
     });

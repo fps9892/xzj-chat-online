@@ -2225,16 +2225,12 @@ body {
 }
 
 .rooms-list {
-  display: flex;
+  display: none;
   flex-direction: column;
   gap: 8px;
 }
 
-.rooms-list[data-section="private"] {
-  display: none;
-}
-
-.rooms-list[data-section="private"].active {
+.rooms-list.active {
   display: flex;
 }
 
