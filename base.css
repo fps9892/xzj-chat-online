@@ -2121,7 +2121,11 @@ body {
   right: 0;
   width: 350px;
   height: 100vh;
-  background: linear-gradient(145deg, rgba(0, 0, 0, 0.95), rgba(10, 10, 10, 0.98));
+  background: linear-gradient(
+    145deg,
+    rgba(0, 0, 0, 0.95),
+    rgba(10, 10, 10, 0.98)
+  );
   border-left: 2px solid #00ff00;
   transform: translateX(100%);
   transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
@@ -2132,7 +2136,8 @@ body {
 }
 
 @keyframes rgbBorderPanel {
-  0%, 100% {
+  0%,
+  100% {
     border-left-color: #00ff00;
     box-shadow: -5px 0 30px rgba(0, 255, 0, 0.3);
   }
@@ -2332,7 +2337,7 @@ body {
   height: 44px;
   cursor: pointer;
   filter: invert(1);
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
   padding: 10px;
@@ -2365,7 +2370,11 @@ body {
   width: 500px;
   max-width: 90%;
   max-height: 80vh;
-  background: linear-gradient(145deg, rgba(0, 0, 0, 0.95), rgba(10, 10, 10, 0.98));
+  background: linear-gradient(
+    145deg,
+    rgba(0, 0, 0, 0.95),
+    rgba(10, 10, 10, 0.98)
+  );
   border: 2px solid #00ff00;
   border-radius: 15px;
   display: flex;
@@ -2452,11 +2461,13 @@ body {
   border-radius: 3px;
 }
 
-.polls-list, .polls-create {
+.polls-list,
+.polls-create {
   display: none;
 }
 
-.polls-list.active, .polls-create.active {
+.polls-list.active,
+.polls-create.active {
   display: block;
 }
 
@@ -2572,7 +2583,8 @@ body {
   margin-top: 10px;
 }
 
-.add-option-btn, .create-poll-btn {
+.add-option-btn,
+.create-poll-btn {
   width: 100%;
   padding: 12px;
   background: rgba(0, 255, 0, 0.1);
@@ -2586,7 +2598,8 @@ body {
   margin-top: 10px;
 }
 
-.add-option-btn:hover, .create-poll-btn:hover {
+.add-option-btn:hover,
+.create-poll-btn:hover {
   background: rgba(0, 255, 0, 0.2);
   transform: translateY(-2px);
 }
