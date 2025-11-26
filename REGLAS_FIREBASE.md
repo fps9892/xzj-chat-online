@@ -158,8 +158,14 @@ service cloud.firestore {
 
 ## Cambios importantes:
 
-1. **Firestore - banned/muted**: `allow write: if true;` - Permite banear/mutear tanto usuarios registrados como invitados
-2. **Firestore - rooms**: `allow create/update/delete: if true;` - Permisos completos para gestión de salas
+1. **Firestore - banned/muted**: `allow write: if true;` - Permite banear/mutear usuarios registrados e invitados
+2. **Firestore - rooms**: `allow create/update/delete: if true;` - Permisos completos para gestión de salas públicas y privadas
 3. **Firestore - polls**: Colección de encuestas con permisos de lectura pública y escritura para usuarios autenticados
 4. **Realtime Database - roomAccessNotifications**: Notificaciones de acceso a salas privadas
 5. **Realtime Database - roomDeleted**: Sistema de temporizador de 15 segundos antes de eliminar salas
+6. **Realtime Database - roomEvents**: Eventos de entrada/salida de salas con índice por timestamp
+
+## Notas:
+- Las salas privadas funcionan con `acceptedUsers` y `pendingUsers` en Firestore
+- Los invitados pueden solicitar acceso a salas privadas usando su `userId`
+- El sistema verifica acceso mediante `checkPrivateRoomAccess()`
