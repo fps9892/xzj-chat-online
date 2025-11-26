@@ -1869,7 +1869,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 clearTimeout(typingTimeout);
                 
                 if (result && result.showDeleteNotification) {
-                    showNotification(`⏳ La sala "${result.roomName}" será eliminada en 15 segundos`, 'success');
+                    showNotification(`⏳ La sala "${result.roomName}" será eliminada`, 'success');
                     return;
                 }
                 
@@ -1979,7 +1979,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         }, 1000);
                         
                         await deleteRoom(roomId);
-                        showNotification(`La sala "${roomName}" será eliminada en 15 segundos`, 'success');
                     } catch (error) {
                         showNotification(error.message, 'error');
                         btn.innerHTML = '<img src="/images/trash.svg" alt="Delete" />';
