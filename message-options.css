@@ -27,6 +27,10 @@
   transform: scale(1.1);
 }
 
+.message.sent .message-options-btn {
+  color: #006600;
+}
+
 @media (max-width: 767px) {
   .message-options-btn {
     opacity: 1;
