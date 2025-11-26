@@ -1592,7 +1592,7 @@ export async function processAdminCommand(message) {
                     return { success: true, message: 'No hay salas disponibles para eliminar', privateMessage: true };
                 }
                 
-                return { success: true, showRoomsPanel: true, rooms: roomsToShow };
+                return { success: false, showRoomsPanel: true, rooms: roomsToShow };
                 
             case '!crearprivada':
                 const privateRoomId = await createPrivateRoom();

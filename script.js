@@ -1862,10 +1862,14 @@ document.addEventListener('DOMContentLoaded', function() {
             sendMessage(message, 'text', null, null, replyingTo).then((result) => {
                 clearReply();
                 
+                messageInput.value = '';
+                charCounter.textContent = '0/250';
+                charCounter.classList.remove('warning', 'danger');
+                setTypingStatus(false);
+                clearTimeout(typingTimeout);
+                
                 if (result && result.showRoomsPanel) {
                     showRoomsManagementPanel(result.rooms);
-                    messageInput.value = '';
-                    charCounter.textContent = '0/250';
                     return;
                 }
                 
@@ -1875,12 +1879,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         loadUsers();
                     }, 500);
                 }
-                
-                messageInput.value = '';
-                charCounter.textContent = '0/250';
-                charCounter.classList.remove('warning', 'danger');
-                setTypingStatus(false);
-                clearTimeout(typingTimeout);
             }).catch(error => {
                 console.error('Error enviando mensaje:', error);
                 showNotification(error.message || 'Error al enviar mensaje', 'error');
