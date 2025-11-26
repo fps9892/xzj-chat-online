@@ -1,26 +1,25 @@
-/* Panel de Gestión de Salas */
 .rooms-management-panel {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(22, 33, 62, 0.98);
-    border: 2px solid #00ff88;
-    border-radius: 12px;
-    padding: 20px;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(0, 255, 136, 0.3);
+    border-radius: 8px;
+    padding: 16px;
     z-index: 10000;
-    min-width: 400px;
+    min-width: 380px;
     max-width: 90vw;
-    max-height: 80vh;
+    max-height: 70vh;
     overflow-y: auto;
-    box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
-    animation: slideIn 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    animation: slideIn 0.2s ease;
 }
 
 @keyframes slideIn {
     from {
         opacity: 0;
-        transform: translate(-50%, -60%);
+        transform: translate(-50%, -55%);
     }
     to {
         opacity: 1;
@@ -28,35 +27,47 @@
     }
 }
 
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+}
+
 .rooms-management-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid rgba(0, 255, 136, 0.3);
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(0, 255, 136, 0.2);
 }
 
 .rooms-management-header h3 {
     margin: 0;
     color: #00ff88;
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
 }
 
 .close-rooms-management {
     background: none;
     border: none;
-    color: #fff;
-    font-size: 32px;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 24px;
     cursor: pointer;
     padding: 0;
-    width: 32px;
-    height: 32px;
+    width: 24px;
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: color 0.3s;
+    transition: color 0.2s;
 }
 
 .close-rooms-management:hover {
@@ -66,57 +77,97 @@
 .rooms-management-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
 }
 
 .room-management-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 15px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(0, 255, 136, 0.2);
-    border-radius: 8px;
-    transition: all 0.3s;
+    padding: 10px 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    transition: all 0.2s;
 }
 
 .room-management-item:hover {
-    background: rgba(0, 255, 136, 0.1);
-    border-color: #00ff88;
+    background: rgba(0, 255, 136, 0.05);
+    border-color: rgba(0, 255, 136, 0.3);
+}
+
+.room-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.room-type-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 255, 136, 0.15);
+    border: 1px solid rgba(0, 255, 136, 0.3);
+    border-radius: 4px;
+    color: #00ff88;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
 }
 
 .room-management-name {
     color: #fff;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 500;
 }
 
+.room-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.room-user-count-badge {
+    background: rgba(0, 255, 136, 0.15);
+    border: 1px solid rgba(0, 255, 136, 0.3);
+    border-radius: 4px;
+    padding: 4px 8px;
+    color: #00ff88;
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 28px;
+    text-align: center;
+    transition: all 0.2s;
+}
+
 .delete-room-btn {
-    background: rgba(255, 68, 68, 0.2);
-    border: 1px solid #ff4444;
-    border-radius: 6px;
-    padding: 8px 12px;
+    background: rgba(255, 68, 68, 0.1);
+    border: 1px solid rgba(255, 68, 68, 0.3);
+    border-radius: 4px;
+    padding: 6px 10px;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .delete-room-btn:hover {
-    background: #ff4444;
-    transform: scale(1.05);
+    background: rgba(255, 68, 68, 0.2);
+    border-color: #ff4444;
 }
 
 .delete-room-btn img {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     filter: brightness(0) invert(1);
 }
 
 .delete-countdown {
-    color: #fff;
-    font-size: 18px;
+    color: #ff4444;
+    font-size: 14px;
     font-weight: 700;
     animation: pulse 1s infinite;
 }
@@ -124,26 +175,29 @@
 @keyframes pulse {
     0%, 100% {
         opacity: 1;
-        transform: scale(1);
     }
     50% {
-        opacity: 0.7;
-        transform: scale(1.1);
+        opacity: 0.6;
     }
 }
 
-/* Responsive */
 @media (max-width: 767px) {
     .rooms-management-panel {
         min-width: 90vw;
-        padding: 15px;
+        padding: 12px;
     }
     
     .rooms-management-header h3 {
-        font-size: 18px;
+        font-size: 14px;
     }
     
     .room-management-name {
-        font-size: 14px;
+        font-size: 13px;
+    }
+    
+    .room-type-icon {
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
     }
 }

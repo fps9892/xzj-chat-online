@@ -1895,16 +1895,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const panel = createElement(`
             <div class="rooms-management-panel">
                 <div class="rooms-management-header">
-                    <h3>📋 Gestionar Salas</h3>
+                    <h3>Gestionar Salas</h3>
                     <button class="close-rooms-management">×</button>
                 </div>
                 <div class="rooms-management-list">
                     ${rooms.map(room => `
                         <div class="room-management-item" data-room-id="${room.id}">
-                            <span class="room-management-name">${room.isPrivate ? '🔒' : '🌐'} ${room.name}</span>
-                            <button class="delete-room-btn" data-room-id="${room.id}" data-room-name="${room.name}">
-                                <img src="/images/trash.svg" alt="Delete" />
-                            </button>
+                            <div class="room-info">
+                                <span class="room-type-icon">${room.isPrivate ? 'P' : 'G'}</span>
+                                <span class="room-management-name">${room.name}</span>
+                            </div>
+                            <div class="room-actions">
+                                <span class="room-user-count-badge" data-room-id="${room.id}">0</span>
+                                <button class="delete-room-btn" data-room-id="${room.id}" data-room-name="${room.name}">
+                                    <img src="/images/trash.svg" alt="Delete" />
+                                </button>
+                            </div>
                         </div>
                     `).join('')}
                 </div>
@@ -1913,7 +1919,28 @@ document.addEventListener('DOMContentLoaded', function() {
         
         document.body.appendChild(panel);
         
-        panel.querySelector('.close-rooms-management').addEventListener('click', () => panel.remove());
+        // Setup user count listeners
+        const userCountListeners = new Map();
+        rooms.forEach(room => {
+            const usersRef = ref(database, `rooms/${room.id}/users`);
+            const unsubscribe = onValue(usersRef, (snapshot) => {
+                let count = 0;
+                if (snapshot.exists()) {
+                    snapshot.forEach((childSnapshot) => {
+                        const userData = childSnapshot.val();
+                        if (userData.status === 'online') count++;
+                    });
+                }
+                const badge = panel.querySelector(`.room-user-count-badge[data-room-id="${room.id}"]`);
+                if (badge) badge.textContent = count;
+            });
+            userCountListeners.set(room.id, unsubscribe);
+        });
+        
+        panel.querySelector('.close-rooms-management').addEventListener('click', () => {
+            userCountListeners.forEach(unsubscribe => unsubscribe());
+            panel.remove();
+        });
         
         panel.querySelectorAll('.delete-room-btn').forEach(btn => {
             btn.addEventListener('click', async () => {
@@ -1924,7 +1951,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     try {
                         const { deleteRoom } = await import('./firebase.js');
                         
-                        // Reemplazar icono con temporizador
                         btn.innerHTML = '<span class="delete-countdown">15</span>';
                         btn.disabled = true;
                         btn.style.pointerEvents = 'none';
@@ -1938,18 +1964,22 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                             if (countdown <= 0) {
                                 clearInterval(countdownInterval);
+                                const roomItem = btn.closest('.room-management-item');
+                                if (roomItem) {
+                                    roomItem.style.animation = 'fadeOut 0.3s ease';
+                                    setTimeout(() => {
+                                        roomItem.remove();
+                                        if (panel.querySelectorAll('.room-management-item').length === 0) {
+                                            userCountListeners.forEach(unsubscribe => unsubscribe());
+                                            panel.remove();
+                                        }
+                                    }, 300);
+                                }
                             }
                         }, 1000);
                         
                         await deleteRoom(roomId);
-                        showNotification(`⏳ La sala "${roomName}" será eliminada en 15 segundos`, 'success');
-                        
-                        setTimeout(() => {
-                            btn.closest('.room-management-item').remove();
-                            if (panel.querySelectorAll('.room-management-item').length === 0) {
-                                panel.remove();
-                            }
-                        }, 15000);
+                        showNotification(`La sala "${roomName}" será eliminada en 15 segundos`, 'success');
                     } catch (error) {
                         showNotification(error.message, 'error');
                         btn.innerHTML = '<img src="/images/trash.svg" alt="Delete" />';
