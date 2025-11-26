@@ -2762,3 +2762,193 @@ body {
     width: 450px;
   }
 }
+
+/* Paneles de Moderación */
+.moderation-panel {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #000;
+  border: 2px solid #00ff00;
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 90%;
+  width: 400px;
+  max-height: 60vh;
+  overflow-y: auto;
+  z-index: 9999;
+}
+
+.moderation-panel.ban-panel {
+  border-color: #ff4444;
+}
+
+.moderation-panel.mute-panel {
+  border-color: #ffaa00;
+}
+
+.moderation-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #333;
+}
+
+.moderation-panel-icon {
+  width: 24px;
+  height: 24px;
+  filter: invert(1);
+}
+
+.moderation-panel-title {
+  font-family: "Orbitron", monospace;
+  font-size: 16px;
+  color: #00ff00;
+  flex: 1;
+}
+
+.ban-panel .moderation-panel-title {
+  color: #ff4444;
+}
+
+.mute-panel .moderation-panel-title {
+  color: #ffaa00;
+}
+
+.moderation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.moderation-user-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.moderation-user-item:hover {
+  background: #222;
+}
+
+.moderation-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.moderation-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid #fff;
+}
+
+.moderation-user-name {
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  color: #fff;
+}
+
+.moderation-action-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.moderation-action-btn img {
+  width: 16px;
+  height: 16px;
+  filter: invert(1);
+}
+
+.ban-action-btn {
+  background: #ff4444;
+  color: #fff;
+}
+
+.ban-action-btn:hover {
+  background: #ff2d2d;
+}
+
+.unban-action-btn {
+  background: #00ff00;
+  color: #000;
+}
+
+.unban-action-btn:hover {
+  background: #00cc00;
+}
+
+.mute-action-btn {
+  background: #ffaa00;
+  color: #000;
+}
+
+.mute-action-btn:hover {
+  background: #ff8800;
+}
+
+.unmute-action-btn {
+  background: #00ff00;
+  color: #000;
+}
+
+.unmute-action-btn:hover {
+  background: #00cc00;
+}
+
+.close-moderation-panel {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-moderation-panel:hover {
+  color: #fff;
+}
+
+.moderation-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.moderation-panel::-webkit-scrollbar-track {
+  background: #000;
+}
+
+.moderation-panel::-webkit-scrollbar-thumb {
+  background: #00ff00;
+  border-radius: 3px;
+}
+
+@media (max-width: 767px) {
+  .moderation-panel {
+    width: 95%;
+    bottom: 110px;
+    padding: 15px;
+  }
+}
