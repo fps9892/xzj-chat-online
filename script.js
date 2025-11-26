@@ -168,41 +168,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 roomsDropdown.innerHTML = '';
                 
                 // Separar salas públicas y privadas
-                const publicRooms = rooms.filter(r => !r.isPrivate);
-                const privateRooms = rooms.filter(r => r.isPrivate);
+                const publicRooms = rooms.filter(r => r.isPrivate !== true);
+                const privateRooms = rooms.filter(r => r.isPrivate === true);
                 
-                // Ordenar salas públicas (general primero, luego por fecha)
+                // Ordenar salas públicas (general primero, luego por fecha - más reciente abajo)
                 const generalRoom = publicRooms.find(r => r.id === 'general');
                 const otherPublicRooms = publicRooms.filter(r => r.id !== 'general').sort((a, b) => {
-                    return new Date(b.createdAt) - new Date(a.createdAt);
+                    return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
                 });
                 const sortedPublicRooms = generalRoom ? [generalRoom, ...otherPublicRooms] : otherPublicRooms;
                 
-                // Ordenar salas privadas por fecha (más reciente al final)
+                // Ordenar salas privadas por fecha (más reciente abajo)
                 const sortedPrivateRooms = privateRooms.sort((a, b) => {
-                    return new Date(b.createdAt) - new Date(a.createdAt);
+                    return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
                 });
                 
                 // Sección de salas públicas
-                if (sortedPublicRooms.length > 0) {
-                    const publicHeader = document.createElement('div');
-                    publicHeader.className = 'room-section-header';
-                    publicHeader.textContent = 'Salas Públicas';
-                    roomsDropdown.appendChild(publicHeader);
-                    
-                    for (const room of sortedPublicRooms) {
-                        const roomElement = document.createElement('div');
-                        roomElement.className = 'room-item';
-                        if (room.id === currentRoom) {
-                            roomElement.classList.add('active');
-                        }
-                        roomElement.setAttribute('data-room', room.id);
-                        roomElement.innerHTML = room.name;
-                        roomsDropdown.appendChild(roomElement);
+                const publicHeader = document.createElement('div');
+                publicHeader.className = 'room-section-header';
+                publicHeader.textContent = 'Salas Públicas';
+                roomsDropdown.appendChild(publicHeader);
+                
+                for (const room of sortedPublicRooms) {
+                    const roomElement = document.createElement('div');
+                    roomElement.className = 'room-item';
+                    if (room.id === currentRoom) {
+                        roomElement.classList.add('active');
                     }
+                    roomElement.setAttribute('data-room', room.id);
+                    roomElement.innerHTML = room.name;
+                    roomsDropdown.appendChild(roomElement);
                 }
                 
-                // Sección de salas privadas
+                // Sección de salas privadas (solo si hay salas privadas)
                 if (sortedPrivateRooms.length > 0) {
                     const privateHeader = document.createElement('div');
                     privateHeader.className = 'room-section-header';

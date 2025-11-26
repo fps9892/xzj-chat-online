@@ -980,7 +980,8 @@ export async function createRoom(roomName) {
             name: roomName,
             createdBy: currentUser.firebaseUid,
             createdAt: new Date().toISOString(),
-            isActive: true
+            isActive: true,
+            isPrivate: false
         });
         
         // Crear estructura inicial en Realtime Database
@@ -1009,26 +1010,42 @@ export async function deleteRoom(roomName) {
     const isModerator = await checkModeratorStatus(userId);
     
     try {
-        const roomId = roomName.toLowerCase().replace(/[^a-z0-9]/g, '');
+        // Buscar sala por nombre exacto primero
+        const roomsSnapshot = await getDocs(collection(db, 'rooms'));
+        let roomId = null;
+        let roomData = null;
+        
+        roomsSnapshot.forEach((doc) => {
+            if (doc.data().name === roomName) {
+                roomId = doc.id;
+                roomData = doc.data();
+            }
+        });
+        
+        // Si no se encuentra, intentar con el formato antiguo
+        if (!roomId) {
+            roomId = roomName.toLowerCase().replace(/[^a-z0-9-]/g, '');
+            const roomDoc = await getDoc(doc(db, 'rooms', roomId));
+            if (roomDoc.exists()) {
+                roomData = roomDoc.data();
+            }
+        }
+        
+        if (!roomId || !roomData) {
+            throw new Error('Sala no encontrada');
+        }
         
         // No permitir borrar la sala general
         if (roomId === 'general') {
             throw new Error('No se puede borrar la sala general');
         }
         
-        // Verificar si es sala privada y si el usuario es el dueño
-        const roomDoc = await getDoc(doc(db, 'rooms', roomId));
-        if (roomDoc.exists()) {
-            const roomData = roomDoc.data();
-            const isOwner = roomData.owner === userId;
-            const isPrivateRoom = roomData.isPrivate === true;
-            
-            // Permitir borrar si es admin, moderador, o dueño de sala privada
-            if (!isAdmin && !isModerator && !(isPrivateRoom && isOwner)) {
-                throw new Error('No tienes permisos para borrar esta sala');
-            }
-        } else if (!isAdmin && !isModerator) {
-            throw new Error('Solo administradores y moderadores pueden borrar salas');
+        // Verificar permisos
+        const isOwner = roomData.owner === userId;
+        const isPrivateRoom = roomData.isPrivate === true;
+        
+        if (!isAdmin && !isModerator && !(isPrivateRoom && isOwner)) {
+            throw new Error('No tienes permisos para borrar esta sala');
         }
         
         // Notificar a usuarios en la sala antes de borrar
