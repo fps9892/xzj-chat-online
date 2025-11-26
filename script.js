@@ -1,4 +1,4 @@
-import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, currentRoom, updateUserData, changePassword, sendImage, sendAudio, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, getRooms, listenToRooms, listenToAnnouncements, showAnnouncement, listenToUserStatus, processEmotes, extractYouTubeId, checkPrivateRoomAccess, requestPrivateRoomAccess } from './firebase.js';
+import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, currentRoom, updateUserData, changePassword, sendImage, sendAudio, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, getRooms, listenToRooms, listenToAnnouncements, showAnnouncement, listenToUserStatus, processEmotes, extractYouTubeId, checkPrivateRoomAccess, requestPrivateRoomAccess, listenToRoomAccessNotifications } from './firebase.js';
 import { AudioRecorder, formatTime, blobToBase64 } from './audio-recorder.js';
 import { getUserProfile, findUserByUsername, animateMessageDeletion, initAdminListener } from './core.js';
 
@@ -167,23 +167,58 @@ document.addEventListener('DOMContentLoaded', function() {
             roomsListener = listenToRooms(async (rooms) => {
                 roomsDropdown.innerHTML = '';
                 
-                // Asegurar que la sala general esté primero
-                const generalRoom = rooms.find(r => r.id === 'general');
-                let sortedRooms = rooms;
-                if (generalRoom) {
-                    sortedRooms = [generalRoom, ...rooms.filter(r => r.id !== 'general')];
+                // Separar salas públicas y privadas
+                const publicRooms = rooms.filter(r => !r.isPrivate);
+                const privateRooms = rooms.filter(r => r.isPrivate);
+                
+                // Ordenar salas públicas (general primero, luego por fecha)
+                const generalRoom = publicRooms.find(r => r.id === 'general');
+                const otherPublicRooms = publicRooms.filter(r => r.id !== 'general').sort((a, b) => {
+                    return new Date(b.createdAt) - new Date(a.createdAt);
+                });
+                const sortedPublicRooms = generalRoom ? [generalRoom, ...otherPublicRooms] : otherPublicRooms;
+                
+                // Ordenar salas privadas por fecha (más reciente al final)
+                const sortedPrivateRooms = privateRooms.sort((a, b) => {
+                    return new Date(b.createdAt) - new Date(a.createdAt);
+                });
+                
+                // Sección de salas públicas
+                if (sortedPublicRooms.length > 0) {
+                    const publicHeader = document.createElement('div');
+                    publicHeader.className = 'room-section-header';
+                    publicHeader.textContent = 'Salas Públicas';
+                    roomsDropdown.appendChild(publicHeader);
+                    
+                    for (const room of sortedPublicRooms) {
+                        const roomElement = document.createElement('div');
+                        roomElement.className = 'room-item';
+                        if (room.id === currentRoom) {
+                            roomElement.classList.add('active');
+                        }
+                        roomElement.setAttribute('data-room', room.id);
+                        roomElement.innerHTML = room.name;
+                        roomsDropdown.appendChild(roomElement);
+                    }
                 }
                 
-                // Crear elementos de sala
-                for (const room of sortedRooms) {
-                    const roomElement = document.createElement('div');
-                    roomElement.className = 'room-item';
-                    if (room.id === currentRoom) {
-                        roomElement.classList.add('active');
+                // Sección de salas privadas
+                if (sortedPrivateRooms.length > 0) {
+                    const privateHeader = document.createElement('div');
+                    privateHeader.className = 'room-section-header';
+                    privateHeader.textContent = 'Salas Privadas';
+                    roomsDropdown.appendChild(privateHeader);
+                    
+                    for (const room of sortedPrivateRooms) {
+                        const roomElement = document.createElement('div');
+                        roomElement.className = 'room-item private-room';
+                        if (room.id === currentRoom) {
+                            roomElement.classList.add('active');
+                        }
+                        roomElement.setAttribute('data-room', room.id);
+                        roomElement.innerHTML = `🔒 ${room.name}`;
+                        roomsDropdown.appendChild(roomElement);
                     }
-                    roomElement.setAttribute('data-room', room.id);
-                    roomElement.innerHTML = room.name;
-                    roomsDropdown.appendChild(roomElement);
                 }
                 
                 // Actualizar event listeners
@@ -1359,6 +1394,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
+    // Escuchar notificaciones de acceso a salas privadas
+    listenToRoomAccessNotifications((data) => {
+        if (data.accepted && data.roomId === currentRoom) {
+            // Recargar mensajes cuando el usuario es aceptado
+            loadMessages();
+            showNotification('Has sido aceptado en la sala privada', 'success');
+        }
+    });
     
     // Esperar a que termine la carga para inicializar
     setTimeout(() => {

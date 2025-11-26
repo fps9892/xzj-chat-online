@@ -226,6 +226,14 @@ Firebase Console → Realtime Database → Rules
         ".read": true,
         ".write": true
       }
+    },
+    "roomAccessNotifications": {
+      ".read": true,
+      ".write": true,
+      "$userId": {
+        ".read": true,
+        ".write": true
+      }
     }
   }
 }

@@ -209,7 +209,26 @@ body {
 
 .room-item:last-child {
   border-bottom: none;
-  border-radius: 0 0 10px 10px;
+}
+
+.room-section-header {
+  padding: 8px 18px;
+  font-family: "Orbitron", monospace;
+  font-size: 11px;
+  color: #00ff00;
+  background: rgba(0, 255, 0, 0.05);
+  border-bottom: 1px solid rgba(0, 255, 0, 0.2);
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.room-item.private-room {
+  background: rgba(255, 170, 0, 0.05);
+}
+
+.room-item.private-room:hover {
+  background: rgba(255, 170, 0, 0.1);
+  color: #ffaa00;
 }
 
 .room-item:hover {

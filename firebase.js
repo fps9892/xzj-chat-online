@@ -927,11 +927,34 @@ export async function acceptUserToPrivateRoom(roomId, userId) {
             pendingUsers: pendingUsers.filter(id => id !== userId)
         });
         
+        // Notificar al usuario aceptado mediante Realtime Database
+        const notificationRef = ref(database, `roomAccessNotifications/${userId}`);
+        await set(notificationRef, {
+            roomId: roomId,
+            accepted: true,
+            timestamp: serverTimestamp()
+        });
+        
         return true;
     } catch (error) {
         console.error('Error accepting user:', error);
         throw error;
     }
+}
+
+// Escuchar notificaciones de acceso a sala
+export function listenToRoomAccessNotifications(callback) {
+    const userId = currentUser.firebaseUid || currentUser.userId;
+    const notificationRef = ref(database, `roomAccessNotifications/${userId}`);
+    
+    return onValue(notificationRef, (snapshot) => {
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            callback(data);
+            // Limpiar notificación después de procesarla
+            remove(notificationRef);
+        }
+    });
 }
 
 // Crear sala nueva (administradores y moderadores)
@@ -975,16 +998,15 @@ export async function createRoom(roomName) {
     }
 }
 
-// Borrar sala (solo administradores)
+// Borrar sala (administradores, moderadores o dueño de sala privada)
 export async function deleteRoom(roomName) {
-    if (!currentUser.firebaseUid || currentUser.isGuest) {
+    if (!currentUser.firebaseUid && !currentUser.userId) {
         throw new Error('Solo usuarios registrados pueden borrar salas');
     }
     
-    const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
-    if (!isAdmin) {
-        throw new Error('Solo administradores pueden borrar salas');
-    }
+    const userId = currentUser.firebaseUid || currentUser.userId;
+    const isAdmin = await checkAdminStatus(userId);
+    const isModerator = await checkModeratorStatus(userId);
     
     try {
         const roomId = roomName.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -992,6 +1014,21 @@ export async function deleteRoom(roomName) {
         // No permitir borrar la sala general
         if (roomId === 'general') {
             throw new Error('No se puede borrar la sala general');
+        }
+        
+        // Verificar si es sala privada y si el usuario es el dueño
+        const roomDoc = await getDoc(doc(db, 'rooms', roomId));
+        if (roomDoc.exists()) {
+            const roomData = roomDoc.data();
+            const isOwner = roomData.owner === userId;
+            const isPrivateRoom = roomData.isPrivate === true;
+            
+            // Permitir borrar si es admin, moderador, o dueño de sala privada
+            if (!isAdmin && !isModerator && !(isPrivateRoom && isOwner)) {
+                throw new Error('No tienes permisos para borrar esta sala');
+            }
+        } else if (!isAdmin && !isModerator) {
+            throw new Error('Solo administradores y moderadores pueden borrar salas');
         }
         
         // Notificar a usuarios en la sala antes de borrar
