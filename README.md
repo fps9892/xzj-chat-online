@@ -156,7 +156,7 @@ service cloud.firestore {
 }
 ```
 
-#### Archivo _redirects (Netlify)
+#### Archivo \_redirects (Netlify)
 
 ```
 Crear archivo: _redirects en la raíz del proyecto
