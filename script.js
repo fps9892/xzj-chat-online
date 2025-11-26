@@ -590,10 +590,10 @@ document.addEventListener('DOMContentLoaded', function() {
     async function loadMessages() {
         // Verificar acceso a sala privada
         const accessCheck = await checkPrivateRoomAccess(currentRoom);
-        hasPrivateRoomAccess = accessCheck.isOwner || accessCheck.hasAccess;
         
-        // Si no es sala privada, habilitar controles
+        // Si no es sala privada, cargar normalmente
         if (!accessCheck.isPrivate) {
+            hasPrivateRoomAccess = true;
             enableChatControls();
             listenToMessages((messages) => {
                 renderMessages(messages);
@@ -602,8 +602,10 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        if (hasPrivateRoomAccess) {
-            // Usuario tiene acceso, cargar mensajes normalmente
+        // Es sala privada - verificar permisos
+        if (accessCheck.isOwner || accessCheck.hasAccess) {
+            // Usuario es dueño o tiene acceso
+            hasPrivateRoomAccess = true;
             enableChatControls();
             listenToMessages((messages) => {
                 renderMessages(messages);
@@ -611,28 +613,17 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         } else if (accessCheck.isPending) {
             // Usuario está pendiente de aprobación
+            hasPrivateRoomAccess = false;
             const chatArea = document.querySelector('.chat-area');
             chatArea.innerHTML = '<div class="room-loader"><div class="loader-spinner"></div><p>Solicitud pendiente de ingreso</p><small>Esperando aprobación del dueño</small></div>';
-            
-            // Deshabilitar controles
             disableChatControls();
         } else {
-            // Usuario no tiene acceso, solicitar acceso
-            const requested = await requestPrivateRoomAccess(currentRoom);
-            if (requested) {
-                const chatArea = document.querySelector('.chat-area');
-                chatArea.innerHTML = '<div class="room-loader"><div class="loader-spinner"></div><p>Solicitud pendiente de ingreso</p><small>Esperando aprobación del dueño</small></div>';
-                
-                // Deshabilitar controles
-                disableChatControls();
-            } else {
-                // No es sala privada o error, cargar normalmente
-                enableChatControls();
-                listenToMessages((messages) => {
-                    renderMessages(messages);
-                    initializeMessages();
-                });
-            }
+            // Usuario no tiene acceso - solicitar
+            hasPrivateRoomAccess = false;
+            await requestPrivateRoomAccess(currentRoom);
+            const chatArea = document.querySelector('.chat-area');
+            chatArea.innerHTML = '<div class="room-loader"><div class="loader-spinner"></div><p>Solicitud enviada</p><small>Esperando aprobación del dueño</small></div>';
+            disableChatControls();
         }
     }
     
