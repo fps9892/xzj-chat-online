@@ -207,6 +207,11 @@ export async function sendMessage(text, type = 'text', imageData = null, audioDu
                 
                 const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
                 await push(messagesRef, systemMessageData);
+                
+                // Retornar indicador de cambio de sala si aplica
+                if (commandResult.roomChanged) {
+                    return { roomChanged: true };
+                }
                 return;
             } else {
                 throw new Error(commandResult.message);
@@ -1611,7 +1616,18 @@ export async function processAdminCommand(message) {
                 
             case '!crearprivada':
                 const privateRoomId = await createPrivateRoom();
-                return { success: true, message: `Sala privada creada: ${privateRoomId}` };
+                const roomDoc = await getDoc(doc(db, 'rooms', privateRoomId));
+                const roomName = roomDoc.exists() ? roomDoc.data().name : privateRoomId;
+                
+                // Actualizar UI y cambiar sala
+                if (typeof document !== 'undefined') {
+                    const roomNameEl = document.querySelector('.current-room-name');
+                    if (roomNameEl) roomNameEl.textContent = roomName;
+                    document.title = `${roomName} - FYZAR CHAT`;
+                }
+                
+                await changeRoom(privateRoomId, false);
+                return { success: true, message: `Sala privada creada: ${roomName}`, roomChanged: true };
                 
             case '!aceptar':
                 if (args.length === 0) {

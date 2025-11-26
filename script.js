@@ -1777,24 +1777,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Enviar mensaje
     function sendMessageHandler() {
-        // Verificar acceso a sala privada
-        if (!hasPrivateRoomAccess) {
-            const accessCheck = checkPrivateRoomAccess(currentRoom);
-            accessCheck.then(check => {
-                if (!check.isOwner && !check.hasAccess) {
-                    showNotification('No tienes acceso a esta sala privada', 'error');
-                    return;
-                }
-            });
-        }
-        
         const message = messageInput.value.trim();
         if (message) {
             // Cerrar lista de comandos si existe
             const commandList = document.querySelector('.private-command-message');
             if (commandList) commandList.remove();
             
-            sendMessage(message).then(() => {
+            sendMessage(message).then((result) => {
+                // Si se creó sala privada, recargar
+                if (result && result.roomChanged) {
+                    setTimeout(() => {
+                        loadMessages();
+                        loadUsers();
+                    }, 500);
+                }
+                
                 messageInput.value = '';
                 charCounter.textContent = '0/250';
                 charCounter.classList.remove('warning', 'danger');
