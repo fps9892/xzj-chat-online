@@ -86,8 +86,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const messageInput = document.querySelector('.message-input');
     const charCounter = document.querySelector('.char-counter');
     const sendIcon = document.querySelector('.send-icon');
-    const roomSelector = document.querySelector('.room-selector');
-    const roomsDropdown = document.querySelector('.rooms-dropdown');
+    const roomsBtn = document.getElementById('roomsBtn');
+    const roomsPanelOverlay = document.getElementById('roomsPanelOverlay');
+    const roomsPanel = document.getElementById('roomsPanel');
+    const closeRoomsPanel = document.querySelector('.close-rooms-panel');
+    const roomsTabs = document.querySelectorAll('.rooms-tab');
+    const publicRoomsList = document.querySelector('.rooms-list[data-section="public"]');
+    const privateRoomsList = document.querySelector('.rooms-list[data-section="private"]');
     const mobileUsersIndicator = document.querySelector('.mobile-users-indicator');
     const mobileUsersDropdown = document.querySelector('.mobile-users-dropdown');
     const currentRoomName = document.querySelector('.current-room-name');
@@ -227,50 +232,76 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Configurar event listeners para salas
     function setupRoomListeners() {
-        const roomItems = document.querySelectorAll('.room-item');
+        const roomItems = document.querySelectorAll('.room-item-panel');
         roomItems.forEach(item => {
             item.addEventListener('click', function() {
                 const roomId = this.getAttribute('data-room');
                 
-                // No hacer nada si ya estamos en esa sala
                 if (roomId === currentRoom) {
-                    roomsDropdown.classList.remove('active');
+                    roomsPanelOverlay.classList.remove('active');
                     return;
                 }
                 
-                const roomDisplayName = this.textContent.split(' (')[0];
+                const roomDisplayName = this.textContent.trim();
                 currentRoomName.textContent = roomDisplayName;
                 originalTitle = `${roomDisplayName} - FYZAR CHAT`;
                 document.title = originalTitle;
                 unreadMessages = 0;
                 
-                // Remover clase active de todos los items
                 roomItems.forEach(r => r.classList.remove('active'));
-                // Agregar clase active al item seleccionado
                 this.classList.add('active');
                 
-                // Mostrar loader
                 const chatArea = document.querySelector('.chat-area');
                 chatArea.innerHTML = '<div class="room-loader"><div class="loader-spinner"></div><p>Cargando sala...</p></div>';
                 
-                // Limpiar listeners antes de cambiar sala
                 cleanupListeners();
                 previousUsersList.clear();
                 isInitialLoad = true;
                 lastMessageCount = 0;
                 
-                // Cambiar sala y recargar datos
                 changeRoom(roomId, false).then(() => {
                     loadMessages();
                     loadUsers();
                 });
                 
-                roomsDropdown.classList.remove('active');
+                roomsPanelOverlay.classList.remove('active');
             });
         });
     }
+    
+    // Event listeners para panel de salas
+    roomsBtn.addEventListener('click', () => {
+        roomsPanelOverlay.classList.add('active');
+    });
+    
+    closeRoomsPanel.addEventListener('click', () => {
+        roomsPanelOverlay.classList.remove('active');
+    });
+    
+    roomsPanelOverlay.addEventListener('click', (e) => {
+        if (e.target === roomsPanelOverlay) {
+            roomsPanelOverlay.classList.remove('active');
+        }
+    });
+    
+    // Tabs de salas públicas/privadas
+    roomsTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const tabType = this.getAttribute('data-tab');
+            
+            roomsTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            if (tabType === 'public') {
+                publicRoomsList.style.display = 'flex';
+                privateRoomsList.style.display = 'none';
+            } else {
+                publicRoomsList.style.display = 'none';
+                privateRoomsList.style.display = 'flex';
+            }
+        });
+    });
 
     // Abrir panel de usuario
     userInfo.addEventListener('click', function(e) {

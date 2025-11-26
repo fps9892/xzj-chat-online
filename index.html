@@ -54,15 +54,10 @@
       </div>
 
       <div class="room-selector">
-        <img src="/images/arrows-rooms.svg" alt="Arrows" class="arrows-icon" />
-        <img
-          src="/images/rooms-public-icon.svg"
-          alt="Rooms"
-          class="rooms-icon"
-        />
-        <div class="rooms-dropdown">
-          <div class="room-item active" data-room="general">Sala General <span class="room-users">(0)</span></div>
-        </div>
+        <button class="rooms-btn" id="roomsBtn">
+          <img src="/images/rooms-public-icon.svg" alt="Rooms" class="rooms-icon" />
+          <span class="desktop-only">Salas</span>
+        </button>
       </div>
 
       <div class="mobile-users-indicator">
@@ -222,6 +217,28 @@
     <script type="module" src="/script.js"></script>
     <script type="module" src="/level-init.js"></script>
     <script type="module" src="/emote-manager.js"></script>
+    <!-- Panel de Salas -->
+    <div class="rooms-panel-overlay" id="roomsPanelOverlay">
+      <div class="rooms-panel" id="roomsPanel">
+        <div class="rooms-panel-header">
+          <h2>Salas</h2>
+          <img src="/images/close.svg" alt="Close" class="close-rooms-panel" />
+        </div>
+        <div class="rooms-panel-tabs">
+          <button class="rooms-tab active" data-tab="public">Públicas</button>
+          <button class="rooms-tab" data-tab="private">Privadas</button>
+        </div>
+        <div class="rooms-panel-content">
+          <div class="rooms-list" data-section="public">
+            <!-- Salas públicas se cargarán aquí -->
+          </div>
+          <div class="rooms-list" data-section="private" style="display: none;">
+            <!-- Salas privadas se cargarán aquí -->
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Panel de Usuario -->
     <div class="user-panel-overlay">
       <div class="user-panel">

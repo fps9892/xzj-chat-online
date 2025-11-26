@@ -71,6 +71,21 @@
 - **Validación**: Mínimo 6 caracteres
 - **Manejo de Errores**: Mensajes específicos para cada tipo de error
 
+### Panel Lateral de Salas
+
+- **Diseño Lateral**: Panel desplegable desde la derecha con animación suave
+- **Dos Secciones**: Tabs para alternar entre salas públicas y privadas
+- **Cierre Automático**: Panel se cierra al seleccionar una sala
+- **Responsive**: Adaptado para móvil (85% ancho), tablet (300px) y desktop (350px)
+- **Iconos Visuales**: 🌐 para públicas, 🔒 para privadas
+
+### Sistema de Eliminación de Salas
+
+- **Temporizador de 15 segundos**: Aviso previo antes de eliminar sala
+- **Contador Regresivo**: Actualización cada segundo visible para todos
+- **Redirección Automática**: Usuarios redirigidos a index.html al finalizar
+- **Recarga Forzada**: Limpia completamente el estado de la aplicación
+
 ---
 
 ## 🚀 Inicio Rápido
@@ -247,6 +262,11 @@ Firebase Console → Realtime Database → Rules
 }
 ```
 
+**Nota**: La sección `roomDeleted` permite el sistema de temporizador de 15 segundos antes de eliminar salas, notificando a todos los usuarios en tiempo real.
+
+```
+```
+
 ### 2. Iniciar el Proyecto
 
 **Opción A**: Abrir directamente
@@ -332,7 +352,10 @@ node server.js
 | Métrica                 | Antes  | Después  | Mejora     |
 | ----------------------- | ------ | -------- | ---------- |
 | Archivos JS             | 7      | 4        | -43%       |
-| Funcionalidades         | 15     | 35+      | +133%      |
+| Funcionalidades         | 15     | 38+      | +153%      |
+| Tipos de notificaciones | 1      | 3        | +200%      |
+| Roles de usuario        | 2      | 4        | +100%      |
+| Seguridad               | Básica | Avanzada | ⭐⭐⭐⭐⭐ |         | 15     | 35+      | +133%      |
 | Tipos de notificaciones | 1      | 3        | +200%      |
 | Roles de usuario        | 2      | 4        | +100%      |
 | Seguridad               | Básica | Avanzada | ⭐⭐⭐⭐⭐ |
@@ -381,6 +404,21 @@ node server.js
 - [ ] Eliminar fondo funciona
 - [ ] Fondo persiste entre sesiones
 - [ ] Cambio de contraseña con reautenticación funciona
+
+### Panel de Salas
+
+- [ ] Botón "Salas" abre panel lateral derecho
+- [ ] Panel se anima desde la derecha
+- [ ] Tabs "Públicas" y "Privadas" funcionan
+- [ ] Panel se cierra al seleccionar sala
+- [ ] Panel responsive en móvil, tablet y desktop
+
+### Sistema de Eliminación
+
+- [ ] Temporizador de 15 segundos aparece
+- [ ] Contador regresivo actualiza cada segundo
+- [ ] Usuarios redirigidos automáticamente
+- [ ] Página se recarga correctamente
 
 ---
 

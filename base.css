@@ -2073,3 +2073,244 @@ body {
     padding: 8px;
   }
 }
+
+/* Panel Lateral de Salas */
+.rooms-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 15px;
+  border: 2px solid #00ff00;
+  border-radius: 20px;
+  cursor: pointer;
+  background: rgba(0, 255, 0, 0.05);
+  color: #fff;
+  font-family: "Orbitron", monospace;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.rooms-btn:hover {
+  background: rgba(0, 255, 0, 0.15);
+  transform: scale(1.05);
+}
+
+.rooms-panel-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 2000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.rooms-panel-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.rooms-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 350px;
+  height: 100vh;
+  background: #000;
+  border-left: 2px solid #00ff00;
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  display: flex;
+  flex-direction: column;
+  box-shadow: -5px 0 30px rgba(0, 255, 0, 0.3);
+}
+
+.rooms-panel-overlay.active .rooms-panel {
+  transform: translateX(0);
+}
+
+.rooms-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 2px solid #00ff00;
+  background: rgba(0, 255, 0, 0.05);
+}
+
+.rooms-panel-header h2 {
+  font-family: "Orbitron", monospace;
+  font-size: 20px;
+  color: #00ff00;
+  letter-spacing: 2px;
+}
+
+.close-rooms-panel {
+  width: 24px;
+  height: 24px;
+  filter: invert(1);
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.close-rooms-panel:hover {
+  transform: rotate(90deg) scale(1.2);
+}
+
+.rooms-panel-tabs {
+  display: flex;
+  gap: 0;
+  padding: 0;
+  border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+}
+
+.rooms-tab {
+  flex: 1;
+  padding: 15px;
+  background: transparent;
+  border: none;
+  color: #888;
+  font-family: "Orbitron", monospace;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border-bottom: 3px solid transparent;
+}
+
+.rooms-tab:hover {
+  background: rgba(0, 255, 0, 0.05);
+  color: #00ff00;
+}
+
+.rooms-tab.active {
+  color: #00ff00;
+  border-bottom-color: #00ff00;
+  background: rgba(0, 255, 0, 0.1);
+}
+
+.rooms-panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.rooms-panel-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.rooms-panel-content::-webkit-scrollbar-track {
+  background: #000;
+}
+
+.rooms-panel-content::-webkit-scrollbar-thumb {
+  background: #00ff00;
+  border-radius: 3px;
+}
+
+.rooms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rooms-list[data-section="private"] {
+  display: none;
+}
+
+.rooms-list[data-section="private"].active {
+  display: flex;
+}
+
+.room-item-panel {
+  padding: 15px;
+  background: rgba(0, 255, 0, 0.05);
+  border: 1px solid rgba(0, 255, 0, 0.2);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: "Orbitron", monospace;
+  font-size: 14px;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.room-item-panel:hover {
+  background: rgba(0, 255, 0, 0.15);
+  border-color: #00ff00;
+  transform: translateX(-5px);
+}
+
+.room-item-panel.active {
+  background: rgba(0, 255, 0, 0.25);
+  border-color: #00ff00;
+  border-width: 2px;
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+}
+
+.room-item-panel.private {
+  background: rgba(255, 170, 0, 0.05);
+  border-color: rgba(255, 170, 0, 0.3);
+}
+
+.room-item-panel.private:hover {
+  background: rgba(255, 170, 0, 0.15);
+  border-color: #ffaa00;
+}
+
+.room-item-panel.private.active {
+  background: rgba(255, 170, 0, 0.25);
+  border-color: #ffaa00;
+  box-shadow: 0 0 15px rgba(255, 170, 0, 0.4);
+}
+
+.room-item-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.room-item-icon {
+  font-size: 16px;
+}
+
+.empty-rooms {
+  text-align: center;
+  padding: 40px 20px;
+  color: #888;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+}
+
+/* Responsive para tablet */
+@media (max-width: 1024px) and (min-width: 768px) {
+  .rooms-panel {
+    width: 300px;
+  }
+}
+
+/* Responsive para móvil */
+@media (max-width: 767px) {
+  .rooms-panel {
+    width: 85%;
+    max-width: 320px;
+  }
+
+  .rooms-panel-header h2 {
+    font-size: 18px;
+  }
+
+  .rooms-tab {
+    font-size: 13px;
+    padding: 12px;
+  }
+
+  .room-item-panel {
+    padding: 12px;
+    font-size: 13px;
+  }
+}
