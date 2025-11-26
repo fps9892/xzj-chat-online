@@ -1071,6 +1071,7 @@ export async function deleteRoom(roomName) {
         // Notificar a usuarios en la sala con temporizador de 15 segundos
         const usersRef = ref(database, `rooms/${roomId}/users`);
         const usersSnapshot = await get(usersRef);
+        const roomDeletedRef = ref(database, `roomDeleted/${roomId}`);
         
         if (usersSnapshot.exists()) {
             // Enviar mensaje de advertencia con temporizador
@@ -1091,7 +1092,6 @@ export async function deleteRoom(roomName) {
             await push(messagesRef, warningMessageData);
             
             // Iniciar temporizador de 15 segundos
-            const roomDeletedRef = ref(database, `roomDeleted/${roomId}`);
             await set(roomDeletedRef, {
                 deleting: true,
                 countdown: 15,
