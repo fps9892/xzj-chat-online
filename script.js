@@ -1904,14 +1904,14 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="moderation-user-info">
                                 <img src="${user.avatar}" class="moderation-user-avatar" alt="${user.name}" />
                                 <span class="moderation-user-name">${userId} ${user.name}${user.isGuest ? ' (invitado)' : ''}</span>
-                            </div>`;
-                    }).join('')}
+                            </div>
                             <button class="moderation-action-btn ban-action-btn" data-user-id="${user.firebaseUid || user.userId}" data-username="${user.name}" data-is-guest="${user.isGuest}">
                                 <img src="/images/ban.svg" alt="Ban" />
                                 Banear
                             </button>
                         </div>
-                    `).join('')}
+                        `;
+                    }).join('')}
                 </div>
             </div>
         `);
@@ -2069,14 +2069,14 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="moderation-user-info">
                                 <img src="${user.avatar}" class="moderation-user-avatar" alt="${user.name}" />
                                 <span class="moderation-user-name">${userId} ${user.name}${user.isGuest ? ' (invitado)' : ''}</span>
-                            </div>`;
-                    }).join('')}
+                            </div>
                             <button class="moderation-action-btn mute-action-btn" data-user-id="${user.firebaseUid || user.userId}" data-username="${user.name}" data-is-guest="${user.isGuest}">
                                 <img src="/images/mute.svg" alt="Mute" />
                                 Mutear
                             </button>
                         </div>
-                    `).join('')}
+                        `;
+                    }).join('')}
                 </div>
             </div>
         `);
