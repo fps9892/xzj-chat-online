@@ -949,7 +949,7 @@ export async function createRoom(roomName) {
 }
 
 // Borrar sala (administradores, moderadores o dueño de sala privada)
-export async function deleteRoom(roomName) {
+export async function deleteRoom(roomNameOrId) {
     if (!currentUser.firebaseUid && !currentUser.userId) {
         throw new Error('Solo usuarios registrados pueden borrar salas');
     }
@@ -959,26 +959,18 @@ export async function deleteRoom(roomName) {
     const isModerator = await checkModeratorStatus(userId);
     
     try {
-        // Buscar sala por nombre exacto primero
         const roomsSnapshot = await getDocs(collection(db, 'rooms'));
         let roomId = null;
         let roomData = null;
         
-        roomsSnapshot.forEach((doc) => {
-            if (doc.data().name === roomName) {
-                roomId = doc.id;
-                roomData = doc.data();
+        // Buscar por nombre o ID
+        roomsSnapshot.forEach((docSnapshot) => {
+            const data = docSnapshot.data();
+            if (data.name === roomNameOrId || docSnapshot.id === roomNameOrId) {
+                roomId = docSnapshot.id;
+                roomData = data;
             }
         });
-        
-        // Si no se encuentra, intentar con el formato antiguo
-        if (!roomId) {
-            roomId = roomName.toLowerCase().replace(/[^a-z0-9-]/g, '');
-            const roomDoc = await getDoc(doc(db, 'rooms', roomId));
-            if (roomDoc.exists()) {
-                roomData = roomDoc.data();
-            }
-        }
         
         if (!roomId || !roomData) {
             throw new Error('Sala no encontrada');
@@ -1643,8 +1635,8 @@ export async function processAdminCommand(message) {
                     throw new Error('Uso: !borrar <nombre_sala>');
                 }
                 const roomToDelete = args.join(' ');
-                deleteRoom(roomToDelete);
-                return { success: true, message: `⏳ La sala "${roomToDelete}" será eliminada en 15 segundos`, privateMessage: true };
+                deleteRoom(roomToDelete).catch(err => console.error('Error deleting room:', err));
+                return { success: false, showDeleteNotification: true, roomName: roomToDelete };
                 
             case '!ban':
                 if (args.length === 0) {

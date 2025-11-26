@@ -1868,6 +1868,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTypingStatus(false);
                 clearTimeout(typingTimeout);
                 
+                if (result && result.showDeleteNotification) {
+                    showNotification(`⏳ La sala "${result.roomName}" será eliminada en 15 segundos`, 'success');
+                    return;
+                }
+                
                 if (result && result.showRoomsPanel) {
                     showRoomsManagementPanel(result.rooms);
                     return;
@@ -1918,9 +1923,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (confirm(`¿Estás seguro de eliminar la sala "${roomName}"?`)) {
                     try {
                         const { deleteRoom } = await import('./firebase.js');
-                        await deleteRoom(roomName);
+                        await deleteRoom(roomId);
                         showNotification(`⏳ La sala "${roomName}" será eliminada en 15 segundos`, 'success');
                         btn.closest('.room-management-item').remove();
+                        
+                        if (panel.querySelectorAll('.room-management-item').length === 0) {
+                            panel.remove();
+                        }
                     } catch (error) {
                         showNotification(error.message, 'error');
                     }
