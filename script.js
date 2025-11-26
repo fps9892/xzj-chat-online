@@ -1468,7 +1468,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Escuchar cambios en estado de baneo/mute
-    if (!currentUser.isGuest && currentUser.firebaseUid) {
+    const userIdToCheck = currentUser.firebaseUid || currentUser.userId;
+    if (userIdToCheck) {
         listenToUserStatus((status) => {
             if (status.type === 'banned') {
                 window.location.replace('banned.html');
@@ -1479,6 +1480,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 imageBtn.style.opacity = '0.5';
                 emoteBtn.style.pointerEvents = 'none';
                 emoteBtn.style.opacity = '0.5';
+                micBtn.style.pointerEvents = 'none';
+                micBtn.style.opacity = '0.5';
+                const pollsBtn = document.querySelector('.polls-btn');
+                if (pollsBtn) {
+                    pollsBtn.style.pointerEvents = 'none';
+                    pollsBtn.style.opacity = '0.5';
+                }
                 sendIcon.style.pointerEvents = 'none';
                 sendIcon.style.opacity = '0.5';
             } else if (status.type === 'unmuted') {
@@ -1488,6 +1496,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 imageBtn.style.opacity = '1';
                 emoteBtn.style.pointerEvents = 'auto';
                 emoteBtn.style.opacity = '1';
+                micBtn.style.pointerEvents = 'auto';
+                micBtn.style.opacity = '1';
+                const pollsBtn = document.querySelector('.polls-btn');
+                if (pollsBtn) {
+                    pollsBtn.style.pointerEvents = 'auto';
+                    pollsBtn.style.opacity = '1';
+                }
                 sendIcon.style.pointerEvents = 'auto';
                 sendIcon.style.opacity = '1';
             }
@@ -1868,7 +1883,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <img src="${user.avatar}" class="moderation-user-avatar" alt="${user.name}" />
                                 <span class="moderation-user-name">${index + 1}. ${user.name}</span>
                             </div>
-                            <button class="moderation-action-btn ban-action-btn" data-user-id="${user.isGuest ? user.userId : user.firebaseUid}" data-username="${user.name}">
+                            <button class="moderation-action-btn ban-action-btn" data-user-id="${user.firebaseUid || user.userId}" data-username="${user.name}" data-is-guest="${user.isGuest}">
                                 <img src="/images/ban.svg" alt="Ban" />
                                 Banear
                             </button>
@@ -1892,6 +1907,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         await banUserFirebase(userId, reason);
                         showNotification(`${username} ha sido baneado`, 'success');
                         panel.remove();
+                        
+                        const bannedRef = ref(database, `rooms/${currentRoom}/users/${userId}`);
+                        await set(bannedRef, null);
                     } catch (error) {
                         showNotification(error.message, 'error');
                     }
@@ -2001,7 +2019,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <img src="${user.avatar}" class="moderation-user-avatar" alt="${user.name}" />
                                 <span class="moderation-user-name">${index + 1}. ${user.name}</span>
                             </div>
-                            <button class="moderation-action-btn mute-action-btn" data-user-id="${user.isGuest ? user.userId : user.firebaseUid}" data-username="${user.name}">
+                            <button class="moderation-action-btn mute-action-btn" data-user-id="${user.firebaseUid || user.userId}" data-username="${user.name}" data-is-guest="${user.isGuest}">
                                 <img src="/images/mute.svg" alt="Mute" />
                                 Mutear
                             </button>
