@@ -251,6 +251,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 changeRoom(roomId, false).then(() => {
                     loadMessages();
                     loadUsers();
+                    startTypingListener();
                 });
                 
                 roomsPanelOverlay.classList.remove('active');
@@ -665,6 +666,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     let currentUsersListener = null;
+    let currentTypingListener = null;
     let previousUsersList = new Map();
     let roomEventsListener = null;
     let isInitialLoad = true;
@@ -1322,6 +1324,10 @@ document.addEventListener('DOMContentLoaded', function() {
             currentUsersListener();
             currentUsersListener = null;
         }
+        if (currentTypingListener) {
+            currentTypingListener();
+            currentTypingListener = null;
+        }
     }
     
     async function initializeApp() {
@@ -1708,33 +1714,39 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Escuchar usuarios escribiendo
-    listenToTyping((typingUsers) => {
-        const sidebarTypingIndicator = document.querySelector('.sidebar-typing-indicator');
-        
-        if (typingUsers.length > 0) {
-            let message;
-            if (typingUsers.length === 1) {
-                message = `${typingUsers[0]} está escribiendo...`;
-            } else if (typingUsers.length === 2) {
-                message = `${typingUsers[0]} y ${typingUsers[1]} están escribiendo...`;
-            } else {
-                message = `${typingUsers[0]}, ${typingUsers[1]} y ${typingUsers.length - 2} más están escribiendo...`;
-            }
-            typingIndicator.textContent = message;
-            typingIndicator.style.display = 'block';
-            
-            // Mostrar también en sidebar
-            if (sidebarTypingIndicator) {
-                sidebarTypingIndicator.textContent = message;
-                sidebarTypingIndicator.style.display = 'block';
-            }
-        } else {
-            typingIndicator.style.display = 'none';
-            if (sidebarTypingIndicator) {
-                sidebarTypingIndicator.style.display = 'none';
-            }
+    function startTypingListener() {
+        if (currentTypingListener) {
+            currentTypingListener();
         }
-    });
+        currentTypingListener = listenToTyping((typingUsers) => {
+            const sidebarTypingIndicator = document.querySelector('.sidebar-typing-indicator');
+            
+            if (typingUsers.length > 0) {
+                let message;
+                if (typingUsers.length === 1) {
+                    message = `${typingUsers[0]} está escribiendo...`;
+                } else if (typingUsers.length === 2) {
+                    message = `${typingUsers[0]} y ${typingUsers[1]} están escribiendo...`;
+                } else {
+                    message = `${typingUsers[0]}, ${typingUsers[1]} y ${typingUsers.length - 2} más están escribiendo...`;
+                }
+                typingIndicator.textContent = message;
+                typingIndicator.style.display = 'block';
+                
+                if (sidebarTypingIndicator) {
+                    sidebarTypingIndicator.textContent = message;
+                    sidebarTypingIndicator.style.display = 'block';
+                }
+            } else {
+                typingIndicator.style.display = 'none';
+                if (sidebarTypingIndicator) {
+                    sidebarTypingIndicator.style.display = 'none';
+                }
+            }
+        });
+    }
+    
+    startTypingListener();
 
     // Botón de imagen
     if (imageBtn && imageInput) {
