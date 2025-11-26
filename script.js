@@ -1895,22 +1895,21 @@ document.addEventListener('DOMContentLoaded', function() {
                             if (!guestNumericIds.has(user.firebaseUid || user.userId)) {
                                 guestNumericIds.set(user.firebaseUid || user.userId, currentGuestId++);
                             }
-                            userId = `#${guestNumericIds.get(user.firebaseUid || user.userId)}`;
+                            userId = '#' + guestNumericIds.get(user.firebaseUid || user.userId);
                         } else {
-                            userId = `#${index + 1}`;
+                            userId = '#' + (index + 1);
                         }
-                        return `
-                        <div class="moderation-user-item">
-                            <div class="moderation-user-info">
-                                <img src="${user.avatar}" class="moderation-user-avatar" alt="${user.name}" />
-                                <span class="moderation-user-name">${userId} ${user.name}${user.isGuest ? ' (invitado)' : ''}</span>
-                            </div>
-                            <button class="moderation-action-btn ban-action-btn" data-user-id="${user.firebaseUid || user.userId}" data-username="${user.name}" data-is-guest="${user.isGuest}">
-                                <img src="/images/ban.svg" alt="Ban" />
-                                Banear
-                            </button>
-                        </div>
-                        `;
+                        const guestLabel = user.isGuest ? ' (invitado)' : '';
+                        return '<div class="moderation-user-item">' +
+                            '<div class="moderation-user-info">' +
+                                '<img src="' + user.avatar + '" class="moderation-user-avatar" alt="' + user.name + '" />' +
+                                '<span class="moderation-user-name">' + userId + ' ' + user.name + guestLabel + '</span>' +
+                            '</div>' +
+                            '<button class="moderation-action-btn ban-action-btn" data-user-id="' + (user.firebaseUid || user.userId) + '" data-username="' + user.name + '" data-is-guest="' + user.isGuest + '">' +
+                                '<img src="/images/ban.svg" alt="Ban" />' +
+                                'Banear' +
+                            '</button>' +
+                        '</div>';
                     }).join('')}
                 </div>
             </div>
@@ -2060,22 +2059,21 @@ document.addEventListener('DOMContentLoaded', function() {
                             if (!guestNumericIds.has(user.firebaseUid || user.userId)) {
                                 guestNumericIds.set(user.firebaseUid || user.userId, currentGuestId++);
                             }
-                            userId = `#${guestNumericIds.get(user.firebaseUid || user.userId)}`;
+                            userId = '#' + guestNumericIds.get(user.firebaseUid || user.userId);
                         } else {
-                            userId = `#${index + 1}`;
+                            userId = '#' + (index + 1);
                         }
-                        return `
-                        <div class="moderation-user-item">
-                            <div class="moderation-user-info">
-                                <img src="${user.avatar}" class="moderation-user-avatar" alt="${user.name}" />
-                                <span class="moderation-user-name">${userId} ${user.name}${user.isGuest ? ' (invitado)' : ''}</span>
-                            </div>
-                            <button class="moderation-action-btn mute-action-btn" data-user-id="${user.firebaseUid || user.userId}" data-username="${user.name}" data-is-guest="${user.isGuest}">
-                                <img src="/images/mute.svg" alt="Mute" />
-                                Mutear
-                            </button>
-                        </div>
-                        `;
+                        const guestLabel = user.isGuest ? ' (invitado)' : '';
+                        return '<div class="moderation-user-item">' +
+                            '<div class="moderation-user-info">' +
+                                '<img src="' + user.avatar + '" class="moderation-user-avatar" alt="' + user.name + '" />' +
+                                '<span class="moderation-user-name">' + userId + ' ' + user.name + guestLabel + '</span>' +
+                            '</div>' +
+                            '<button class="moderation-action-btn mute-action-btn" data-user-id="' + (user.firebaseUid || user.userId) + '" data-username="' + user.name + '" data-is-guest="' + user.isGuest + '">' +
+                                '<img src="/images/mute.svg" alt="Mute" />' +
+                                'Mutear' +
+                            '</button>' +
+                        '</div>';
                     }).join('')}
                 </div>
             </div>
