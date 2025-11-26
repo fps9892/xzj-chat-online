@@ -573,8 +573,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const accessCheck = await checkPrivateRoomAccess(currentRoom);
         hasPrivateRoomAccess = accessCheck.isOwner || accessCheck.hasAccess;
         
+        // Si no es sala privada, habilitar controles
+        if (!accessCheck.isPrivate) {
+            enableChatControls();
+            listenToMessages((messages) => {
+                renderMessages(messages);
+                initializeMessages();
+            });
+            return;
+        }
+        
         if (hasPrivateRoomAccess) {
             // Usuario tiene acceso, cargar mensajes normalmente
+            enableChatControls();
             listenToMessages((messages) => {
                 renderMessages(messages);
                 initializeMessages();
@@ -588,14 +599,16 @@ document.addEventListener('DOMContentLoaded', function() {
             disableChatControls();
         } else {
             // Usuario no tiene acceso, solicitar acceso
-            try {
-                await requestPrivateRoomAccess(currentRoom);
+            const requested = await requestPrivateRoomAccess(currentRoom);
+            if (requested) {
                 const chatArea = document.querySelector('.chat-area');
                 chatArea.innerHTML = '<div class="room-loader"><div class="loader-spinner"></div><p>Solicitud pendiente de ingreso</p><small>Esperando aprobación del dueño</small></div>';
                 
                 // Deshabilitar controles
                 disableChatControls();
-            } catch (error) {
+            } else {
+                // No es sala privada o error, cargar normalmente
+                enableChatControls();
                 listenToMessages((messages) => {
                     renderMessages(messages);
                     initializeMessages();
@@ -1439,6 +1452,32 @@ document.addEventListener('DOMContentLoaded', function() {
             enableChatControls();
             loadMessages();
             showNotification('Has sido aceptado en la sala privada', 'success');
+        }
+    });
+    
+    // Escuchar cuando una sala es borrada
+    const { database } = await import('./firebase.js');
+    const { ref, onValue } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
+    
+    const roomDeletedRef = ref(database, `roomDeleted/${currentRoom}`);
+    onValue(roomDeletedRef, (snapshot) => {
+        if (snapshot.exists() && snapshot.val().deleted) {
+            // Sala fue borrada, redirigir a general
+            showNotification('La sala ha sido eliminada. Redirigiendo a Sala General...', 'warning');
+            setTimeout(() => {
+                const roomNameEl = document.querySelector('.current-room-name');
+                if (roomNameEl) roomNameEl.textContent = 'Sala General';
+                
+                cleanupListeners();
+                previousUsersList.clear();
+                isInitialLoad = true;
+                lastMessageCount = 0;
+                
+                changeRoom('general', false).then(() => {
+                    loadMessages();
+                    loadUsers();
+                });
+            }, 1500);
         }
     });
     

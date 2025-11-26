@@ -58,6 +58,14 @@ async function initializeRoomFromURL() {
                 const roomDoc = await getDoc(doc(db, 'rooms', urlRoom));
                 if (roomDoc.exists()) {
                     currentRoom = urlRoom;
+                    // Actualizar nombre de sala en el header
+                    const roomData = roomDoc.data();
+                    if (typeof document !== 'undefined') {
+                        const roomNameEl = document.querySelector('.current-room-name');
+                        if (roomNameEl) {
+                            roomNameEl.textContent = roomData.name || 'Sala General';
+                        }
+                    }
                 } else {
                     currentRoom = 'general';
                     updateURL('general');
@@ -817,10 +825,10 @@ export async function createPrivateRoom() {
 export async function checkPrivateRoomAccess(roomId) {
     try {
         const roomDoc = await getDoc(doc(db, 'rooms', roomId));
-        if (!roomDoc.exists()) return { hasAccess: false, isPending: false };
+        if (!roomDoc.exists()) return { hasAccess: true, isPending: false, isPrivate: false };
         
         const roomData = roomDoc.data();
-        if (!roomData.isPrivate) return { hasAccess: true, isPending: false };
+        if (!roomData.isPrivate) return { hasAccess: true, isPending: false, isPrivate: false };
         
         const userId = currentUser.firebaseUid || currentUser.userId;
         const acceptedUsers = roomData.acceptedUsers || [];
@@ -829,11 +837,12 @@ export async function checkPrivateRoomAccess(roomId) {
         return {
             hasAccess: acceptedUsers.includes(userId),
             isPending: pendingUsers.includes(userId),
-            isOwner: roomData.owner === userId
+            isOwner: roomData.owner === userId,
+            isPrivate: true
         };
     } catch (error) {
         console.error('Error checking private room access:', error);
-        return { hasAccess: false, isPending: false };
+        return { hasAccess: true, isPending: false, isPrivate: false };
     }
 }
 
@@ -844,9 +853,18 @@ export async function requestPrivateRoomAccess(roomId) {
         const roomRef = doc(db, 'rooms', roomId);
         const roomDoc = await getDoc(roomRef);
         
-        if (!roomDoc.exists()) throw new Error('Sala no encontrada');
+        if (!roomDoc.exists()) {
+            console.warn('Sala no encontrada, probablemente es sala pública');
+            return false;
+        }
         
         const roomData = roomDoc.data();
+        
+        // Si no es sala privada, no hacer nada
+        if (!roomData.isPrivate) {
+            return false;
+        }
+        
         const pendingUsers = roomData.pendingUsers || [];
         
         if (!pendingUsers.includes(userId)) {
@@ -858,7 +876,7 @@ export async function requestPrivateRoomAccess(roomId) {
         return true;
     } catch (error) {
         console.error('Error requesting access:', error);
-        throw error;
+        return false;
     }
 }
 
@@ -1075,12 +1093,25 @@ export async function deleteRoom(roomName) {
         // Esperar un momento para que los usuarios vean el mensaje
         await new Promise(resolve => setTimeout(resolve, 1000));
         
+        // Notificar a todos los usuarios que la sala fue borrada
+        const roomDeletedRef = ref(database, `roomDeleted/${roomId}`);
+        await set(roomDeletedRef, {
+            deleted: true,
+            timestamp: serverTimestamp()
+        });
+        
+        // Esperar para que la notificación se procese
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         // Borrar de Firestore
         await deleteDoc(doc(db, 'rooms', roomId));
         
         // Borrar de Realtime Database
         const roomRef = ref(database, `rooms/${roomId}`);
         await remove(roomRef);
+        
+        // Limpiar notificación
+        await remove(roomDeletedRef);
         
         return true;
     } catch (error) {
