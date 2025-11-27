@@ -175,8 +175,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (room.id === currentHash) roomElement.classList.add('active');
                         roomElement.setAttribute('data-room', room.id);
                         roomElement.innerHTML = `
-                            <span class="room-user-count" data-room-id="${room.id}">0</span>
                             <span class="room-name">${room.name}</span>
+                            <span class="room-user-count" data-room-id="${room.id}">0</span>
                         `;
                         publicRoomsList.appendChild(roomElement);
                         setupRoomUserCountListener(room.id);
@@ -217,7 +217,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                         
                         roomElement.innerHTML = `
-                            <span class="room-user-count" data-room-id="${room.id}">0</span>
                             <div class="room-info-container">
                                 <div class="room-item-name">
                                     <span class="room-item-icon">🔒</span>
@@ -225,6 +224,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </div>
                                 <small class="room-creator">Por: ${creatorName}</small>
                             </div>
+                            <span class="room-user-count" data-room-id="${room.id}">0</span>
                         `;
                         privateRoomsList.appendChild(roomElement);
                         setupRoomUserCountListener(room.id);
