@@ -20,7 +20,7 @@ export function setupMessageOptions(messageEl, message, currentUser, sendMessage
         // Opción copiar
         const copyOption = document.createElement('div');
         copyOption.className = 'message-option-item';
-        copyOption.innerHTML = '📋 Copiar';
+        copyOption.innerHTML = 'Copiar';
         copyOption.addEventListener('click', () => {
             navigator.clipboard.writeText(message.text || '').then(() => {
                 showNotification('Mensaje copiado', 'success');
@@ -32,7 +32,7 @@ export function setupMessageOptions(messageEl, message, currentUser, sendMessage
         // Opción responder
         const replyOption = document.createElement('div');
         replyOption.className = 'message-option-item';
-        replyOption.innerHTML = '↩️ Responder';
+        replyOption.innerHTML = 'Responder';
         replyOption.addEventListener('click', () => {
             setReplyTo(message);
             menu.remove();
@@ -43,7 +43,7 @@ export function setupMessageOptions(messageEl, message, currentUser, sendMessage
         if (isOwn) {
             const deleteOption = document.createElement('div');
             deleteOption.className = 'message-option-item delete';
-            deleteOption.innerHTML = '🗑️ Eliminar';
+            deleteOption.innerHTML = 'Eliminar';
             deleteOption.addEventListener('click', async () => {
                 if (confirm('¿Eliminar este mensaje?')) {
                     try {
