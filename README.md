@@ -219,10 +219,6 @@ service cloud.firestore {
     match /roomPresence/{roomId} {
       allow read: if true;
       allow write: if true;
-      "users": {
-        allow read: if true;
-        allow write: if true;
-      }
     }
 
     match /{document=**} {

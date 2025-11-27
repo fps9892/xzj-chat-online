@@ -673,6 +673,28 @@ body {
   overflow-y: auto;
 }
 
+/* Responsive user-panel-content */
+@media (max-width: 767px) {
+  .user-panel-content {
+    padding: 20px 15px;
+    max-height: 60vh;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .user-panel-content {
+    padding: 22px 20px;
+    max-height: 70vh;
+  }
+}
+
+@media (min-width: 1024px) {
+  .user-panel-content {
+    padding: 25px;
+    max-height: 480px;
+  }
+}
+
 .config-section {
   display: block;
 }

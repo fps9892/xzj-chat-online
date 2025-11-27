@@ -768,6 +768,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     e.target.classList.add('active');
                 }
             }
+            
+            // Click en avatar de mensaje
+            if (e.target.classList.contains('clickable-avatar')) {
+                const userId = e.target.dataset.userId;
+                if (userId) {
+                    showUserProfile(userId);
+                }
+            }
         });
         chatArea.dataset.speedListenerAdded = 'true';
     }
@@ -899,9 +907,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <span class="message-time">${time}</span>
                                 <span class="message-username clickable-username" data-user-id="${message.userId}" style="color: ${message.textColor || currentUser.textColor || '#ffffff'}">${displayName}</span>
                                 ${roleTag}
-                                <img src="${message.userAvatar}" alt="User" class="message-avatar">
+                                <img src="${message.userAvatar}" alt="User" class="message-avatar clickable-avatar" data-user-id="${message.userId}" style="cursor: pointer;">
                             ` : `
-                                <img src="${message.userAvatar}" alt="User" class="message-avatar">
+                                <img src="${message.userAvatar}" alt="User" class="message-avatar clickable-avatar" data-user-id="${message.userId}" style="cursor: pointer;">
                                 <span class="message-username clickable-username" data-user-id="${message.userId}" style="color: ${message.textColor || '#ffffff'}">${displayName}</span>
                                 ${roleTag}
                                 <span class="message-time">${time}</span>
@@ -921,9 +929,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <span class="message-time">${time}</span>
                                 <span class="message-username clickable-username" data-user-id="${message.userId}" style="color: ${message.textColor || currentUser.textColor || '#ffffff'}">${displayName}</span>
                                 ${roleTag}
-                                <img src="${message.userAvatar}" alt="User" class="message-avatar">
+                                <img src="${message.userAvatar}" alt="User" class="message-avatar clickable-avatar" data-user-id="${message.userId}" style="cursor: pointer;">
                             ` : `
-                                <img src="${message.userAvatar}" alt="User" class="message-avatar">
+                                <img src="${message.userAvatar}" alt="User" class="message-avatar clickable-avatar" data-user-id="${message.userId}" style="cursor: pointer;">
                                 <span class="message-username clickable-username" data-user-id="${message.userId}" style="color: ${message.textColor || '#ffffff'}">${displayName}</span>
                                 ${roleTag}
                                 <span class="message-time">${time}</span>
