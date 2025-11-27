@@ -1523,7 +1523,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const { doc, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
             const mutedDocRef = doc(db, 'muted', userIdToCheck);
             
-            onSnapshot(mutedDocRef, (docSnap) => {
+            onSnapshot(mutedDocRef, async (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     const mutedUntil = data.mutedUntil;
@@ -2629,25 +2629,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    function updateActiveUserCount() {
-        const publicRooms = document.querySelector("#public-rooms");
-        const privateRooms = document.querySelector("#private-rooms");
+    function updateRoomUserCounts() {
+        const rooms = [
+            { id: "general", type: "public" },
+            { id: "privada1", type: "private" }
+            // Agregar más salas según sea necesario
+        ];
 
-        // Simulación de conteo de usuarios activos por sala
-        const activeUsers = {
-            public: Math.floor(Math.random() * 50), // Reemplazar con datos reales
-            private: Math.floor(Math.random() * 20) // Reemplazar con datos reales
-        };
-
-        if (publicRooms) {
-            publicRooms.querySelector(".active-user-count").textContent = `(${activeUsers.public} activos)`;
-        }
-
-        if (privateRooms) {
-            privateRooms.querySelector(".active-user-count").textContent = `(${activeUsers.private} activos)`;
-        }
+        rooms.forEach(room => {
+            const userCountElement = document.querySelector(`.room-user-count[data-room-id="${room.id}"]`);
+            if (userCountElement) {
+                // Simulación de conteo de usuarios activos (reemplazar con datos reales)
+                const activeUsers = Math.floor(Math.random() * 50);
+                userCountElement.textContent = `(${activeUsers})`;
+            }
+        });
     }
 
-    // Llamar a la función periódicamente para actualizar el contador
-    setInterval(updateActiveUserCount, 5000);
+    // Llamar a la función periódicamente para mantener los datos actualizados
+    setInterval(updateRoomUserCounts, 5000);
 });

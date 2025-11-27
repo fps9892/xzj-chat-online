@@ -258,12 +258,6 @@ body {
   font-family: "Orbitron", monospace;
 }
 
-.active-user-count {
-  font-size: 0.9em;
-  color: #4caf50;
-  margin-left: 5px;
-}
-
 .user-count-loader {
   display: inline-block;
   width: 12px;

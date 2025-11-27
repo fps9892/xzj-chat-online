@@ -310,21 +310,11 @@
           <button class="rooms-tab" data-tab="private">Privadas</button>
         </div>
         <div class="rooms-panel-content">
-          <div id="menu">
-            <div id="public-rooms">
-              <h3>
-                Salas Públicas
-                <span class="active-user-count">(0 activos)</span>
-              </h3>
-              <!-- Salas públicas se cargarán aquí -->
-            </div>
-            <div id="private-rooms">
-              <h3>
-                Salas Privadas
-                <span class="active-user-count">(0 activos)</span>
-              </h3>
-              <!-- Salas privadas se cargarán aquí -->
-            </div>
+          <div class="rooms-list active" data-section="public">
+            <!-- Salas públicas se cargarán aquí -->
+          </div>
+          <div class="rooms-list" data-section="private">
+            <!-- Salas privadas se cargarán aquí -->
           </div>
         </div>
       </div>
