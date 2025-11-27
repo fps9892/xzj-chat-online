@@ -95,6 +95,13 @@
 - **Eliminar Fondo**: Volver al fondo negro por defecto
 - **Persistencia**: Fondo guardado en localStorage entre sesiones
 
+### Límites de Imágenes
+
+- **Fotos de Perfil**: Máximo 3MB, comprimidas automáticamente a 800px
+- **Imágenes en Chat**: Máximo 5MB, comprimidas automáticamente a 800px
+- **Compresión**: Calidad JPEG 70% para optimizar almacenamiento en Firestore
+- **Límite Firestore**: 1MB por campo (las imágenes se comprimen automáticamente)
+
 ### Cambio de Contraseña Mejorado
 
 - **Reautenticación**: Solicita contraseña actual por seguridad

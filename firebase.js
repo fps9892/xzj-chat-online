@@ -521,9 +521,32 @@ export async function sendImage(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => {
-            sendMessage('', 'image', reader.result)
-                .then(resolve)
-                .catch(reject);
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                const maxSize = 800;
+                
+                if (width > height && width > maxSize) {
+                    height = (height * maxSize) / width;
+                    width = maxSize;
+                } else if (height > maxSize) {
+                    width = (width * maxSize) / height;
+                    height = maxSize;
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                const compressedImage = canvas.toDataURL('image/jpeg', 0.7);
+                sendMessage('', 'image', compressedImage)
+                    .then(resolve)
+                    .catch(reject);
+            };
+            img.src = reader.result;
         };
         reader.onerror = () => reject(new Error('Error al leer el archivo'));
         reader.readAsDataURL(file);

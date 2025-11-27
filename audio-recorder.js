@@ -62,8 +62,8 @@ export class AudioRecorder {
                 barHeight = (this.dataArray[i] / 255) * HEIGHT;
 
                 const gradient = ctx.createLinearGradient(0, HEIGHT - barHeight, 0, HEIGHT);
-                gradient.addColorStop(0, '#00ff00');
-                gradient.addColorStop(1, '#00ff0050');
+                gradient.addColorStop(0, '#d4a59a');
+                gradient.addColorStop(1, '#c97a6f50');
 
                 ctx.fillStyle = gradient;
                 ctx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight);
