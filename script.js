@@ -333,11 +333,19 @@ document.addEventListener('DOMContentLoaded', function() {
             panelTabs.forEach(t => t.classList.remove('active'));
             this.classList.add('active');
             
+            const commandsSection = document.querySelector('.commands-section');
+            
             if (this.dataset.tab === 'config') {
                 configSection.style.display = 'block';
+                if (commandsSection) commandsSection.style.display = 'none';
+                rulesSection.style.display = 'none';
+            } else if (this.dataset.tab === 'commands') {
+                configSection.style.display = 'none';
+                if (commandsSection) commandsSection.style.display = 'block';
                 rulesSection.style.display = 'none';
             } else {
                 configSection.style.display = 'none';
+                if (commandsSection) commandsSection.style.display = 'none';
                 rulesSection.style.display = 'block';
             }
         });

@@ -665,6 +665,10 @@ body {
   display: block;
 }
 
+.commands-section {
+  display: none;
+}
+
 .rules-section {
   display: none;
 }
@@ -710,6 +714,68 @@ body {
   font-size: 14px;
   line-height: 1.6;
   color: #ccc;
+}
+
+.commands-content {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #ccc;
+}
+
+.commands-content h3 {
+  color: #00ff00;
+  font-family: "Orbitron", monospace;
+  font-size: 16px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.command-category {
+  margin-bottom: 25px;
+  padding: 15px;
+  background: rgba(0, 255, 0, 0.05);
+  border: 1px solid rgba(0, 255, 0, 0.2);
+  border-radius: 8px;
+}
+
+.command-category h4 {
+  color: #00ff00;
+  font-family: "Orbitron", monospace;
+  font-size: 14px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+}
+
+.command-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  margin-bottom: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  border-left: 3px solid #00ff00;
+}
+
+.command-name {
+  color: #00ff00;
+  font-family: "Orbitron", monospace;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.command-desc {
+  color: #aaa;
+  font-size: 12px;
+  font-family: "Inter", sans-serif;
+}
+
+.command-info {
+  color: #888;
+  font-size: 12px;
+  margin: 4px 0;
+  padding-left: 10px;
 }
 
 .rooms-dropdown::-webkit-scrollbar,
