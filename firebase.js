@@ -1919,6 +1919,7 @@ export async function getRooms() {
                     id: doc.id,
                     name: roomData.name,
                     createdBy: roomData.createdBy,
+                    createdByName: roomData.createdByName || roomData.createdBy || 'Sistema',
                     createdAt: roomData.createdAt,
                     isPrivate: roomData.isPrivate || false
                 });

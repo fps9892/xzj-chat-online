@@ -174,8 +174,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         const currentHash = window.location.hash.substring(1);
                         if (room.id === currentHash) roomElement.classList.add('active');
                         roomElement.setAttribute('data-room', room.id);
+                        const creatorName = room.createdByName || 'Sistema';
                         roomElement.innerHTML = `
-                            <span class="room-name">${room.name}</span>
+                            <div class="room-info-container">
+                                <span class="room-name">${room.name}</span>
+                                <small class="room-creator">Por: ${creatorName}</small>
+                            </div>
                             <span class="room-user-count" data-room-id="${room.id}">0</span>
                         `;
                         publicRoomsList.appendChild(roomElement);
@@ -193,10 +197,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         const currentHash = window.location.hash.substring(1);
                         if (room.id === currentHash) roomElement.classList.add('active');
                         roomElement.setAttribute('data-room', room.id);
+                        const creatorName = room.createdByName || 'Usuario';
                         roomElement.innerHTML = `
-                            <div class="room-item-name">
-                                <span class="room-item-icon">🔒</span>
-                                <span>${room.name}</span>
+                            <div class="room-info-container">
+                                <div class="room-item-name">
+                                    <span class="room-item-icon">🔒</span>
+                                    <span>${room.name}</span>
+                                </div>
+                                <small class="room-creator">Por: ${creatorName}</small>
                             </div>
                             <span class="room-user-count" data-room-id="${room.id}">0</span>
                         `;

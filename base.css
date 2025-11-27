@@ -2317,8 +2317,23 @@ body {
   gap: 10px;
 }
 
-.room-item-panel .room-name {
+.room-info-container {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.room-item-panel .room-name {
+  font-size: 13px;
+  color: #fff;
+}
+
+.room-creator {
+  font-size: 10px;
+  color: #888;
+  font-family: "Inter", sans-serif;
+  font-weight: normal;
 }
 
 .room-item-panel .room-user-count {
@@ -2331,6 +2346,7 @@ body {
   min-width: 30px;
   text-align: center;
   border: 1px solid rgba(0, 255, 0, 0.4);
+  flex-shrink: 0;
 }
 
 .room-item-panel:hover {
