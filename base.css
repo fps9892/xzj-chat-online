@@ -1296,7 +1296,7 @@ body {
 }
 
 .message.received .message-content {
-  background: #6b4f4f !important;
+  background: #6b4f4f00 !important;
   background: #5c3838;
   color: #fff;
   border-bottom-left-radius: 0px;
@@ -1567,13 +1567,20 @@ body {
 }
 
 .profile-avatar::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   height: 180px;
-  background: linear-gradient(to top, #1a0f0f 0%, rgba(26, 15, 15, 0.98) 25%, rgba(26, 15, 15, 0.85) 50%, rgba(26, 15, 15, 0.4) 75%, transparent 100%);
+  background: linear-gradient(
+    to top,
+    #1a0f0f 0%,
+    rgba(26, 15, 15, 0.98) 25%,
+    rgba(26, 15, 15, 0.85) 50%,
+    rgba(26, 15, 15, 0.4) 75%,
+    transparent 100%
+  );
   pointer-events: none;
   z-index: 1;
 }
@@ -1633,8 +1640,6 @@ body {
   position: relative;
   z-index: 1;
 }
-
-
 
 .profile-sections {
   padding: 20px;
@@ -1770,8 +1775,8 @@ body {
 }
 
 .profile-info-icon {
-  width: 20px;
-  height: 20px;
+  width: 34px;
+  height: 34px;
   filter: invert(1);
   margin-bottom: 5px;
 }
@@ -1970,8 +1975,6 @@ body {
   color: #d4a59a;
 }
 
-
-
 .profile-status-dot {
   width: 8px;
   height: 8px;
@@ -2062,15 +2065,15 @@ body {
     width: 95%;
     max-height: 90vh;
   }
-  
+
   .profile-avatar {
     height: 220px;
   }
-  
+
   .profile-username {
     font-size: 20px;
   }
-  
+
   .profile-sections {
     max-height: calc(90vh - 380px);
   }
@@ -2152,8 +2155,6 @@ body {
   height: 64px;
   border-radius: 8px;
 }
-
-
 
 .clickable-username {
   cursor: pointer;
