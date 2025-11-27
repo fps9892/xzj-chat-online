@@ -2311,7 +2311,6 @@ body {
   font-size: 13px;
   color: #fff;
   display: flex;
-  justify-content: space-between;
   align-items: center;
   text-align: left;
   gap: 10px;
@@ -2327,6 +2326,7 @@ body {
 .room-item-panel .room-name {
   font-size: 13px;
   color: #fff;
+  flex: 1;
 }
 
 .room-creator {
@@ -2341,9 +2341,10 @@ body {
   font-size: 13px;
   font-weight: bold;
   min-width: 35px;
-  text-align: center;
+  text-align: left;
   flex-shrink: 0;
   font-family: "Orbitron", monospace;
+  margin-right: 5px;
 }
 
 .room-item-panel .room-user-count::before {
