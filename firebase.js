@@ -1600,6 +1600,9 @@ export async function processAdminCommand(message) {
                 const roomDoc = await getDoc(doc(db, 'rooms', privateRoomId));
                 const privateRoomName = roomDoc.exists() ? roomDoc.data().name : privateRoomId;
                 
+                // Actualizar hash de URL
+                window.location.hash = privateRoomId;
+                
                 // Actualizar UI y cambiar sala
                 if (typeof document !== 'undefined') {
                     const roomNameEl = document.querySelector('.current-room-name');
