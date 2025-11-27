@@ -2,7 +2,10 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
     <title>Sala General - FYZAR CHAT</title>
     <link rel="icon" type="image/svg+xml" href="/images/logo.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -25,18 +28,19 @@
   </head>
   <body>
     <!-- Pantalla de Usuario Baneado -->
-    <div class="banned-overlay" id="bannedOverlay" style="display: none;">
+    <div class="banned-overlay" id="bannedOverlay" style="display: none">
       <div class="banned-content">
         <h1>⛔ BANEADO</h1>
         <p>Tu cuenta ha sido suspendida</p>
         <div class="ban-reason">
-          <strong>Razón:</strong> <span id="ban-reason-text">No especificada</span>
+          <strong>Razón:</strong>
+          <span id="ban-reason-text">No especificada</span>
         </div>
         <p id="ban-duration"></p>
         <p>Si crees que esto es un error, contacta a un administrador</p>
       </div>
     </div>
-    
+
     <!-- Pantalla de Carga Profesional -->
     <div class="loading-screen" id="loadingScreen">
       <div class="loading-content">
@@ -49,13 +53,21 @@
     </div>
     <header class="header">
       <div class="user-info">
-        <img src="/images/profileuser.jpg" alt="Profile" class="profile-image" />
+        <img
+          src="/images/profileuser.jpg"
+          alt="Profile"
+          class="profile-image"
+        />
         <span class="username desktop-only">username</span>
       </div>
 
       <div class="room-selector">
         <button class="rooms-btn" id="roomsBtn">
-          <img src="/images/rooms-public-icon.svg" alt="Rooms" class="rooms-icon" />
+          <img
+            src="/images/rooms-public-icon.svg"
+            alt="Rooms"
+            class="rooms-icon"
+          />
           <span class="desktop-only">Salas</span>
         </button>
       </div>
@@ -102,7 +114,7 @@
             <div class="skeleton skeleton-user-name"></div>
           </div>
         </div>
-        <div class="sidebar-typing-indicator" style="display: none;"></div>
+        <div class="sidebar-typing-indicator" style="display: none"></div>
       </aside>
     </div>
 
@@ -167,14 +179,22 @@
         </div>
         <div class="emote-content">
           <div class="emote-section active" data-section="emotes">
-            <div class="favorites-section" id="favoriteEmotes" style="display: none;">
+            <div
+              class="favorites-section"
+              id="favoriteEmotes"
+              style="display: none"
+            >
               <div class="favorites-title">⭐ Favoritos</div>
               <div class="favorites-grid" id="favoriteEmotesGrid"></div>
             </div>
             <div class="emote-grid" id="emotesGrid"></div>
           </div>
           <div class="emote-section" data-section="gifs">
-            <div class="favorites-section" id="favoriteGifs" style="display: none;">
+            <div
+              class="favorites-section"
+              id="favoriteGifs"
+              style="display: none"
+            >
               <div class="favorites-title">⭐ Favoritos</div>
               <div class="favorites-grid" id="favoriteGifsGrid"></div>
             </div>
@@ -195,7 +215,12 @@
           <img src="/images/close.svg" alt="Close" class="close-icon" />
         </button>
       </div>
-      <canvas class="audio-visualizer" id="audioVisualizer" width="300" height="80"></canvas>
+      <canvas
+        class="audio-visualizer"
+        id="audioVisualizer"
+        width="300"
+        height="80"
+      ></canvas>
       <div class="audio-timer" id="audioTimer">00:00</div>
       <div class="audio-controls">
         <button class="audio-btn play" id="playBtn" title="Grabar">
@@ -207,7 +232,11 @@
         <button class="audio-btn delete" id="deleteAudioBtn" title="Eliminar">
           <img src="/images/trash.svg" alt="Delete" class="audio-icon" />
         </button>
-        <button class="audio-btn upload" id="uploadAudioBtn" title="Subir audio">
+        <button
+          class="audio-btn upload"
+          id="uploadAudioBtn"
+          title="Subir audio"
+        >
           <img src="/images/folder.svg" alt="Upload" class="audio-icon" />
         </button>
         <button class="audio-btn send" id="sendAudioBtn" title="Enviar">
@@ -236,10 +265,25 @@
           </div>
           <div class="polls-create" data-section="create">
             <div class="create-poll-form">
-              <input type="text" class="poll-question" placeholder="Pregunta de la encuesta" maxlength="100" />
+              <input
+                type="text"
+                class="poll-question"
+                placeholder="Pregunta de la encuesta"
+                maxlength="100"
+              />
               <div class="poll-options">
-                <input type="text" class="poll-option" placeholder="Opción 1" maxlength="50" />
-                <input type="text" class="poll-option" placeholder="Opción 2" maxlength="50" />
+                <input
+                  type="text"
+                  class="poll-option"
+                  placeholder="Opción 1"
+                  maxlength="50"
+                />
+                <input
+                  type="text"
+                  class="poll-option"
+                  placeholder="Opción 2"
+                  maxlength="50"
+                />
               </div>
               <button class="add-option-btn">+ Añadir opción</button>
               <button class="create-poll-btn">Crear Encuesta</button>
@@ -266,11 +310,21 @@
           <button class="rooms-tab" data-tab="private">Privadas</button>
         </div>
         <div class="rooms-panel-content">
-          <div class="rooms-list active" data-section="public">
-            <!-- Salas públicas se cargarán aquí -->
-          </div>
-          <div class="rooms-list" data-section="private">
-            <!-- Salas privadas se cargarán aquí -->
+          <div id="menu">
+            <div id="public-rooms">
+              <h3>
+                Salas Públicas
+                <span class="active-user-count">(0 activos)</span>
+              </h3>
+              <!-- Salas públicas se cargarán aquí -->
+            </div>
+            <div id="private-rooms">
+              <h3>
+                Salas Privadas
+                <span class="active-user-count">(0 activos)</span>
+              </h3>
+              <!-- Salas privadas se cargarán aquí -->
+            </div>
           </div>
         </div>
       </div>
@@ -405,7 +459,11 @@
                 </div>
               </div>
             </div>
-            <div class="config-item admin-only" data-config="grant-admin" style="display: none;">
+            <div
+              class="config-item admin-only"
+              data-config="grant-admin"
+              style="display: none"
+            >
               <span>Otorgar rol de administrador</span>
               <button>Asignar</button>
               <div class="config-input">

@@ -1523,7 +1523,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const { doc, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
             const mutedDocRef = doc(db, 'muted', userIdToCheck);
             
-            onSnapshot(mutedDocRef, async (docSnap) => {
+            onSnapshot(mutedDocRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     const mutedUntil = data.mutedUntil;
@@ -2628,4 +2628,26 @@ document.addEventListener('DOMContentLoaded', function() {
             sendMessageHandler();
         }
     });
+
+    function updateActiveUserCount() {
+        const publicRooms = document.querySelector("#public-rooms");
+        const privateRooms = document.querySelector("#private-rooms");
+
+        // Simulación de conteo de usuarios activos por sala
+        const activeUsers = {
+            public: Math.floor(Math.random() * 50), // Reemplazar con datos reales
+            private: Math.floor(Math.random() * 20) // Reemplazar con datos reales
+        };
+
+        if (publicRooms) {
+            publicRooms.querySelector(".active-user-count").textContent = `(${activeUsers.public} activos)`;
+        }
+
+        if (privateRooms) {
+            privateRooms.querySelector(".active-user-count").textContent = `(${activeUsers.private} activos)`;
+        }
+    }
+
+    // Llamar a la función periódicamente para actualizar el contador
+    setInterval(updateActiveUserCount, 5000);
 });
