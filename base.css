@@ -1250,7 +1250,7 @@ body {
 .message-username {
   font-weight: bold;
   color: #fff;
-  font-family: "Inter", sans-serif;
+  font-family: "Orbitron", monospace;
   cursor: pointer;
   transition: opacity 0.2s;
 }
