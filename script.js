@@ -1172,6 +1172,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="profile-role-tag">
                             <span class="profile-role-badge ${user.role === 'Administrador' ? 'admin' : user.role === 'Moderador' ? 'mod' : 'user'}">${user.role || 'Usuario'}</span>
                         </div>
+                        ${user.description ? `<div class="profile-user-description">${user.description}</div>` : ''}
                         
                         <div class="profile-tabs">
                             <button class="profile-tab active" data-section="info">Info</button>
@@ -1187,7 +1188,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                         Activo
                                     </span>
                                 </div>` : ''}
-                                ${user.description ? `<div class="profile-country-item"><div class="profile-field-label">Descripción</div><div class="profile-description">${user.description}</div></div>` : ''}
                                 <div class="profile-info-item">
                                     <span class="profile-info-label">Usuario desde</span>
                                     <span class="profile-info-value">${user.createdAt ? getTimeAgo(user.createdAt) : 'Reciente'}</span>
