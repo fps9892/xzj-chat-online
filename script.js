@@ -1049,9 +1049,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     let userNumericIds = new Map();
-    let guestNumericIds = new Map();
     let currentNumericId = 1;
-    let currentGuestId = 1000;
     
     function createUserElement(user) {
         let displayName = user.name;
@@ -1067,7 +1065,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Asignar ID numérico para admins/mods
         if (currentUser.isAdmin || currentUser.isModerator) {
             if (user.isGuest) {
-                // ID de 3 dígitos para invitados
+                // ID de 4 dígitos para invitados
                 if (!guestNumericIds.has(user.firebaseUid || user.id)) {
                     guestNumericIds.set(user.firebaseUid || user.id, currentGuestId++);
                 }
@@ -1482,13 +1480,19 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Escuchar cambios en estado de baneo/mute
     const userIdToCheck = currentUser.firebaseUid || currentUser.userId;
+    let muteTimerInterval = null;
+    
     if (userIdToCheck) {
         listenToUserStatus((status) => {
             if (status.type === 'banned') {
                 window.location.replace('banned.html');
             } else if (status.type === 'muted') {
+                const remaining = status.mutedUntil - Date.now();
+                const minutes = Math.floor(remaining / 60000);
+                const seconds = Math.ceil((remaining % 60000) / 1000);
+                
                 messageInput.disabled = true;
-                messageInput.placeholder = 'Estás muteado';
+                messageInput.placeholder = 'Muteado - ' + minutes + 'm ' + seconds + 's restantes';
                 imageBtn.style.pointerEvents = 'none';
                 imageBtn.style.opacity = '0.5';
                 emoteBtn.style.pointerEvents = 'none';
@@ -1502,7 +1506,37 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 sendIcon.style.pointerEvents = 'none';
                 sendIcon.style.opacity = '0.5';
+                
+                if (muteTimerInterval) clearInterval(muteTimerInterval);
+                
+                muteTimerInterval = setInterval(() => {
+                    const timeLeft = status.mutedUntil - Date.now();
+                    if (timeLeft <= 0) {
+                        clearInterval(muteTimerInterval);
+                        messageInput.disabled = false;
+                        messageInput.placeholder = 'Escribe tu mensaje...';
+                        imageBtn.style.pointerEvents = 'auto';
+                        imageBtn.style.opacity = '1';
+                        emoteBtn.style.pointerEvents = 'auto';
+                        emoteBtn.style.opacity = '1';
+                        micBtn.style.pointerEvents = 'auto';
+                        micBtn.style.opacity = '1';
+                        const pollsBtn = document.querySelector('.polls-btn');
+                        if (pollsBtn) {
+                            pollsBtn.style.pointerEvents = 'auto';
+                            pollsBtn.style.opacity = '1';
+                        }
+                        sendIcon.style.pointerEvents = 'auto';
+                        sendIcon.style.opacity = '1';
+                        showNotification('Has sido desmuteado automáticamente', 'success');
+                    } else {
+                        const mins = Math.floor(timeLeft / 60000);
+                        const secs = Math.ceil((timeLeft % 60000) / 1000);
+                        messageInput.placeholder = 'Muteado - ' + mins + 'm ' + secs + 's restantes';
+                    }
+                }, 1000);
             } else if (status.type === 'unmuted') {
+                if (muteTimerInterval) clearInterval(muteTimerInterval);
                 messageInput.disabled = false;
                 messageInput.placeholder = 'Escribe tu mensaje...';
                 imageBtn.style.pointerEvents = 'auto';
@@ -2208,22 +2242,22 @@ document.addEventListener('DOMContentLoaded', function() {
             // Detectar comandos de moderación (case insensitive)
             const lowerMessage = message.toLowerCase();
             if (lowerMessage === '!ban' && (currentUser.isAdmin || currentUser.isModerator)) {
-                showBanPanel();
+                showBanPanel(database, currentRoom, currentUser, banUserFirebase, showNotification, db);
                 messageInput.value = '';
                 return;
             }
             if (lowerMessage === '!unban' && (currentUser.isAdmin || currentUser.isModerator)) {
-                showUnbanPanel();
+                showUnbanPanel(database, currentRoom, showNotification, db);
                 messageInput.value = '';
                 return;
             }
             if (lowerMessage === '!mute' && (currentUser.isAdmin || currentUser.isModerator)) {
-                showMutePanel();
+                showMutePanel(database, currentRoom, currentUser, muteUser, showNotification);
                 messageInput.value = '';
                 return;
             }
             if (lowerMessage === '!unmute' && (currentUser.isAdmin || currentUser.isModerator)) {
-                showUnmutePanel();
+                showUnmutePanel(database, currentRoom, showNotification, db);
                 messageInput.value = '';
                 return;
             }

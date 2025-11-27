@@ -15,27 +15,33 @@ export async function showBanPanel(database, currentRoom, currentUser, banUserFi
     const existingPanel = document.querySelector('.moderation-panel');
     if (existingPanel) existingPanel.remove();
     
-    const usersRef = ref(database, `rooms/${currentRoom}/users`);
-    const snapshot = await new Promise(resolve => {
-        onValue(usersRef, resolve, { onlyOnce: true });
+    const roomsRef = ref(database, 'rooms');
+    const roomsSnapshot = await new Promise(resolve => {
+        onValue(roomsRef, resolve, { onlyOnce: true });
     });
     
     const users = [];
-    if (snapshot.exists()) {
-        snapshot.forEach(child => {
-            const userData = child.val();
-            const userKey = child.key;
-            if (userData.status === 'online' && userKey !== currentUser.userId) {
-                if (userData.role !== 'Administrador') {
-                    users.push({
-                        userId: userKey,
-                        firebaseUid: userData.firebaseUid || userKey,
-                        name: userData.name || 'Usuario',
-                        avatar: userData.avatar || 'images/profileuser.jpg',
-                        isGuest: userData.isGuest || false
-                    });
+    const seenUsers = new Set();
+    
+    if (roomsSnapshot.exists()) {
+        roomsSnapshot.forEach(roomChild => {
+            const usersData = roomChild.child('users');
+            usersData.forEach(child => {
+                const userData = child.val();
+                const userKey = child.key;
+                if (userData.status === 'online' && userKey !== currentUser.userId && !seenUsers.has(userKey)) {
+                    if (userData.role !== 'Administrador') {
+                        seenUsers.add(userKey);
+                        users.push({
+                            userId: userKey,
+                            firebaseUid: userData.firebaseUid || userKey,
+                            name: userData.name || 'Usuario',
+                            avatar: userData.avatar || 'images/profileuser.jpg',
+                            isGuest: userData.isGuest || false
+                        });
+                    }
                 }
-            }
+            });
         });
     }
     
@@ -178,27 +184,33 @@ export async function showMutePanel(database, currentRoom, currentUser, muteUser
     const existingPanel = document.querySelector('.moderation-panel');
     if (existingPanel) existingPanel.remove();
     
-    const usersRef = ref(database, `rooms/${currentRoom}/users`);
-    const snapshot = await new Promise(resolve => {
-        onValue(usersRef, resolve, { onlyOnce: true });
+    const roomsRef = ref(database, 'rooms');
+    const roomsSnapshot = await new Promise(resolve => {
+        onValue(roomsRef, resolve, { onlyOnce: true });
     });
     
     const users = [];
-    if (snapshot.exists()) {
-        snapshot.forEach(child => {
-            const userData = child.val();
-            const userKey = child.key;
-            if (userData.status === 'online' && userKey !== currentUser.userId) {
-                if (userData.role !== 'Administrador') {
-                    users.push({
-                        userId: userKey,
-                        firebaseUid: userData.firebaseUid || userKey,
-                        name: userData.name || 'Usuario',
-                        avatar: userData.avatar || 'images/profileuser.jpg',
-                        isGuest: userData.isGuest || false
-                    });
+    const seenUsers = new Set();
+    
+    if (roomsSnapshot.exists()) {
+        roomsSnapshot.forEach(roomChild => {
+            const usersData = roomChild.child('users');
+            usersData.forEach(child => {
+                const userData = child.val();
+                const userKey = child.key;
+                if (userData.status === 'online' && userKey !== currentUser.userId && !seenUsers.has(userKey)) {
+                    if (userData.role !== 'Administrador') {
+                        seenUsers.add(userKey);
+                        users.push({
+                            userId: userKey,
+                            firebaseUid: userData.firebaseUid || userKey,
+                            name: userData.name || 'Usuario',
+                            avatar: userData.avatar || 'images/profileuser.jpg',
+                            isGuest: userData.isGuest || false
+                        });
+                    }
                 }
-            }
+            });
         });
     }
     
@@ -276,11 +288,17 @@ export async function showUnmutePanel(database, currentRoom, showNotification, d
     
     for (const docSnap of mutedSnapshot.docs) {
         const data = docSnap.data();
-        mutedUsers.push({
-            userId: docSnap.id,
-            username: data.username || data.name || 'Usuario',
-            mutedUntil: data.mutedUntil
-        });
+        const remaining = data.mutedUntil - Date.now();
+        if (remaining > 0) {
+            mutedUsers.push({
+                userId: docSnap.id,
+                username: data.username || data.name || 'Usuario',
+                mutedUntil: data.mutedUntil,
+                remaining: remaining
+            });
+        } else {
+            await deleteDoc(doc(db, 'muted', docSnap.id));
+        }
     }
     
     const panel = createElement(`
@@ -291,20 +309,55 @@ export async function showUnmutePanel(database, currentRoom, showNotification, d
                 <button class="close-moderation-panel">×</button>
             </div>
             <div class="moderation-list">
-                ${mutedUsers.length === 0 ? '<div class="empty-rooms">No hay usuarios muteados</div>' : mutedUsers.map((user, index) =>
-                    '<div class="moderation-user-item">' +
+                ${mutedUsers.length === 0 ? '<div class="empty-rooms">No hay usuarios muteados</div>' : mutedUsers.map((user, index) => {
+                    const minutes = Math.ceil(user.remaining / 60000);
+                    const seconds = Math.ceil((user.remaining % 60000) / 1000);
+                    return '<div class="moderation-user-item">' +
                         '<div class="moderation-user-info">' +
                             '<span class="moderation-user-name">' + (index + 1) + '. ' + user.username + '</span>' +
+                            '<span class="mute-timer" data-until="' + user.mutedUntil + '" data-user-id="' + user.userId + '" style="color:#ff9800;font-size:12px;margin-left:10px;">' + minutes + 'm ' + seconds + 's</span>' +
                         '</div>' +
                         '<button class="moderation-action-btn unmute-action-btn" data-user-id="' + user.userId + '" data-username="' + user.username + '">' +
                             '<img src="/images/unmute.svg" alt="Unmute" />' +
                             'Desmutear' +
                         '</button>' +
-                    '</div>'
-                ).join('')}
+                    '</div>';
+                }).join('')}
             </div>
         </div>
     `);
+    
+    document.body.appendChild(panel);
+    
+    const timerInterval = setInterval(() => {
+        const timers = panel.querySelectorAll('.mute-timer');
+        timers.forEach(async timer => {
+            const until = parseInt(timer.dataset.until);
+            const userId = timer.dataset.userId;
+            const remaining = until - Date.now();
+            
+            if (remaining <= 0) {
+                await deleteDoc(doc(db, 'muted', userId));
+                const messageRef = push(ref(database, `rooms/${currentRoom}/messages`));
+                await set(messageRef, {
+                    text: timer.closest('.moderation-user-item').querySelector('.moderation-user-name').textContent.split('. ')[1] + ' ha sido desmuteado automáticamente',
+                    type: 'system',
+                    timestamp: Date.now(),
+                    id: messageRef.key
+                });
+                timer.closest('.moderation-user-item').remove();
+                if (panel.querySelectorAll('.moderation-user-item').length === 0) {
+                    panel.querySelector('.moderation-list').innerHTML = '<div class="empty-rooms">No hay usuarios muteados</div>';
+                }
+            } else {
+                const minutes = Math.floor(remaining / 60000);
+                const seconds = Math.ceil((remaining % 60000) / 1000);
+                timer.textContent = minutes + 'm ' + seconds + 's';
+            }
+        });
+    }, 1000);
+    
+    panel.addEventListener('remove', () => clearInterval(timerInterval));
     
     document.body.appendChild(panel);
     

@@ -1,4 +1,4 @@
-# 🚀 FYZAR CHAT v3.8
+# 🚀 FYZAR CHAT v3.8.1
 
 ## 📋 Resumen de Cambios
 

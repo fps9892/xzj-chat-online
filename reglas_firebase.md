@@ -234,6 +234,13 @@ Después de aplicar las reglas, verifica que:
 
 ---
 
-**Versión**: 3.8  
+**Versión**: 3.8.1  
 **Última actualización**: 2024  
 **Estado**: ✅ Listo para producción
+
+## 🆕 Cambios en v3.8.1
+
+- ✅ IDs de invitados cambiados a 4 dígitos (#1000, #1001, #1002...)
+- ✅ Sistema de baneo para invitados corregido (usa userId real)
+- ✅ Funciones de moderación movidas a `moderation-panels.js`
+- ✅ Nombres reales de invitados en paneles de moderación
