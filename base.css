@@ -1235,10 +1235,10 @@ body {
 }
 
 .message-avatar {
-  width: 24px;
-  height: 24px;
+  width: 35px;
+  height: 35px;
   border-radius: 50%;
-  border: 1px solid #fff;
+  border: 2px solid #ffffffa9;
   cursor: pointer;
   transition: transform 0.2s;
 }
@@ -2077,8 +2077,6 @@ body {
     max-height: calc(90vh - 380px);
   }
 }
-
-
 
 .image-modal-overlay {
   position: fixed;
