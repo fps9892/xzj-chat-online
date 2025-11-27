@@ -128,13 +128,13 @@
 
 .reply-username {
   font-weight: bold;
-  color: #000;
+  color: #c97a6f;
   font-family: "Orbitron", monospace;
   font-size: 11px;
 }
 
 .message.received .reply-username {
-  color: #2a1a1a;
+  color: #c97a6f;
 }
 
 .reply-text {
