@@ -1338,7 +1338,6 @@ export async function grantModeratorRole(userId) {
     }
     
     try {
-        // Verificar si el documento del usuario existe
         const userDocRef = doc(db, 'users', userId);
         const userDoc = await getDoc(userDocRef);
         
@@ -1346,16 +1345,21 @@ export async function grantModeratorRole(userId) {
             throw new Error(`El usuario con UID ${userId} no existe`);
         }
 
-        // Agregar el usuario a la colección `moderators`
         await setDoc(doc(db, 'moderators', userId), {
             grantedBy: currentUser.firebaseUid,
             grantedAt: new Date().toISOString()
         });
         
-        // Actualizar rol en el documento del usuario
         await updateDoc(userDocRef, {
             role: 'Moderador'
         });
+        
+        // Si es el usuario actual, actualizar localStorage
+        if (userId === currentUser.firebaseUid) {
+            currentUser.role = 'Moderador';
+            currentUser.isModerator = true;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        }
         
         return true;
     } catch (error) {
