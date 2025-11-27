@@ -128,8 +128,8 @@ body {
 }
 
 .profile-image {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 6px;
   position: relative;
 }
@@ -148,10 +148,11 @@ body {
 }
 
 .username {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: bold;
   font-family: "Orbitron", monospace;
   color: #f5e6e3;
+  display: block;
 }
 
 .room-selector {
@@ -1608,12 +1609,7 @@ body {
   border-radius: 8px;
 }
 
-/* Ocultar username en móvil */
-@media (max-width: 767px) {
-  .desktop-only {
-    display: none;
-  }
-}
+
 
 .clickable-username {
   cursor: pointer;
