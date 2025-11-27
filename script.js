@@ -1188,28 +1188,44 @@ document.addEventListener('DOMContentLoaded', function() {
                                         Activo
                                     </span>
                                 </div>` : ''}
+                                <div class="profile-info-row">
+                                    <div class="profile-info-half">
+                                        <img src="/images/time.svg" class="profile-info-icon" alt="Time" />
+                                        <span class="profile-info-label">Usuario desde</span>
+                                        <span class="profile-info-value">${user.createdAt ? getTimeAgo(user.createdAt) : 'Reciente'}</span>
+                                    </div>
+                                    <div class="profile-info-half">
+                                        <span class="profile-info-label">UID</span>
+                                        <span class="profile-info-value" style="font-size: 9px;">${fullUid.substring(0, 12)}...</span>
+                                        <button class="copy-uid-btn" data-uid="${fullUid}">📋</button>
+                                    </div>
+                                </div>
+                                <div class="profile-field-label">Última conexión</div>
                                 <div class="profile-info-item">
-                                    <span class="profile-info-label">Usuario desde</span>
-                                    <span class="profile-info-value">${user.createdAt ? getTimeAgo(user.createdAt) : 'Reciente'}</span>
+                                    <span class="profile-info-value">${user.lastSeen ? new Date(user.lastSeen).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Ahora'}</span>
                                 </div>
                                 ${isOwnProfile ? '<button class="profile-edit-btn" id="logoutBtn">Cerrar Sesión</button>' : ''}
                             </div>
                             
                             <div class="profile-section" data-section="stats">
-                                <div class="profile-info-item">
-                                    <span class="profile-info-label">UID</span>
-                                    <span class="profile-info-value">
-                                        <span style="font-size: 10px; word-break: break-all;">${fullUid.substring(0, 16)}...</span>
-                                        <button class="copy-uid-btn" data-uid="${fullUid}">📋</button>
-                                    </span>
+                                <div class="profile-info-row">
+                                    <div class="profile-info-half">
+                                        <span class="profile-info-label">Nivel</span>
+                                        <span class="profile-info-value" style="font-size: 20px;">${user.level || 1}</span>
+                                    </div>
+                                    <div class="profile-info-half">
+                                        <span class="profile-info-label">Mensajes</span>
+                                        <span class="profile-info-value" style="font-size: 20px;">${user.messageCount || 0}</span>
+                                    </div>
                                 </div>
-                                <div class="profile-info-item">
-                                    <span class="profile-info-label">Nivel</span>
-                                    <div class="profile-level">
-                                        <span class="profile-info-value">${user.level || 1}</span>
-                                        <div class="profile-level-bar">
-                                            <div class="profile-level-fill" style="width: ${((user.level || 1) % 1) * 100}%"></div>
-                                        </div>
+                                <div class="profile-info-row">
+                                    <div class="profile-info-half">
+                                        <span class="profile-info-label">Tiempo Online</span>
+                                        <span class="profile-info-value">${user.onlineTime || '0h'}</span>
+                                    </div>
+                                    <div class="profile-info-half">
+                                        <span class="profile-info-label">Reputación</span>
+                                        <span class="profile-info-value" style="font-size: 20px;">${user.reputation || 0}</span>
                                     </div>
                                 </div>
                             </div>
