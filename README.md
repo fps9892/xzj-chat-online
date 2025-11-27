@@ -174,11 +174,6 @@ service cloud.firestore {
       allow write: if isAdmin() || isModerator();
     }
 
-    match /bannedIPs/{ipAddress} {
-      allow read: if true;
-      allow write: if isAdmin() || isModerator();
-    }
-
     match /muted/{firebaseUid} {
       allow read: if true;
       allow write: if isAdmin() || isModerator();

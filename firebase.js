@@ -648,7 +648,6 @@ export async function checkBannedStatus(userId, userIP = null) {
     if (!userId) return false;
     
     try {
-        // Verificar baneo por ID
         const bannedDoc = await getDoc(doc(db, 'banned', userId));
         if (bannedDoc.exists()) {
             const banData = bannedDoc.data();
@@ -657,32 +656,11 @@ export async function checkBannedStatus(userId, userIP = null) {
                 const expiresAt = new Date(banData.expiresAt);
                 if (expiresAt < new Date()) {
                     await deleteDoc(doc(db, 'banned', userId));
-                    if (banData.ip && banData.ip !== 'unknown') {
-                        await deleteDoc(doc(db, 'bannedIPs', banData.ip.replace(/\./g, '_')));
-                    }
                     return false;
                 }
             }
             
             return banData;
-        }
-        
-        // Verificar baneo por IP
-        if (userIP) {
-            const ipDoc = await getDoc(doc(db, 'bannedIPs', userIP.replace(/\./g, '_')));
-            if (ipDoc.exists()) {
-                const banData = ipDoc.data();
-                
-                if (banData.expiresAt) {
-                    const expiresAt = new Date(banData.expiresAt);
-                    if (expiresAt < new Date()) {
-                        await deleteDoc(doc(db, 'bannedIPs', userIP.replace(/\./g, '_')));
-                        return false;
-                    }
-                }
-                
-                return banData;
-            }
         }
         
         return false;
@@ -1115,16 +1093,8 @@ export async function banUser(userId, reason = 'Violación de reglas', duration 
             banData.expiresAt = new Date(Date.now() + duration).toISOString();
         }
         
-        // Banear por userId (funciona para registrados e invitados)
+        // Banear por userId con IP incluida en el documento
         await setDoc(doc(db, 'banned', userId), banData);
-        
-        // Banear por IP
-        if (userIP !== 'unknown') {
-            await setDoc(doc(db, 'bannedIPs', userIP.replace(/\./g, '_')), {
-                ...banData,
-                userId: userId
-            });
-        }
         
         // Enviar mensaje al chat
         const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
@@ -1348,23 +1318,7 @@ export async function unbanUser(userId) {
     }
     
     try {
-        // 1. Buscar en bannedIPs usando query por userId
-        const bannedIPsQuery = fsQuery(collection(db, 'bannedIPs'), where('userId', '==', userId));
-        const bannedIPsSnapshot = await getDocs(bannedIPsQuery);
-        
-        // 2. Eliminar todos los documentos encontrados en bannedIPs
-        const deleteIPPromises = [];
-        bannedIPsSnapshot.forEach((ipDoc) => {
-            deleteIPPromises.push(deleteDoc(doc(db, 'bannedIPs', ipDoc.id)));
-        });
-        
-        if (deleteIPPromises.length > 0) {
-            await Promise.all(deleteIPPromises);
-        }
-        
-        // 3. Eliminar el documento de banned
         await deleteDoc(doc(db, 'banned', userId));
-        
         return true;
     } catch (error) {
         console.error('Error unbanning user:', error);
