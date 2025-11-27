@@ -1528,10 +1528,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (timeLeft <= 0) {
                         clearInterval(muteTimerInterval);
                         if (muteTimerPanel) muteTimerPanel.remove();
-                        showNotification('Serás desmuteado en un momento...', 'success');
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1000);
+                        messageInput.disabled = false;
+                        messageInput.placeholder = 'Escribe tu mensaje...';
+                        imageBtn.style.pointerEvents = 'auto';
+                        imageBtn.style.opacity = '1';
+                        emoteBtn.style.pointerEvents = 'auto';
+                        emoteBtn.style.opacity = '1';
+                        micBtn.style.pointerEvents = 'auto';
+                        micBtn.style.opacity = '1';
+                        const pollsBtn = document.querySelector('.polls-btn');
+                        if (pollsBtn) {
+                            pollsBtn.style.pointerEvents = 'auto';
+                            pollsBtn.style.opacity = '1';
+                        }
+                        sendIcon.style.pointerEvents = 'auto';
+                        sendIcon.style.opacity = '1';
+                        showNotification('Has sido desmuteado automáticamente', 'success');
                     } else {
                         const mins = Math.floor(timeLeft / 60000);
                         const secs = Math.ceil((timeLeft % 60000) / 1000);
