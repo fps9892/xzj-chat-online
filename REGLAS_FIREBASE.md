@@ -5,17 +5,20 @@
 ### Paneles de Moderación Mejorados:
 - `!ban` - Panel visual con iconos SVG para banear usuarios de todas las salas
 - `!unban` - Panel visual con icono SVG para desbanear usuarios
-- `!mute` - Panel visual con iconos SVG para mutear usuarios de todas las salas
+- `!mute` - Panel visual con iconos SVG para mutear usuarios de todas las salas (excluye usuarios ya muteados)
 - `!unmute` - Panel visual con icono SVG y temporizador en tiempo real
 - Todos los comandos son case-insensitive (!BAN, !ban, !Ban funcionan igual)
 - Los paneles muestran usuarios de TODAS las salas (públicas y privadas)
 
 ### Sistema de Desmuteo Automático:
-- Temporizador visual en panel de unmute (actualización cada segundo)
-- Panel fijo arriba del input muestra tiempo restante para usuario muteado
+- Listener en tiempo real de Firestore detecta cambios instantáneamente
+- Panel fijo arriba del input-area muestra tiempo restante (actualización cada segundo)
+- Temporizador usa el tiempo definido por admin/moderador en el panel de mute
 - Desmuteo automático cuando expira el tiempo SIN recargar la página
+- Mensaje del sistema en el chat notifica el desmuteo automático
 - Controles se habilitan automáticamente al finalizar el tiempo
 - Panel naranja con icono SVG y contador en tiempo real
+- Responsive para PC, tablet y móvil
 
 ### IDs de Usuario:
 - Usuarios registrados: IDs cortos (#1, #2, #3...)
@@ -207,8 +210,11 @@ Después de aplicar las reglas, verifica que:
 - Colección `muted` almacena `mutedUntil` (timestamp) para desmuteo automático
 - Colección `banned` almacena información de usuarios baneados con razón y timestamp
 - Colección `bannedIPs` almacena IPs baneadas para bloquear invitados
-- Usuario muteado ve panel fijo naranja arriba del input con temporizador en tiempo real
+- Usuario muteado ve panel fijo naranja arriba del input-area con temporizador en tiempo real
 - Al finalizar el tiempo de muteo, el usuario es desmuteado automáticamente SIN recargar la página
+- Sistema usa Firestore onSnapshot para detectar cambios en tiempo real
+- Temporizador muestra tiempo exacto definido por el moderador (no fijo)
+- Mensaje del sistema "[Usuario] ha sido desmuteado automáticamente" aparece en el chat
 
 ## 🔧 Colecciones de Firestore
 
@@ -216,11 +222,13 @@ Después de aplicar las reglas, verifica que:
 ```javascript
 {
   username: string,
-  mutedUntil: number (timestamp),
-  mutedAt: number (timestamp),
+  mutedUntil: number (timestamp en milisegundos),
+  mutedAt: number (timestamp en milisegundos),
   reason: string (opcional)
 }
 ```
+
+**Importante**: `mutedUntil` debe ser un timestamp en milisegundos (Date.now() + duración). El sistema calcula automáticamente el tiempo restante y desmutea cuando `mutedUntil <= Date.now()`
 
 ### `banned/{userId}`
 ```javascript

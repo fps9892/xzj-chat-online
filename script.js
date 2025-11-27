@@ -1523,7 +1523,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     const remaining = mutedUntil - Date.now();
                     const minutes = Math.floor(remaining / 60000);
-                    const seconds = Math.ceil((remaining % 60000) / 1000);
+                    const seconds = Math.floor((remaining % 60000) / 1000);
                     
                     muteTimerPanel = createElement(`
                         <div class="mute-timer-panel">
@@ -1557,7 +1557,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                         } else {
                             const mins = Math.floor(timeLeft / 60000);
-                            const secs = Math.ceil((timeLeft % 60000) / 1000);
+                            const secs = Math.floor((timeLeft % 60000) / 1000);
                             const countdown = muteTimerPanel.querySelector('.mute-timer-countdown');
                             if (countdown) {
                                 countdown.textContent = mins + 'm ' + secs + 's';
