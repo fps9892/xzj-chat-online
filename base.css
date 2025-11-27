@@ -611,7 +611,7 @@ body {
 }
 
 .user-panel {
-  background: linear-gradient(145deg, #2a1a1a 0%, #3d2626 100%);
+  background: #1a0f0f;
   border: 2px solid #c97a6f;
   border-radius: 16px;
   width: 450px;
@@ -622,7 +622,7 @@ body {
 }
 
 .user-panel-header {
-  background: linear-gradient(135deg, #4a2f2f 0%, #3d2626 100%);
+  background: rgba(201, 122, 111, 0.08);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -638,20 +638,24 @@ body {
 
 .user-panel-tab {
   font-family: "Orbitron", monospace;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
-  padding: 5px 10px;
-  border-radius: 6px;
-  transition: background-color 0.2s;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.3s;
+  color: #888;
+  border: 1px solid transparent;
 }
 
 .user-panel-tab.active {
-  background-color: #5c3838;
+  background-color: rgba(201, 122, 111, 0.2);
   color: #f5e6e3;
+  border-color: #c97a6f;
 }
 
 .user-panel-tab:hover {
-  background-color: #4a2f2f;
+  background-color: rgba(201, 122, 111, 0.1);
+  color: #f5e6e3;
 }
 
 .close-panel {
@@ -685,10 +689,10 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 18px;
-  margin-bottom: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
   background: rgba(201, 122, 111, 0.08);
-  border: 1px solid rgba(201, 122, 111, 0.2);
+  border: 2px solid rgba(201, 122, 111, 0.2);
   border-radius: 10px;
   font-size: 14px;
   transition: all 0.3s ease;
@@ -697,7 +701,7 @@ body {
 .config-item:hover {
   background: rgba(201, 122, 111, 0.15);
   border-color: #c97a6f;
-  transform: translateX(4px);
+  transform: translateX(3px);
 }
 
 .config-item:last-child {
@@ -705,8 +709,8 @@ body {
 }
 
 .config-item button {
-  background: linear-gradient(135deg, #d4a59a 0%, #c97a6f 100%);
-  border: none;
+  background: #d4a59a;
+  border: 2px solid #c97a6f;
   color: #1a0f0f;
   padding: 8px 16px;
   border-radius: 8px;
@@ -715,12 +719,11 @@ body {
   font-weight: 600;
   font-family: "Orbitron", monospace;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(201, 122, 111, 0.3);
 }
 
 .config-item button:hover {
+  background: #c97a6f;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(201, 122, 111, 0.5);
 }
 
 .config-item.danger button {
@@ -1470,8 +1473,12 @@ body {
   align-items: center;
 }
 
+.user-panel-overlay {
+  z-index: 999999;
+}
+
 .user-profile-panel {
-  background: linear-gradient(145deg, #2a1a1a 0%, #1a0f0f 100%);
+  background: #1a0f0f;
   border: 2px solid #c97a6f;
   border-radius: 16px;
   width: 400px;
@@ -1498,10 +1505,15 @@ body {
   cursor: pointer;
   z-index: 10;
   transition: transform 0.3s;
+  background: rgba(42, 26, 26, 0.8);
+  padding: 6px;
+  border-radius: 8px;
+  border: 2px solid rgba(201, 122, 111, 0.3);
 }
 
 .close-profile:hover {
-  transform: rotate(90deg) scale(1.2);
+  transform: rotate(90deg) scale(1.1);
+  background: rgba(201, 122, 111, 0.3);
 }
 
 .user-profile-content {
@@ -1530,7 +1542,7 @@ body {
   left: 0;
   right: 0;
   height: 180px;
-  background: linear-gradient(to top, #2a1a1a 0%, rgba(42, 26, 26, 0.95) 30%, rgba(42, 26, 26, 0.7) 60%, transparent 100%);
+  background: linear-gradient(to top, #1a0f0f 0%, rgba(26, 15, 15, 0.98) 25%, rgba(26, 15, 15, 0.85) 50%, rgba(26, 15, 15, 0.4) 75%, transparent 100%);
   pointer-events: none;
   z-index: 1;
 }
@@ -1923,8 +1935,8 @@ body {
 
 .config-panel-btn {
   position: absolute;
-  top: 15px;
-  left: 15px;
+  bottom: 15px;
+  right: 15px;
   width: 32px;
   height: 32px;
   background: rgba(42, 26, 26, 0.8);
@@ -1933,7 +1945,7 @@ body {
   padding: 6px;
   cursor: pointer;
   transition: all 0.3s;
-  z-index: 10;
+  z-index: 2;
 }
 
 .config-panel-btn:hover {
