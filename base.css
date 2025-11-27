@@ -1514,33 +1514,46 @@ body {
 .profile-avatar {
   position: relative;
   width: 100%;
-  height: 200px;
+  height: 250px;
   margin-bottom: 0;
   overflow: hidden;
-  background: linear-gradient(180deg, #3d2626 0%, #2a1a1a 100%);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+.profile-avatar::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(to top, #2a1a1a, transparent);
+  pointer-events: none;
+}
+
 .profile-avatar img {
-  width: 120px;
-  height: 120px;
-  border-radius: 12px;
-  border: 3px solid #c97a6f;
-  box-shadow: 0 4px 20px rgba(201, 122, 111, 0.4);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0;
+  border: none;
 }
 
 .profile-username {
   font-family: "Orbitron", monospace;
   font-size: 24px;
   font-weight: bold;
-  margin: 20px 0 10px;
+  margin: -30px 0 20px;
   padding: 0 20px;
   overflow: hidden;
   white-space: nowrap;
   border-right: 3px solid;
   animation: typing 2s steps(20) 1, blink 0.75s step-end infinite;
+  position: relative;
+  z-index: 1;
+  text-align: center;
 }
 
 @keyframes typing {
@@ -1554,6 +1567,7 @@ body {
 
 .profile-sections {
   padding: 20px;
+  position: relative;
 }
 
 .profile-section {
@@ -1563,6 +1577,11 @@ body {
   padding: 15px;
   margin-bottom: 15px;
   text-align: left;
+  display: none;
+}
+
+.profile-section.active {
+  display: block;
 }
 
 .profile-section-title {
@@ -1572,6 +1591,45 @@ body {
   margin-bottom: 12px;
   text-transform: uppercase;
   letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s;
+  user-select: none;
+}
+
+.profile-section-title:hover {
+  color: #d4a59a;
+  transform: translateX(5px);
+}
+
+.profile-tabs {
+  display: flex;
+  gap: 10px;
+  padding: 0 20px 15px;
+  border-bottom: 1px solid rgba(201, 122, 111, 0.2);
+}
+
+.profile-tab {
+  flex: 1;
+  padding: 10px;
+  background: transparent;
+  border: 1px solid rgba(201, 122, 111, 0.3);
+  border-radius: 8px;
+  color: #888;
+  font-family: "Orbitron", monospace;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-align: center;
+}
+
+.profile-tab.active {
+  background: rgba(201, 122, 111, 0.2);
+  border-color: #c97a6f;
+  color: #f5e6e3;
+}
+
+.profile-tab:hover {
+  background: rgba(201, 122, 111, 0.1);
 }
 
 .profile-info-item {
@@ -1614,10 +1672,7 @@ body {
   color: #d4a59a;
 }
 
-.profile-status.offline {
-  background: rgba(136, 136, 136, 0.2);
-  color: #888;
-}
+
 
 .profile-status-dot {
   width: 8px;
@@ -1628,7 +1683,7 @@ body {
 }
 
 .profile-country-flag {
-  font-size: 32px;
+  font-size: 40px;
 }
 
 .profile-role-badge {
@@ -1685,12 +1740,7 @@ body {
   }
   
   .profile-avatar {
-    height: 180px;
-  }
-  
-  .profile-avatar img {
-    width: 100px;
-    height: 100px;
+    height: 220px;
   }
   
   .profile-username {

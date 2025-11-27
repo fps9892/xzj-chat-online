@@ -1147,9 +1147,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function showUserProfile(user) {
         const isOnline = user.status === 'online';
-        const statusClass = isOnline ? 'online' : 'offline';
-        const statusText = isOnline ? 'Activo' : 'Offline';
         const userColor = user.textColor || '#ffffff';
+        const countryFlag = user.country || '🌎';
         
         const modal = createElement(`
             <div class="user-profile-overlay active">
@@ -1161,23 +1160,25 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="profile-avatar">
                             <img src="${user.avatar}" alt="${user.username || user.name}">
                         </div>
-                        <div class="profile-username" style="color: ${userColor}; margin: 0 auto; display: inline-block;">${user.username || user.name}</div>
+                        <div class="profile-username" style="color: ${userColor};">${user.username || user.name}</div>
+                        
+                        <div class="profile-tabs">
+                            <button class="profile-tab active" data-section="info">📋 Info</button>
+                            <button class="profile-tab" data-section="stats">📊 Stats</button>
+                        </div>
                         
                         <div class="profile-sections">
-                            <div class="profile-section">
-                                <div class="profile-section-title">📋 Info</div>
-                                <div class="profile-info-item">
+                            <div class="profile-section active" data-section="info">
+                                ${isOnline ? `<div class="profile-info-item">
                                     <span class="profile-info-label">Estado</span>
-                                    <span class="profile-status ${statusClass}">
+                                    <span class="profile-status online">
                                         <span class="profile-status-dot"></span>
-                                        ${statusText}
+                                        Activo
                                     </span>
-                                </div>
+                                </div>` : ''}
                                 <div class="profile-info-item">
                                     <span class="profile-info-label">País</span>
-                                    <span class="profile-info-value">
-                                        <span class="profile-country-flag">${user.country || '🌎'}</span>
-                                    </span>
+                                    <span class="profile-country-flag">${countryFlag}</span>
                                 </div>
                                 <div class="profile-info-item">
                                     <span class="profile-info-label">Cuenta creada</span>
@@ -1189,8 +1190,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </div>
                             </div>
                             
-                            <div class="profile-section">
-                                <div class="profile-section-title">📊 Stats</div>
+                            <div class="profile-section" data-section="stats">
                                 <div class="profile-info-item">
                                     <span class="profile-info-label">UID</span>
                                     <span class="profile-info-value" style="font-size: 10px; word-break: break-all;">${(user.firebaseUid || user.id || 'N/A').substring(0, 16)}...</span>
@@ -1218,18 +1218,25 @@ document.addEventListener('DOMContentLoaded', function() {
         if (usernameEl) {
             const text = usernameEl.textContent;
             usernameEl.textContent = '';
-            usernameEl.style.display = 'inline-block';
             usernameEl.style.width = '0';
-            usernameEl.style.whiteSpace = 'nowrap';
-            usernameEl.style.overflow = 'hidden';
             usernameEl.style.borderRight = `3px solid ${userColor}`;
             
             setTimeout(() => {
                 usernameEl.textContent = text;
-                usernameEl.style.width = '100%';
-                usernameEl.style.animation = 'typing 2s steps(20) 1, blink 0.75s step-end infinite';
+                usernameEl.style.width = 'auto';
             }, 100);
         }
+        
+        // Tabs functionality
+        modal.querySelectorAll('.profile-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const section = tab.dataset.section;
+                modal.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+                modal.querySelectorAll('.profile-section').forEach(s => s.classList.remove('active'));
+                tab.classList.add('active');
+                modal.querySelector(`.profile-section[data-section="${section}"]`).classList.add('active');
+            });
+        });
         
         modal.querySelector('.close-profile').addEventListener('click', () => modal.remove());
         modal.addEventListener('click', (e) => {
