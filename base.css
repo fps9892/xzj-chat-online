@@ -2337,16 +2337,21 @@ body {
 }
 
 .room-item-panel .room-user-count {
-  background: rgba(0, 255, 0, 0.2);
   color: #00ff00;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: bold;
-  min-width: 30px;
+  min-width: 35px;
   text-align: center;
-  border: 1px solid rgba(0, 255, 0, 0.4);
   flex-shrink: 0;
+  font-family: "Orbitron", monospace;
+}
+
+.room-item-panel .room-user-count::before {
+  content: "(";
+}
+
+.room-item-panel .room-user-count::after {
+  content: ")";
 }
 
 .room-item-panel:hover {
