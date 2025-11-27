@@ -561,8 +561,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Convertir imagen a base64
     function fileToBase64(file) {
         return new Promise((resolve, reject) => {
-            if (file.size > 1024 * 1024) { // 1MB
-                reject(new Error('La imagen debe ser menor a 1MB'));
+            if (file.size > 3 * 1024 * 1024) { // 3MB
+                reject(new Error('La imagen debe ser menor a 3MB'));
                 return;
             }
             
@@ -771,9 +771,19 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Click en avatar de mensaje
             if (e.target.classList.contains('clickable-avatar')) {
-                const userId = e.target.dataset.userId;
-                if (userId) {
-                    showUserProfile(userId);
+                const messageContainer = e.target.closest('.message-container');
+                if (messageContainer) {
+                    const messageId = messageContainer.dataset.messageId;
+                    const messages = document.querySelectorAll('.message-container');
+                    for (const msg of messages) {
+                        if (msg.dataset.messageId === messageId) {
+                            const usernameEl = msg.querySelector('.clickable-username');
+                            if (usernameEl) {
+                                usernameEl.click();
+                                break;
+                            }
+                        }
+                    }
                 }
             }
         });

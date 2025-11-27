@@ -1296,8 +1296,7 @@ body {
 }
 
 .message.received .message-content {
-  background: #6b4f4f00 !important;
-  background: #5c3838;
+  background: #6b4f4f;
   color: #fff;
   border-bottom-left-radius: 0px;
 }
@@ -2079,18 +2078,7 @@ body {
   }
 }
 
-.message.received .message-content::before {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: -7px;
-  width: 0;
-  height: 0;
-  border: 8px solid transparent;
-  border-right-color: #333;
-  border-bottom: 0;
-  border-left: 0;
-}
+
 
 .image-modal-overlay {
   position: fixed;
