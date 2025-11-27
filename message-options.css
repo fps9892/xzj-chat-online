@@ -165,8 +165,8 @@
   bottom: 95px;
   left: 20px;
   right: 20px;
-  background: rgba(0, 255, 0, 0.1);
-  border: 1px solid #00ff00;
+  background: rgba(255, 68, 68, 0.1);
+  border: 1px solid #c97a6f;
   border-radius: 8px;
   padding: 10px 15px;
   display: flex;
@@ -196,7 +196,7 @@
 
 .reply-banner-username {
   font-weight: bold;
-  color: #00ff00;
+  color: #c97a6f;
   font-size: 12px;
   font-family: "Orbitron", monospace;
 }

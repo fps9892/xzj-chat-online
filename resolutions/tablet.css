@@ -29,11 +29,11 @@
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    border: 1px solid #00ff00;
+    border: 2px solid #c97a6f;
     border-radius: 8px;
     padding: 6px 10px;
     cursor: pointer;
-    background-color: #000;
+    background-color: #2a1a1a;
   }
 
   .users-connected-icon {
@@ -43,14 +43,14 @@
   }
 
   .mobile-user-count {
-    color: #00ff00;
+    color: #c97a6f;
     font-size: 14px;
     font-weight: bold;
     font-family: "Orbitron", monospace;
   }
 
   .mobile-user-count.loading::after {
-    content: '';
+    content: "";
     display: inline-block;
     width: 12px;
     height: 12px;

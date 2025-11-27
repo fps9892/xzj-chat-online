@@ -79,7 +79,7 @@
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    border: 1px solid #c97a6f;
+    border: 2px solid #c97a6f;
     border-radius: 6px;
     padding: 5px 8px;
     cursor: pointer;
@@ -451,16 +451,16 @@
     bottom: 110px;
     padding: 15px;
   }
-  
+
   .moderation-user-name {
     font-size: 13px;
   }
-  
+
   .moderation-action-btn {
     font-size: 11px;
     padding: 5px 10px;
   }
-  
+
   .moderation-action-btn img {
     width: 14px;
     height: 14px;

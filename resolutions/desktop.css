@@ -58,7 +58,7 @@
   .users-sidebar {
     width: 200px;
     background-color: #2a1a1a;
-    border-left: 1px solid #c97a6f;
+    border-left: 2px solid #c97a6f;
     display: flex;
     flex-direction: column;
     height: 100%;
