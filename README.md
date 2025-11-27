@@ -307,6 +307,59 @@ Firebase Console → Realtime Database → Rules
 ```
 
 **Nota**: La sección `roomDeleted` permite el sistema de temporizador de 15 segundos antes de eliminar salas, notificando a todos los usuarios en tiempo real.
+
+### 2. Iniciar el Proyecto
+
+**Opción A**: Abrir directamente
+
+```bash
+# Abre login.html en tu navegador
+```
+
+**Opción B**: Con servidor Node.js
+
+```bash
+npm install
+node server.js
+```
+
+---
+
+## 📁 Estructura de Archivos
+
+### Archivos Principales
+
+```
+├── index.html          # Chat principal
+├── login.html          # Login con CAPTCHA y validaciones
+├── core.js            # Utilidades consolidadas
+├── firebase.js        # Lógica de Firebase + baneo/muteo
+├── script.js          # Lógica principal del chat
+├── login.js           # Lógica del login + CAPTCHA
+├── main.js            # Inicialización
+├── base.css           # Estilos base + moderadores
+└── login.css          # Estilos responsive + animaciones
+    "roomAccessNotifications": {
+      ".read": true,
+      ".write": true,
+      "$userId": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "roomDeleted": {
+      ".read": true,
+      ".write": true,
+      "$roomId": {
+        ".read": true,
+        ".write": true
+      }
+    }
+  }
+}
+```
+
+**Nota**: La sección `roomDeleted` permite el sistema de temporizador de 15 segundos antes de eliminar salas, notificando a todos los usuarios en tiempo real.
 ```
 
 ### 2. Iniciar el Proyecto
