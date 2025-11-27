@@ -376,6 +376,9 @@ body {
   left: 0;
   right: 0;
   z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 @media (max-width: 767px) {
@@ -2961,21 +2964,18 @@ body {
 
 /* Panel de Temporizador de Muteo */
 .mute-timer-panel {
-  position: fixed;
-  top: 70px;
-  left: 50%;
-  transform: translateX(-50%);
   background: rgba(255, 152, 0, 0.95);
   color: #fff;
   padding: 12px 24px;
-  border-radius: 8px;
+  border-radius: 8px 8px 0 0;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
-  z-index: 9999;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  animation: slideDown 0.3s ease;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
   border: 2px solid #ff9800;
+  border-bottom: none;
+  animation: slideUp 0.3s ease;
 }
 
 .mute-timer-icon {
@@ -2997,23 +2997,21 @@ body {
   font-family: "Orbitron", monospace;
 }
 
-@keyframes slideDown {
+@keyframes slideUp {
   from {
-    top: -100px;
+    transform: translateY(100%);
     opacity: 0;
   }
   to {
-    top: 70px;
+    transform: translateY(0);
     opacity: 1;
   }
 }
 
 @media (max-width: 767px) {
   .mute-timer-panel {
-    top: 60px;
     padding: 10px 16px;
     font-size: 12px;
-    max-width: 90%;
   }
   
   .mute-timer-icon {
@@ -3027,16 +3025,5 @@ body {
   
   .mute-timer-countdown {
     font-size: 14px;
-  }
-  
-  @keyframes slideDown {
-    from {
-      top: -100px;
-      opacity: 0;
-    }
-    to {
-      top: 60px;
-      opacity: 1;
-    }
   }
 }

@@ -1489,110 +1489,102 @@ document.addEventListener('DOMContentLoaded', function() {
         listenToUserStatus((status) => {
             if (status.type === 'banned') {
                 window.location.replace('banned.html');
-            } else if (status.type === 'muted') {
-                messageInput.disabled = true;
-                messageInput.placeholder = 'Estás muteado';
-                imageBtn.style.pointerEvents = 'none';
-                imageBtn.style.opacity = '0.5';
-                emoteBtn.style.pointerEvents = 'none';
-                emoteBtn.style.opacity = '0.5';
-                micBtn.style.pointerEvents = 'none';
-                micBtn.style.opacity = '0.5';
-                const pollsBtn = document.querySelector('.polls-btn');
-                if (pollsBtn) {
-                    pollsBtn.style.pointerEvents = 'none';
-                    pollsBtn.style.opacity = '0.5';
-                }
-                sendIcon.style.pointerEvents = 'none';
-                sendIcon.style.opacity = '0.5';
-                
-                if (muteTimerInterval) clearInterval(muteTimerInterval);
-                if (muteTimerPanel) muteTimerPanel.remove();
-                
-                const remaining = status.mutedUntil - Date.now();
-                const minutes = Math.floor(remaining / 60000);
-                const seconds = Math.ceil((remaining % 60000) / 1000);
-                
-                muteTimerPanel = createElement(`
-                    <div class="mute-timer-panel">
-                        <img src="/images/mute.svg" alt="Muted" class="mute-timer-icon" />
-                        <span class="mute-timer-text">Muteado - Tiempo restante: <strong class="mute-timer-countdown">${minutes}m ${seconds}s</strong></span>
-                    </div>
-                `);
-                
-                const messageArea = document.querySelector('.message-area');
-                messageArea.insertBefore(muteTimerPanel, messageArea.firstChild);
-                
-                muteTimerInterval = setInterval(async () => {
-                    const timeLeft = status.mutedUntil - Date.now();
-                    if (timeLeft <= 0) {
-                        clearInterval(muteTimerInterval);
-                        if (muteTimerPanel) muteTimerPanel.remove();
-                        
-                        try {
-                            const { deleteDoc, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-                            const mutedDoc = await getDoc(doc(db, 'muted', userIdToCheck));
-                            if (mutedDoc.exists()) {
-                                const username = mutedDoc.data().username || currentUser.username;
-                                await deleteDoc(doc(db, 'muted', userIdToCheck));
+            }
+        });
+        
+        // Listener en tiempo real para muteo
+        (async () => {
+            const { doc, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            const mutedDocRef = doc(db, 'muted', userIdToCheck);
+            
+            onSnapshot(mutedDocRef, async (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const mutedUntil = data.mutedUntil;
+                    
+                    messageInput.disabled = true;
+                    messageInput.placeholder = 'Estás muteado';
+                    imageBtn.style.pointerEvents = 'none';
+                    imageBtn.style.opacity = '0.5';
+                    emoteBtn.style.pointerEvents = 'none';
+                    emoteBtn.style.opacity = '0.5';
+                    micBtn.style.pointerEvents = 'none';
+                    micBtn.style.opacity = '0.5';
+                    const pollsBtn = document.querySelector('.polls-btn');
+                    if (pollsBtn) {
+                        pollsBtn.style.pointerEvents = 'none';
+                        pollsBtn.style.opacity = '0.5';
+                    }
+                    sendIcon.style.pointerEvents = 'none';
+                    sendIcon.style.opacity = '0.5';
+                    
+                    if (muteTimerInterval) clearInterval(muteTimerInterval);
+                    if (muteTimerPanel) muteTimerPanel.remove();
+                    
+                    const remaining = mutedUntil - Date.now();
+                    const minutes = Math.floor(remaining / 60000);
+                    const seconds = Math.ceil((remaining % 60000) / 1000);
+                    
+                    muteTimerPanel = createElement(`
+                        <div class="mute-timer-panel">
+                            <img src="/images/mute.svg" alt="Muted" class="mute-timer-icon" />
+                            <span class="mute-timer-text">Muteado - Tiempo restante: <strong class="mute-timer-countdown">${minutes}m ${seconds}s</strong></span>
+                        </div>
+                    `);
+                    
+                    const inputArea = document.querySelector('.input-area');
+                    inputArea.insertBefore(muteTimerPanel, inputArea.firstChild);
+                    
+                    muteTimerInterval = setInterval(async () => {
+                        const timeLeft = mutedUntil - Date.now();
+                        if (timeLeft <= 0) {
+                            clearInterval(muteTimerInterval);
+                            if (muteTimerPanel) muteTimerPanel.remove();
+                            
+                            try {
+                                const { deleteDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                                await deleteDoc(mutedDocRef);
                                 
                                 const messageRef = push(ref(database, 'rooms/' + currentRoom + '/messages'));
                                 await set(messageRef, {
-                                    text: username + ' ha sido desmuteado automáticamente',
+                                    text: currentUser.username + ' ha sido desmuteado automáticamente',
                                     type: 'system',
                                     timestamp: Date.now(),
                                     id: messageRef.key
                                 });
+                            } catch (error) {
+                                console.error('Error al desmutear:', error);
                             }
-                        } catch (error) {
-                            console.error('Error al desmutear:', error);
+                        } else {
+                            const mins = Math.floor(timeLeft / 60000);
+                            const secs = Math.ceil((timeLeft % 60000) / 1000);
+                            const countdown = muteTimerPanel.querySelector('.mute-timer-countdown');
+                            if (countdown) {
+                                countdown.textContent = mins + 'm ' + secs + 's';
+                            }
                         }
-                        
-                        messageInput.disabled = false;
-                        messageInput.placeholder = 'Escribe tu mensaje...';
-                        imageBtn.style.pointerEvents = 'auto';
-                        imageBtn.style.opacity = '1';
-                        emoteBtn.style.pointerEvents = 'auto';
-                        emoteBtn.style.opacity = '1';
-                        micBtn.style.pointerEvents = 'auto';
-                        micBtn.style.opacity = '1';
-                        const pollsBtn = document.querySelector('.polls-btn');
-                        if (pollsBtn) {
-                            pollsBtn.style.pointerEvents = 'auto';
-                            pollsBtn.style.opacity = '1';
-                        }
-                        sendIcon.style.pointerEvents = 'auto';
-                        sendIcon.style.opacity = '1';
-                        showNotification('Has sido desmuteado automáticamente', 'success');
-                    } else {
-                        const mins = Math.floor(timeLeft / 60000);
-                        const secs = Math.ceil((timeLeft % 60000) / 1000);
-                        const countdown = muteTimerPanel.querySelector('.mute-timer-countdown');
-                        if (countdown) {
-                            countdown.textContent = mins + 'm ' + secs + 's';
-                        }
+                    }, 1000);
+                } else {
+                    if (muteTimerInterval) clearInterval(muteTimerInterval);
+                    if (muteTimerPanel) muteTimerPanel.remove();
+                    messageInput.disabled = false;
+                    messageInput.placeholder = 'Escribe tu mensaje...';
+                    imageBtn.style.pointerEvents = 'auto';
+                    imageBtn.style.opacity = '1';
+                    emoteBtn.style.pointerEvents = 'auto';
+                    emoteBtn.style.opacity = '1';
+                    micBtn.style.pointerEvents = 'auto';
+                    micBtn.style.opacity = '1';
+                    const pollsBtn = document.querySelector('.polls-btn');
+                    if (pollsBtn) {
+                        pollsBtn.style.pointerEvents = 'auto';
+                        pollsBtn.style.opacity = '1';
                     }
-                }, 1000);
-            } else if (status.type === 'unmuted') {
-                if (muteTimerInterval) clearInterval(muteTimerInterval);
-                if (muteTimerPanel) muteTimerPanel.remove();
-                messageInput.disabled = false;
-                messageInput.placeholder = 'Escribe tu mensaje...';
-                imageBtn.style.pointerEvents = 'auto';
-                imageBtn.style.opacity = '1';
-                emoteBtn.style.pointerEvents = 'auto';
-                emoteBtn.style.opacity = '1';
-                micBtn.style.pointerEvents = 'auto';
-                micBtn.style.opacity = '1';
-                const pollsBtn = document.querySelector('.polls-btn');
-                if (pollsBtn) {
-                    pollsBtn.style.pointerEvents = 'auto';
-                    pollsBtn.style.opacity = '1';
+                    sendIcon.style.pointerEvents = 'auto';
+                    sendIcon.style.opacity = '1';
                 }
-                sendIcon.style.pointerEvents = 'auto';
-                sendIcon.style.opacity = '1';
-            }
-        });
+            });
+        })();
     }
     
     // Escuchar notificaciones de acceso a salas privadas
