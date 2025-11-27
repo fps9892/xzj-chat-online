@@ -1190,18 +1190,17 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </div>` : ''}
                                 <div class="profile-info-row">
                                     <div class="profile-info-half">
-                                        <img src="/images/time.svg" class="profile-info-icon" alt="Time" />
-                                        <span class="profile-info-label">Usuario desde</span>
-                                        <span class="profile-info-value">${user.createdAt ? getTimeAgo(user.createdAt) : 'Reciente'}</span>
+                                        <span class="profile-info-value">
+                                            <img src="/images/time.svg" class="profile-info-icon" alt="Time" style="margin: 0;" />
+                                            ${user.createdAt ? getTimeAgo(user.createdAt) : 'Reciente'}
+                                        </span>
                                     </div>
                                     <div class="profile-info-half">
-                                        <span class="profile-info-label">UID</span>
-                                        <span class="profile-info-value" style="font-size: 9px;">${fullUid.substring(0, 12)}...</span>
-                                        <button class="copy-uid-btn" data-uid="${fullUid}">📋</button>
+                                        <button class="copy-uid-btn" data-uid="${fullUid}">Copiar ID</button>
                                     </div>
                                 </div>
                                 <div class="profile-field-label">Última conexión</div>
-                                <div class="profile-info-item">
+                                <div class="profile-info-item" style="justify-content: center;">
                                     <span class="profile-info-value">${user.lastSeen ? new Date(user.lastSeen).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Ahora'}</span>
                                 </div>
                                 ${isOwnProfile ? '<button class="profile-edit-btn" id="logoutBtn">Cerrar Sesión</button>' : ''}

@@ -694,14 +694,20 @@ body {
   background: rgba(201, 122, 111, 0.08);
   border: 2px solid rgba(201, 122, 111, 0.2);
   border-radius: 10px;
-  font-size: 14px;
+  font-size: 13px;
   transition: all 0.3s ease;
+  font-family: "Inter", sans-serif;
 }
 
 .config-item:hover {
   background: rgba(201, 122, 111, 0.15);
   border-color: #c97a6f;
   transform: translateX(3px);
+}
+
+.config-item span {
+  font-weight: 500;
+  color: #f5e6e3;
 }
 
 .config-item:last-child {
@@ -1722,6 +1728,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   padding: 12px 10px;
   background: rgba(201, 122, 111, 0.08);
   border: 2px solid rgba(201, 122, 111, 0.2);
@@ -1732,6 +1739,12 @@ body {
 .profile-info-half:hover {
   background: rgba(201, 122, 111, 0.15);
   transform: translateY(-2px);
+}
+
+.profile-info-half .profile-info-value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .profile-info-icon {
@@ -1768,8 +1781,9 @@ body {
   color: #888;
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-bottom: 3px;
+  margin-bottom: 5px;
   font-weight: 600;
+  text-align: center;
 }
 
 .profile-description {
@@ -1888,19 +1902,35 @@ body {
 }
 
 .copy-uid-btn {
-  background: rgba(201, 122, 111, 0.2);
-  border: 1px solid #c97a6f;
+  background: #d4a59a;
+  border: 2px solid #c97a6f;
   border-radius: 6px;
-  padding: 4px 8px;
+  padding: 6px 12px;
   cursor: pointer;
   transition: all 0.3s;
-  color: #f5e6e3;
+  color: #1a0f0f;
   font-size: 11px;
+  font-family: "Orbitron", monospace;
+  font-weight: 600;
 }
 
 .copy-uid-btn:hover {
-  background: rgba(201, 122, 111, 0.4);
-  transform: scale(1.1);
+  background: #c97a6f;
+  transform: translateY(-2px);
+}
+
+.image-preview {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  border: 2px solid #c97a6f;
+  object-fit: cover;
+  margin-top: 10px;
+  display: none;
+}
+
+.image-preview.active {
+  display: block;
 }
 
 .profile-status {

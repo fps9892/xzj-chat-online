@@ -193,6 +193,11 @@ service cloud.firestore {
       allow update: if isAuthenticated() && (request.auth.uid == firebaseUid || isAdmin());
       allow delete: if isAdmin();
     }
+    
+    match /userStats/{firebaseUid} {
+      allow read: if true;
+      allow write: if isAuthenticated() && (request.auth.uid == firebaseUid || isAdmin());
+    }
 
     match /guests/{guestId} {
       allow read: if true;
