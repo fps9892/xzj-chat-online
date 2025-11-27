@@ -1537,8 +1537,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     `);
                     
-                    const inputArea = document.querySelector('.input-area');
-                    inputArea.insertBefore(muteTimerPanel, inputArea.firstChild);
+                    document.body.appendChild(muteTimerPanel);
                     
                     muteTimerInterval = setInterval(async () => {
                         const timeLeft = mutedUntil - Date.now();

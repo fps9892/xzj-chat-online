@@ -6,7 +6,6 @@
   width: 320px;
   max-height: 550px;
   background: rgba(0, 0, 0, 0.95);
-  backdrop-filter: blur(2px);
   border: 2px solid #00ff00;
   border-radius: 12px;
   z-index: 100001;
@@ -36,7 +35,7 @@
   text-align: center;
   cursor: pointer;
   color: #888;
-  font-family: 'Orbitron', monospace;
+  font-family: "Orbitron", monospace;
   font-size: 12px;
   border-bottom: 2px solid transparent;
   transition: all 0.2s;
@@ -76,7 +75,7 @@
 .favorites-title {
   font-size: 11px;
   color: #00ff00;
-  font-family: 'Orbitron', monospace;
+  font-family: "Orbitron", monospace;
   margin-bottom: 8px;
 }
 
@@ -112,7 +111,8 @@
   object-fit: cover;
 }
 
-.emote-item:hover, .favorite-item:hover {
+.emote-item:hover,
+.favorite-item:hover {
   transform: scale(1.15);
   filter: brightness(1.2);
   border-color: #00ff00;

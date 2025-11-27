@@ -288,7 +288,11 @@ body {
 .room-header {
   background-color: #000;
   border-bottom: 1px solid rgba(0, 255, 0, 0.2);
-  margin-top: 55px;
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
+  z-index: 999;
   text-align: center;
   padding: 12px 0;
 }
@@ -307,6 +311,7 @@ body {
 
 .chat-area {
   flex: 1;
+  margin-top: 100px;
   margin-bottom: 80px;
   padding: 20px;
   overflow-y: auto;
@@ -376,9 +381,6 @@ body {
   left: 0;
   right: 0;
   z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
 }
 
 @media (max-width: 767px) {
@@ -2964,18 +2966,21 @@ body {
 
 /* Panel de Temporizador de Muteo */
 .mute-timer-panel {
+  position: fixed;
+  top: 98px;
+  left: 0;
+  right: 0;
   background: rgba(255, 152, 0, 0.95);
   color: #fff;
   padding: 12px 24px;
-  border-radius: 8px 8px 0 0;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
-  border: 2px solid #ff9800;
-  border-bottom: none;
-  animation: slideUp 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border-bottom: 2px solid #ff9800;
+  z-index: 998;
+  animation: slideDown 0.3s ease;
 }
 
 .mute-timer-icon {
@@ -2997,19 +3002,28 @@ body {
   font-family: "Orbitron", monospace;
 }
 
-@keyframes slideUp {
+@keyframes slideDown {
   from {
-    transform: translateY(100%);
+    top: -50px;
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    top: 98px;
     opacity: 1;
   }
 }
 
 @media (max-width: 767px) {
+  .room-header {
+    top: 60px;
+  }
+  
+  .chat-area {
+    margin-top: 100px;
+  }
+  
   .mute-timer-panel {
+    top: 98px;
     padding: 10px 16px;
     font-size: 12px;
   }
