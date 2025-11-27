@@ -310,10 +310,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Abrir panel de usuario
-    userInfo.addEventListener('click', function(e) {
+    // Abrir panel de usuario (ahora abre el perfil)
+    userInfo.addEventListener('click', async function(e) {
         e.stopPropagation();
-        userPanelOverlay.classList.add('active');
+        const userProfile = await getUserProfile(currentUser.firebaseUid || currentUser.userId, currentUser.isGuest);
+        showUserProfile(userProfile || currentUser);
     });
 
     // Cerrar panel de usuario
@@ -1148,24 +1149,33 @@ document.addEventListener('DOMContentLoaded', function() {
     function showUserProfile(user) {
         const isOnline = user.status === 'online';
         const userColor = user.textColor || '#ffffff';
-        const countryFlag = user.country || '🌎';
+        const countryFlag = user.country || '';
         const fullUid = user.firebaseUid || user.id || 'N/A';
+        const hasCountry = countryFlag && countryFlag !== 'No especificado' && countryFlag !== '🌎';
+        const isOwnProfile = (user.firebaseUid || user.id) === (currentUser.firebaseUid || currentUser.userId);
         
         const modal = createElement(`
             <div class="user-profile-overlay active">
                 <div class="user-profile-panel">
                     <div class="user-profile-header">
+                        ${isOwnProfile ? '<button class="config-panel-btn" id="openConfigPanel"><img src="/images/config.svg" alt="Config" /></button>' : ''}
                         <img src="images/close.svg" alt="Close" class="close-profile">
                     </div>
                     <div class="user-profile-content">
                         <div class="profile-avatar">
+                            <div class="profile-country-badge">
+                                ${hasCountry ? `<span class="profile-country-flag">${countryFlag}</span>` : `<img src="/images/planeta.svg" class="profile-country-icon" alt="Planeta" />`}
+                            </div>
                             <img src="${user.avatar}" alt="${user.username || user.name}">
                         </div>
                         <div class="profile-username" style="color: ${userColor};">${user.username || user.name}</div>
+                        <div class="profile-role-tag">
+                            <span class="profile-role-badge ${user.role === 'Administrador' ? 'admin' : user.role === 'Moderador' ? 'mod' : 'user'}">${user.role || 'Usuario'}</span>
+                        </div>
                         
                         <div class="profile-tabs">
-                            <button class="profile-tab active" data-section="info">📋 Info</button>
-                            <button class="profile-tab" data-section="stats">📊 Stats</button>
+                            <button class="profile-tab active" data-section="info">Info</button>
+                            <button class="profile-tab" data-section="stats">Stats</button>
                         </div>
                         
                         <div class="profile-sections">
@@ -1177,18 +1187,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                         Activo
                                     </span>
                                 </div>` : ''}
-                                <div class="profile-info-item">
-                                    <span class="profile-country-flag">${countryFlag}</span>
-                                </div>
-                                ${user.description ? `<div class="profile-description">${user.description}</div>` : ''}
+                                ${user.description ? `<div class="profile-country-item"><div class="profile-field-label">Descripción</div><div class="profile-description">${user.description}</div></div>` : ''}
                                 <div class="profile-info-item">
                                     <span class="profile-info-label">Usuario desde</span>
                                     <span class="profile-info-value">${user.createdAt ? getTimeAgo(user.createdAt) : 'Reciente'}</span>
                                 </div>
-                                <div class="profile-info-item">
-                                    <span class="profile-info-label">Rol</span>
-                                    <span class="profile-role-badge ${user.role === 'Administrador' ? 'admin' : user.role === 'Moderador' ? 'mod' : 'user'}">${user.role || 'Usuario'}</span>
-                                </div>
+                                ${isOwnProfile ? '<button class="profile-edit-btn" id="logoutBtn">Cerrar Sesión</button>' : ''}
                             </div>
                             
                             <div class="profile-section" data-section="stats">
@@ -1217,7 +1221,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         document.body.appendChild(modal);
         
-        // Efecto de tipeo en username (sin cursor)
+        // Efecto de tipeo en username (sin cursor, más lento)
         const usernameEl = modal.querySelector('.profile-username');
         if (usernameEl) {
             const text = usernameEl.textContent;
@@ -1230,7 +1234,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     clearInterval(typeInterval);
                 }
-            }, 80);
+            }, 150);
+        }
+        
+        // Botón de configuración
+        const configBtn = modal.querySelector('#openConfigPanel');
+        if (configBtn) {
+            configBtn.addEventListener('click', () => {
+                modal.remove();
+                userPanelOverlay.classList.add('active');
+            });
+        }
+        
+        // Botón cerrar sesión
+        const logoutBtn = modal.querySelector('#logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+                try {
+                    if (!currentUser.isGuest) {
+                        const { getAuth, signOut } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+                        const auth = getAuth();
+                        await signOut(auth);
+                    }
+                } catch (error) {
+                    console.error('Error al cerrar sesión:', error);
+                } finally {
+                    localStorage.removeItem('currentUser');
+                    window.location.href = 'login.html';
+                }
+            });
         }
         
         // Copy UID functionality
