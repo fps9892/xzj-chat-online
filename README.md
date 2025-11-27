@@ -123,9 +123,10 @@
 ### Notificaciones de Entrada/Salida
 
 - **Notificaciones Temporales**: Aparecen cuando usuarios entran o salen de salas
-- **Sin Lag**: Sistema optimizado sin retrasos
+- **Sin Lag**: Sistema optimizado sin retrasos usando Firestore
 - **Desplegables**: Animación suave desde la izquierda
 - **Auto-ocultar**: Desaparecen automáticamente después de 3 segundos
+- **Firestore**: Usa colección `roomPresence` en lugar de Realtime Database
 
 ### Sistema de URLs
 
@@ -208,6 +209,15 @@ service cloud.firestore {
       allow create: if true;
       allow update: if true;
       allow delete: if true;
+    }
+
+    match /roomPresence/{roomId} {
+      allow read: if true;
+      allow write: if true;
+      "users": {
+        allow read: if true;
+        allow write: if true;
+      }
     }
 
     match /{document=**} {
@@ -303,24 +313,14 @@ Firebase Console → Realtime Database → Rules
         ".read": true,
         ".write": true
       }
-    },
-    "userPresence": {
-      ".read": true,
-      ".write": true,
-      "$roomId": {
-        ".read": true,
-        ".write": true,
-        "$userId": {
-          ".read": true,
-          ".write": true
-        }
-      }
     }
   }
 }
 ```
 
-**Nota**: La sección `roomDeleted` permite el sistema de temporizador de 15 segundos antes de eliminar salas, notificando a todos los usuarios en tiempo real.
+**Notas importantes**:
+- `roomDeleted`: Sistema de temporizador de 15 segundos antes de eliminar salas
+- `roomPresence`: Notificaciones de entrada/salida de usuarios usando Firestore (sin consumir Realtime Database)
 
 ### 2. Iniciar el Proyecto
 
@@ -373,7 +373,9 @@ node server.js
 }
 ```
 
-**Nota**: La sección `roomDeleted` permite el sistema de temporizador de 15 segundos antes de eliminar salas, notificando a todos los usuarios en tiempo real.
+**Notas importantes**:
+- `roomDeleted`: Sistema de temporizador de 15 segundos antes de eliminar salas
+- `roomPresence`: Notificaciones de entrada/salida de usuarios usando Firestore (sin consumir Realtime Database)
 ```
 
 ### 2. Iniciar el Proyecto
@@ -640,6 +642,7 @@ Tu proyecto FYZAR CHAT v3.8 incluye:
 
 ### Reglas de Firebase
 - **Firestore**: Permite crear, leer, actualizar y eliminar salas (isPrivate incluido)
+- **Firestore roomPresence**: Sistema de notificaciones de entrada/salida de usuarios
 - **Realtime Database**: Incluye roomDeleted para temporizador de eliminación
 - **roomAccessNotifications**: Sistema de notificaciones para salas privadas
 
