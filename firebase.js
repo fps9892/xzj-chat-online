@@ -1348,37 +1348,42 @@ export async function unbanUser(userId) {
     }
     
     try {
-        // Obtener datos del baneo para eliminar IP
+        // 1. Obtener datos del baneo
         const bannedDoc = await getDoc(doc(db, 'banned', userId));
+        
         if (bannedDoc.exists()) {
             const banData = bannedDoc.data();
             
-            // Eliminar IP si existe
+            // 2. Eliminar de bannedIPs usando la IP como ID del documento
             if (banData.ip && banData.ip !== 'unknown') {
-                const ipKey = banData.ip.replace(/\./g, '_');
+                const ipDocId = banData.ip.replace(/\./g, '_');
                 try {
-                    await deleteDoc(doc(db, 'bannedIPs', ipKey));
+                    await deleteDoc(doc(db, 'bannedIPs', ipDocId));
                 } catch (ipError) {
-                    console.error('Error eliminando IP:', ipError);
+                    console.error('Error eliminando IP por ID:', ipError);
                 }
             }
         }
         
-        // Buscar y eliminar cualquier IP asociada a este userId en bannedIPs
-        try {
-            const bannedIPsSnapshot = await getDocs(collection(db, 'bannedIPs'));
-            for (const ipDoc of bannedIPsSnapshot.docs) {
-                const ipData = ipDoc.data();
-                if (ipData.userId === userId) {
-                    await deleteDoc(doc(db, 'bannedIPs', ipDoc.id));
-                }
+        // 3. Buscar y eliminar TODOS los documentos en bannedIPs que tengan este userId
+        const bannedIPsSnapshot = await getDocs(collection(db, 'bannedIPs'));
+        const deletePromises = [];
+        
+        bannedIPsSnapshot.forEach((ipDoc) => {
+            const ipData = ipDoc.data();
+            if (ipData.userId === userId) {
+                deletePromises.push(deleteDoc(doc(db, 'bannedIPs', ipDoc.id)));
             }
-        } catch (error) {
-            console.error('Error buscando IPs asociadas:', error);
+        });
+        
+        // Ejecutar todas las eliminaciones de IPs
+        if (deletePromises.length > 0) {
+            await Promise.all(deletePromises);
         }
         
-        // Eliminar el baneo del usuario
+        // 4. Eliminar el documento de banned
         await deleteDoc(doc(db, 'banned', userId));
+        
         return true;
     } catch (error) {
         console.error('Error unbanning user:', error);
