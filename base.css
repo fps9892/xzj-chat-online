@@ -116,18 +116,14 @@ body {
 
 .user-info {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0;
+  gap: 6px;
   cursor: pointer;
-  background: #2a1a1a;
-  border: 2px solid #c97a6f;
-  border-radius: 8px;
-  padding: 6px 12px 6px 6px;
   transition: all 0.3s;
 }
 
 .user-info:hover {
-  background: rgba(201, 122, 111, 0.1);
   transform: scale(1.05);
 }
 
@@ -135,9 +131,7 @@ body {
   width: 40px;
   height: 40px;
   border-radius: 6px;
-  border: 2px solid #c97a6f;
   position: relative;
-  margin-right: 10px;
 }
 
 .profile-image::after {
@@ -154,7 +148,7 @@ body {
 }
 
 .username {
-  font-size: 14px;
+  font-size: 11px;
   font-weight: bold;
   font-family: "Orbitron", monospace;
   color: #f5e6e3;
