@@ -1502,6 +1502,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     const data = docSnap.data();
                     const mutedUntil = data.mutedUntil;
                     
+                    if (!mutedUntil || isNaN(mutedUntil)) {
+                        console.error('mutedUntil inválido:', mutedUntil);
+                        return;
+                    }
+                    
                     messageInput.disabled = true;
                     messageInput.placeholder = 'Estás muteado';
                     imageBtn.style.pointerEvents = 'none';
@@ -1537,7 +1542,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     muteTimerInterval = setInterval(async () => {
                         const timeLeft = mutedUntil - Date.now();
-                        if (timeLeft <= 0) {
+                        if (timeLeft <= 0 || isNaN(timeLeft)) {
                             clearInterval(muteTimerInterval);
                             if (muteTimerPanel) muteTimerPanel.remove();
                             

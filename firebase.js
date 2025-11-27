@@ -1185,8 +1185,8 @@ export async function muteUser(userId, duration = 5 * 60 * 1000) {
             mutedByName: currentUser.username,
             username: mutedUsername,
             name: mutedUsername,
-            mutedAt: new Date().toISOString(),
-            expiresAt: new Date(Date.now() + duration).toISOString()
+            mutedAt: Date.now(),
+            mutedUntil: Date.now() + duration
         });
         return true;
     } catch (error) {
@@ -1204,9 +1204,9 @@ export async function checkMutedStatus(userId) {
         if (!mutedDoc.exists()) return false;
         
         const muteData = mutedDoc.data();
-        const expiresAt = new Date(muteData.expiresAt);
+        const mutedUntil = muteData.mutedUntil || muteData.expiresAt;
         
-        if (expiresAt < new Date()) {
+        if (mutedUntil < Date.now()) {
             await deleteDoc(doc(db, 'muted', userId));
             return false;
         }
@@ -1230,8 +1230,8 @@ export async function getMutedUsersList() {
             const userId = docSnapshot.id;
             
             // Verificar si aún está muteado
-            const expiresAt = new Date(muteData.expiresAt);
-            if (expiresAt < new Date()) continue;
+            const mutedUntil = muteData.mutedUntil || muteData.expiresAt;
+            if (mutedUntil < Date.now()) continue;
             
             let username = 'Usuario desconocido';
             let isGuest = false;
