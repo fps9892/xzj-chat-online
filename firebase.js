@@ -1352,12 +1352,25 @@ export async function unbanUser(userId) {
         const bannedDoc = await getDoc(doc(db, 'banned', userId));
         if (bannedDoc.exists()) {
             const banData = bannedDoc.data();
+            console.log('Ban data:', banData);
+            
             if (banData.ip && banData.ip !== 'unknown') {
-                await deleteDoc(doc(db, 'bannedIPs', banData.ip.replace(/\./g, '_')));
+                const ipKey = banData.ip.replace(/\./g, '_');
+                console.log('Intentando eliminar IP:', ipKey);
+                
+                try {
+                    await deleteDoc(doc(db, 'bannedIPs', ipKey));
+                    console.log('IP eliminada exitosamente');
+                } catch (ipError) {
+                    console.error('Error eliminando IP:', ipError);
+                    // Continuar aunque falle la eliminación de IP
+                }
             }
         }
         
+        // Eliminar el baneo del usuario
         await deleteDoc(doc(db, 'banned', userId));
+        console.log('Usuario desbaneado exitosamente');
         return true;
     } catch (error) {
         console.error('Error unbanning user:', error);
