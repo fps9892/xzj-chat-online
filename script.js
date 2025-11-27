@@ -2,7 +2,7 @@ import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom
 import { AudioRecorder, formatTime, blobToBase64 } from './audio-recorder.js';
 import { getUserProfile, findUserByUsername, animateMessageDeletion, initAdminListener } from './core.js';
 import { setupMessageOptions, replyingTo, clearReply } from './message-options.js';
-import { showBanPanel, showUnbanPanel, showMutePanel, showUnmutePanel, guestNumericIds, currentGuestId } from './moderation-panels.js';
+import { showBanPanel, showUnbanPanel, showMutePanel, showUnmutePanel } from './moderation-panels.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     // Elementos de la pantalla de carga
@@ -1050,6 +1050,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let userNumericIds = new Map();
     let currentNumericId = 1;
+    let guestNumericIds = new Map();
+    let currentGuestId = 1000;
     
     function createUserElement(user) {
         let displayName = user.name;

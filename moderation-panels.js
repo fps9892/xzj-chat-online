@@ -389,4 +389,4 @@ export async function showUnmutePanel(database, currentRoom, showNotification, d
     });
 }
 
-export { guestNumericIds, currentGuestId };
+
