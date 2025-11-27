@@ -1146,27 +1146,65 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function showUserProfile(user) {
+        const isOnline = user.status === 'online';
+        const statusClass = isOnline ? 'online' : 'offline';
+        const statusText = isOnline ? 'Activo' : 'Offline';
+        const userColor = user.textColor || '#ffffff';
+        
         const modal = createElement(`
             <div class="user-profile-overlay active">
                 <div class="user-profile-panel">
                     <div class="user-profile-header">
-                        <h3>Perfil de Usuario</h3>
                         <img src="images/close.svg" alt="Close" class="close-profile">
                     </div>
                     <div class="user-profile-content">
                         <div class="profile-avatar">
                             <img src="${user.avatar}" alt="${user.username || user.name}">
                         </div>
-                        <h4>${user.username || user.name}</h4>
-                        <p class="user-role">${user.role}</p>
-                        <div class="profile-info">
-                            <p><strong>Descripción:</strong> ${user.description || 'Sin descripción'}</p>
-                            <p><strong>País:</strong> ${user.country || 'No especificado'}</p>
-                            <p><strong>Rol:</strong> ${user.role}</p>
-                            <p><strong>Estado:</strong> ${user.status || (user.status === 'online' ? 'En línea' : 'Desconectado')}</p>
-                            <p><strong>Cuenta creada:</strong> ${user.createdAt ? getTimeAgo(user.createdAt) : 'No disponible'}</p>
-                            <p><strong>Última conexión:</strong> ${user.lastSeen ? new Date(user.lastSeen).toLocaleString('es-ES') : 'Ahora'}</p>
-                            <p><strong>ID de la cuenta:</strong> ${user.firebaseUid || user.id || 'No disponible'}</p>
+                        <div class="profile-username" style="color: ${userColor}; margin: 0 auto; display: inline-block;">${user.username || user.name}</div>
+                        
+                        <div class="profile-sections">
+                            <div class="profile-section">
+                                <div class="profile-section-title">📋 Info</div>
+                                <div class="profile-info-item">
+                                    <span class="profile-info-label">Estado</span>
+                                    <span class="profile-status ${statusClass}">
+                                        <span class="profile-status-dot"></span>
+                                        ${statusText}
+                                    </span>
+                                </div>
+                                <div class="profile-info-item">
+                                    <span class="profile-info-label">País</span>
+                                    <span class="profile-info-value">
+                                        <span class="profile-country-flag">${user.country || '🌎'}</span>
+                                    </span>
+                                </div>
+                                <div class="profile-info-item">
+                                    <span class="profile-info-label">Cuenta creada</span>
+                                    <span class="profile-info-value">${user.createdAt ? getTimeAgo(user.createdAt) : 'Reciente'}</span>
+                                </div>
+                                <div class="profile-info-item">
+                                    <span class="profile-info-label">Rol</span>
+                                    <span class="profile-role-badge ${user.role === 'Administrador' ? 'admin' : user.role === 'Moderador' ? 'mod' : 'user'}">${user.role || 'Usuario'}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="profile-section">
+                                <div class="profile-section-title">📊 Stats</div>
+                                <div class="profile-info-item">
+                                    <span class="profile-info-label">UID</span>
+                                    <span class="profile-info-value" style="font-size: 10px; word-break: break-all;">${(user.firebaseUid || user.id || 'N/A').substring(0, 16)}...</span>
+                                </div>
+                                <div class="profile-info-item">
+                                    <span class="profile-info-label">Nivel</span>
+                                    <div class="profile-level">
+                                        <span class="profile-info-value">${user.level || 1}</span>
+                                        <div class="profile-level-bar">
+                                            <div class="profile-level-fill" style="width: ${((user.level || 1) % 1) * 100}%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1174,6 +1212,25 @@ document.addEventListener('DOMContentLoaded', function() {
         `);
         
         document.body.appendChild(modal);
+        
+        // Efecto de tipeo en username
+        const usernameEl = modal.querySelector('.profile-username');
+        if (usernameEl) {
+            const text = usernameEl.textContent;
+            usernameEl.textContent = '';
+            usernameEl.style.display = 'inline-block';
+            usernameEl.style.width = '0';
+            usernameEl.style.whiteSpace = 'nowrap';
+            usernameEl.style.overflow = 'hidden';
+            usernameEl.style.borderRight = `3px solid ${userColor}`;
+            
+            setTimeout(() => {
+                usernameEl.textContent = text;
+                usernameEl.style.width = '100%';
+                usernameEl.style.animation = 'typing 2s steps(20) 1, blink 0.75s step-end infinite';
+            }, 100);
+        }
+        
         modal.querySelector('.close-profile').addEventListener('click', () => modal.remove());
         modal.addEventListener('click', (e) => {
             if (e.target === modal) modal.remove();
