@@ -1348,40 +1348,21 @@ export async function unbanUser(userId) {
     }
     
     try {
-        // 1. Obtener datos del baneo
-        const bannedDoc = await getDoc(doc(db, 'banned', userId));
+        // 1. Buscar en bannedIPs usando query por userId
+        const bannedIPsQuery = fsQuery(collection(db, 'bannedIPs'), where('userId', '==', userId));
+        const bannedIPsSnapshot = await getDocs(bannedIPsQuery);
         
-        if (bannedDoc.exists()) {
-            const banData = bannedDoc.data();
-            
-            // 2. Eliminar de bannedIPs usando la IP como ID del documento
-            if (banData.ip && banData.ip !== 'unknown') {
-                const ipDocId = banData.ip.replace(/\./g, '_');
-                try {
-                    await deleteDoc(doc(db, 'bannedIPs', ipDocId));
-                } catch (ipError) {
-                    console.error('Error eliminando IP por ID:', ipError);
-                }
-            }
-        }
-        
-        // 3. Buscar y eliminar TODOS los documentos en bannedIPs que tengan este userId
-        const bannedIPsSnapshot = await getDocs(collection(db, 'bannedIPs'));
-        const deletePromises = [];
-        
+        // 2. Eliminar todos los documentos encontrados en bannedIPs
+        const deleteIPPromises = [];
         bannedIPsSnapshot.forEach((ipDoc) => {
-            const ipData = ipDoc.data();
-            if (ipData.userId === userId) {
-                deletePromises.push(deleteDoc(doc(db, 'bannedIPs', ipDoc.id)));
-            }
+            deleteIPPromises.push(deleteDoc(doc(db, 'bannedIPs', ipDoc.id)));
         });
         
-        // Ejecutar todas las eliminaciones de IPs
-        if (deletePromises.length > 0) {
-            await Promise.all(deletePromises);
+        if (deleteIPPromises.length > 0) {
+            await Promise.all(deleteIPPromises);
         }
         
-        // 4. Eliminar el documento de banned
+        // 3. Eliminar el documento de banned
         await deleteDoc(doc(db, 'banned', userId));
         
         return true;
