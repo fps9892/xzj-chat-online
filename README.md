@@ -120,6 +120,13 @@
 
 ## 🚀 Inicio Rápido
 
+### Notificaciones de Entrada/Salida
+
+- **Notificaciones Temporales**: Aparecen cuando usuarios entran o salen de salas
+- **Sin Lag**: Sistema optimizado sin retrasos
+- **Desplegables**: Animación suave desde la izquierda
+- **Auto-ocultar**: Desaparecen automáticamente después de 3 segundos
+
 ### Sistema de URLs
 
 - `/` o `/index.html` → Verifica autenticación y redirige
@@ -295,6 +302,18 @@ Firebase Console → Realtime Database → Rules
       "$roomId": {
         ".read": true,
         ".write": true
+      }
+    },
+    "userPresence": {
+      ".read": true,
+      ".write": true,
+      "$roomId": {
+        ".read": true,
+        ".write": true,
+        "$userId": {
+          ".read": true,
+          ".write": true
+        }
       }
     }
   }

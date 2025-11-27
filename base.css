@@ -1000,7 +1000,7 @@ body {
   max-width: 90%;
   width: 100%;
   text-align: center;
-  box-shadow: 0 0 50px rgba(201, 122, 111, 0.5);
+  box-shadow: 0 0 30px rgba(201, 122, 111, 0.4);
 }
 
 .announcement-text {
@@ -1008,7 +1008,7 @@ body {
   font-size: 20px;
   font-weight: bold;
   font-family: "Orbitron", monospace;
-  text-shadow: 0 0 20px #c97a6f;
+  text-shadow: 0 0 10px rgba(201, 122, 111, 0.5);
   word-wrap: break-word;
 }
 
@@ -1873,57 +1873,7 @@ body {
   display: none;
 }
 
-/* Animaciones RGB para anuncios */
-.announcement-box {
-  animation: rgbBorder 3s linear infinite, pulse 2s ease-in-out infinite;
-}
 
-.announcement-text {
-  animation: textGlow 2s ease-in-out infinite;
-}
-
-@keyframes rgbBorder {
-  0% {
-    border-color: #d4a59a;
-    box-shadow: 0 0 50px rgba(201, 122, 111, 0.6),
-      inset 0 0 30px rgba(201, 122, 111, 0.2);
-  }
-  33% {
-    border-color: #00ffff;
-    box-shadow: 0 0 50px rgba(0, 255, 255, 0.6),
-      inset 0 0 30px rgba(0, 255, 255, 0.2);
-  }
-  66% {
-    border-color: #00ff88;
-    box-shadow: 0 0 50px rgba(0, 255, 136, 0.6),
-      inset 0 0 30px rgba(0, 255, 136, 0.2);
-  }
-  100% {
-    border-color: #d4a59a;
-    box-shadow: 0 0 50px rgba(201, 122, 111, 0.6),
-      inset 0 0 30px rgba(201, 122, 111, 0.2);
-  }
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.03);
-  }
-}
-
-@keyframes textGlow {
-  0%,
-  100% {
-    text-shadow: 0 0 20px #c97a6f, 0 0 30px #c97a6f;
-  }
-  50% {
-    text-shadow: 0 0 30px #c97a6f, 0 0 40px #c97a6f, 0 0 50px #c97a6f;
-  }
-}
 
 /* YouTube embed */
 .youtube-embed {
