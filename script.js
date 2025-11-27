@@ -1149,6 +1149,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const isOnline = user.status === 'online';
         const userColor = user.textColor || '#ffffff';
         const countryFlag = user.country || '🌎';
+        const fullUid = user.firebaseUid || user.id || 'N/A';
         
         const modal = createElement(`
             <div class="user-profile-overlay active">
@@ -1177,11 +1178,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                     </span>
                                 </div>` : ''}
                                 <div class="profile-info-item">
-                                    <span class="profile-info-label">País</span>
                                     <span class="profile-country-flag">${countryFlag}</span>
                                 </div>
+                                ${user.description ? `<div class="profile-description">${user.description}</div>` : ''}
                                 <div class="profile-info-item">
-                                    <span class="profile-info-label">Cuenta creada</span>
+                                    <span class="profile-info-label">Usuario desde</span>
                                     <span class="profile-info-value">${user.createdAt ? getTimeAgo(user.createdAt) : 'Reciente'}</span>
                                 </div>
                                 <div class="profile-info-item">
@@ -1193,7 +1194,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="profile-section" data-section="stats">
                                 <div class="profile-info-item">
                                     <span class="profile-info-label">UID</span>
-                                    <span class="profile-info-value" style="font-size: 10px; word-break: break-all;">${(user.firebaseUid || user.id || 'N/A').substring(0, 16)}...</span>
+                                    <span class="profile-info-value">
+                                        <span style="font-size: 10px; word-break: break-all;">${fullUid.substring(0, 16)}...</span>
+                                        <button class="copy-uid-btn" data-uid="${fullUid}">📋</button>
+                                    </span>
                                 </div>
                                 <div class="profile-info-item">
                                     <span class="profile-info-label">Nivel</span>
@@ -1213,18 +1217,35 @@ document.addEventListener('DOMContentLoaded', function() {
         
         document.body.appendChild(modal);
         
-        // Efecto de tipeo en username
+        // Efecto de tipeo en username (sin cursor)
         const usernameEl = modal.querySelector('.profile-username');
         if (usernameEl) {
             const text = usernameEl.textContent;
             usernameEl.textContent = '';
-            usernameEl.style.width = '0';
-            usernameEl.style.borderRight = `3px solid ${userColor}`;
-            
-            setTimeout(() => {
-                usernameEl.textContent = text;
-                usernameEl.style.width = 'auto';
-            }, 100);
+            let i = 0;
+            const typeInterval = setInterval(() => {
+                if (i < text.length) {
+                    usernameEl.textContent += text.charAt(i);
+                    i++;
+                } else {
+                    clearInterval(typeInterval);
+                }
+            }, 80);
+        }
+        
+        // Copy UID functionality
+        const copyBtn = modal.querySelector('.copy-uid-btn');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const uid = copyBtn.dataset.uid;
+                navigator.clipboard.writeText(uid).then(() => {
+                    copyBtn.textContent = '✔';
+                    setTimeout(() => {
+                        copyBtn.textContent = '📋';
+                    }, 1500);
+                });
+            });
         }
         
         // Tabs functionality

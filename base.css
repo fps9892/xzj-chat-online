@@ -1464,7 +1464,7 @@ body {
   right: 0;
   bottom: 0;
   background-color: rgba(42, 26, 26, 0.85);
-  z-index: 2500;
+  z-index: 999999;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1528,8 +1528,8 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 80px;
-  background: linear-gradient(to top, #2a1a1a, transparent);
+  height: 120px;
+  background: linear-gradient(to top, #2a1a1a 0%, rgba(42, 26, 26, 0.9) 40%, transparent 100%);
   pointer-events: none;
 }
 
@@ -1549,21 +1549,12 @@ body {
   padding: 0 20px;
   overflow: hidden;
   white-space: nowrap;
-  border-right: 3px solid;
-  animation: typing 2s steps(20) 1, blink 0.75s step-end infinite;
   position: relative;
   z-index: 1;
   text-align: center;
 }
 
-@keyframes typing {
-  from { width: 0; }
-  to { width: 100%; }
-}
 
-@keyframes blink {
-  50% { border-color: transparent; }
-}
 
 .profile-sections {
   padding: 20px;
@@ -1636,18 +1627,28 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(201, 122, 111, 0.1);
+  padding: 12px 15px;
+  background: rgba(201, 122, 111, 0.08);
+  border: 1px solid rgba(201, 122, 111, 0.2);
+  border-radius: 8px;
+  margin-bottom: 10px;
+  transition: all 0.3s;
+}
+
+.profile-info-item:hover {
+  background: rgba(201, 122, 111, 0.15);
+  transform: translateX(3px);
 }
 
 .profile-info-item:last-child {
-  border-bottom: none;
+  margin-bottom: 0;
 }
 
 .profile-info-label {
   font-family: "Inter", sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   color: #888;
+  font-weight: 600;
 }
 
 .profile-info-value {
@@ -1655,6 +1656,38 @@ body {
   font-size: 13px;
   color: #f5e6e3;
   font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-description {
+  background: rgba(201, 122, 111, 0.08);
+  border: 1px solid rgba(201, 122, 111, 0.2);
+  border-radius: 8px;
+  padding: 12px 15px;
+  margin-bottom: 10px;
+  color: #ccc;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.copy-uid-btn {
+  background: rgba(201, 122, 111, 0.2);
+  border: 1px solid #c97a6f;
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  color: #f5e6e3;
+  font-size: 11px;
+}
+
+.copy-uid-btn:hover {
+  background: rgba(201, 122, 111, 0.4);
+  transform: scale(1.1);
 }
 
 .profile-status {
@@ -1683,7 +1716,7 @@ body {
 }
 
 .profile-country-flag {
-  font-size: 40px;
+  font-size: 36px;
 }
 
 .profile-role-badge {
