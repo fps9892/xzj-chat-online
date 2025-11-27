@@ -6,7 +6,7 @@
   width: 20px;
   height: 20px;
   background: #00000000;
-  border: 1px solid rgba(255, 255, 255, 0);
+  border: 2px solid rgba(255, 255, 255, 0);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -23,12 +23,12 @@
 
 .message-options-btn:hover {
   opacity: 1;
-  background: rgba(0, 255, 0, 0.3);
+  background: rgba(201, 122, 111, 0.15);
   transform: scale(1.1);
 }
 
 .message.sent .message-options-btn {
-  color: #006600;
+  color: #2a1a1a;
 }
 
 @media (max-width: 767px) {
@@ -44,13 +44,13 @@
   position: absolute;
   top: 28px;
   right: 8px;
-  background: #000;
-  border: 1px solid #00ff00;
+  background: #2a1a1a;
+  border: 1px solid #c97a6f;
   border-radius: 8px;
   padding: 5px 0;
   min-width: 120px;
   z-index: 100;
-  box-shadow: 0 4px 15px rgba(0, 255, 0, 0.3);
+  box-shadow: 0 4px 15px rgba(255, 68, 68, 0.1);
 }
 
 .message-option-item {
@@ -96,8 +96,8 @@
 }
 
 .message.received .reply-preview {
-  background: rgba(0, 255, 0, 0.1);
-  border-left-color: #00ff00;
+  background: rgba(255, 68, 68, 0.1);
+  border-left-color: #c97a6f;
 }
 
 .reply-icon {
@@ -134,11 +134,11 @@
 }
 
 .message.received .reply-username {
-  color: #00ff00;
+  color: #2a1a1a;
 }
 
 .reply-text {
-  color: #333;
+  color: #313131;
   font-size: 11px;
   white-space: nowrap;
   overflow: hidden;
@@ -146,7 +146,7 @@
 }
 
 .message.received .reply-text {
-  color: #888;
+  color: #353535;
 }
 
 /* Mensaje con respuesta para el destinatario */
