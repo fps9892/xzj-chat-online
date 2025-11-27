@@ -1483,18 +1483,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Escuchar cambios en estado de baneo/mute
     const userIdToCheck = currentUser.firebaseUid || currentUser.userId;
     let muteTimerInterval = null;
+    let muteTimerPanel = null;
     
     if (userIdToCheck) {
         listenToUserStatus((status) => {
             if (status.type === 'banned') {
                 window.location.replace('banned.html');
             } else if (status.type === 'muted') {
-                const remaining = status.mutedUntil - Date.now();
-                const minutes = Math.floor(remaining / 60000);
-                const seconds = Math.ceil((remaining % 60000) / 1000);
-                
                 messageInput.disabled = true;
-                messageInput.placeholder = 'Muteado - ' + minutes + 'm ' + seconds + 's restantes';
+                messageInput.placeholder = 'Estás muteado';
                 imageBtn.style.pointerEvents = 'none';
                 imageBtn.style.opacity = '0.5';
                 emoteBtn.style.pointerEvents = 'none';
@@ -1510,35 +1507,43 @@ document.addEventListener('DOMContentLoaded', function() {
                 sendIcon.style.opacity = '0.5';
                 
                 if (muteTimerInterval) clearInterval(muteTimerInterval);
+                if (muteTimerPanel) muteTimerPanel.remove();
+                
+                const remaining = status.mutedUntil - Date.now();
+                const minutes = Math.floor(remaining / 60000);
+                const seconds = Math.ceil((remaining % 60000) / 1000);
+                
+                muteTimerPanel = createElement(`
+                    <div class="mute-timer-panel">
+                        <img src="/images/mute.svg" alt="Muted" class="mute-timer-icon" />
+                        <span class="mute-timer-text">Muteado - Tiempo restante: <strong class="mute-timer-countdown">${minutes}m ${seconds}s</strong></span>
+                    </div>
+                `);
+                
+                const messageArea = document.querySelector('.message-area');
+                messageArea.insertBefore(muteTimerPanel, messageArea.firstChild);
                 
                 muteTimerInterval = setInterval(() => {
                     const timeLeft = status.mutedUntil - Date.now();
                     if (timeLeft <= 0) {
                         clearInterval(muteTimerInterval);
-                        messageInput.disabled = false;
-                        messageInput.placeholder = 'Escribe tu mensaje...';
-                        imageBtn.style.pointerEvents = 'auto';
-                        imageBtn.style.opacity = '1';
-                        emoteBtn.style.pointerEvents = 'auto';
-                        emoteBtn.style.opacity = '1';
-                        micBtn.style.pointerEvents = 'auto';
-                        micBtn.style.opacity = '1';
-                        const pollsBtn = document.querySelector('.polls-btn');
-                        if (pollsBtn) {
-                            pollsBtn.style.pointerEvents = 'auto';
-                            pollsBtn.style.opacity = '1';
-                        }
-                        sendIcon.style.pointerEvents = 'auto';
-                        sendIcon.style.opacity = '1';
-                        showNotification('Has sido desmuteado automáticamente', 'success');
+                        if (muteTimerPanel) muteTimerPanel.remove();
+                        showNotification('Serás desmuteado en un momento...', 'success');
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
                     } else {
                         const mins = Math.floor(timeLeft / 60000);
                         const secs = Math.ceil((timeLeft % 60000) / 1000);
-                        messageInput.placeholder = 'Muteado - ' + mins + 'm ' + secs + 's restantes';
+                        const countdown = muteTimerPanel.querySelector('.mute-timer-countdown');
+                        if (countdown) {
+                            countdown.textContent = mins + 'm ' + secs + 's';
+                        }
                     }
                 }, 1000);
             } else if (status.type === 'unmuted') {
                 if (muteTimerInterval) clearInterval(muteTimerInterval);
+                if (muteTimerPanel) muteTimerPanel.remove();
                 messageInput.disabled = false;
                 messageInput.placeholder = 'Escribe tu mensaje...';
                 imageBtn.style.pointerEvents = 'auto';

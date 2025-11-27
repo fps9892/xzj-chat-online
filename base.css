@@ -2958,3 +2958,85 @@ body {
     padding: 15px;
   }
 }
+
+/* Panel de Temporizador de Muteo */
+.mute-timer-panel {
+  position: fixed;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 152, 0, 0.95);
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: slideDown 0.3s ease;
+  border: 2px solid #ff9800;
+}
+
+.mute-timer-icon {
+  width: 24px;
+  height: 24px;
+  filter: brightness(0) invert(1);
+}
+
+.mute-timer-text {
+  font-size: 14px;
+  font-weight: 500;
+  font-family: "Inter", sans-serif;
+}
+
+.mute-timer-countdown {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  font-family: "Orbitron", monospace;
+}
+
+@keyframes slideDown {
+  from {
+    top: -100px;
+    opacity: 0;
+  }
+  to {
+    top: 70px;
+    opacity: 1;
+  }
+}
+
+@media (max-width: 767px) {
+  .mute-timer-panel {
+    top: 60px;
+    padding: 10px 16px;
+    font-size: 12px;
+    max-width: 90%;
+  }
+  
+  .mute-timer-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .mute-timer-text {
+    font-size: 12px;
+  }
+  
+  .mute-timer-countdown {
+    font-size: 14px;
+  }
+  
+  @keyframes slideDown {
+    from {
+      top: -100px;
+      opacity: 0;
+    }
+    to {
+      top: 60px;
+      opacity: 1;
+    }
+  }
+}

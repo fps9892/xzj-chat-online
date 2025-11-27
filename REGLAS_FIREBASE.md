@@ -12,10 +12,10 @@
 
 ### Sistema de Desmuteo Automático:
 - Temporizador visual en panel de unmute (actualización cada segundo)
-- Usuario muteado ve tiempo restante en placeholder del input
+- Panel fijo arriba del input muestra tiempo restante para usuario muteado
 - Desmuteo automático cuando expira el tiempo
-- Mensaje del sistema notifica el desmuteo automático
-- Controles se habilitan automáticamente
+- Recarga automática de la página al finalizar el muteo
+- Panel naranja con icono SVG y contador en tiempo real
 
 ### IDs de Usuario:
 - Usuarios registrados: IDs cortos (#1, #2, #3...)
@@ -207,6 +207,8 @@ Después de aplicar las reglas, verifica que:
 - Colección `muted` almacena `mutedUntil` (timestamp) para desmuteo automático
 - Colección `banned` almacena información de usuarios baneados con razón y timestamp
 - Colección `bannedIPs` almacena IPs baneadas para bloquear invitados
+- Usuario muteado ve panel fijo naranja arriba del input con temporizador en tiempo real
+- Al finalizar el tiempo de muteo, la página se recarga automáticamente para desmutear
 
 ## 🔧 Colecciones de Firestore
 
