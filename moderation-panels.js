@@ -180,13 +180,19 @@ export async function showUnbanPanel(database, currentRoom, showNotification, db
     });
 }
 
-export async function showMutePanel(database, currentRoom, currentUser, muteUser, showNotification) {
+export async function showMutePanel(database, currentRoom, currentUser, muteUser, showNotification, db) {
     const existingPanel = document.querySelector('.moderation-panel');
     if (existingPanel) existingPanel.remove();
     
     const roomsRef = ref(database, 'rooms');
     const roomsSnapshot = await new Promise(resolve => {
         onValue(roomsRef, resolve, { onlyOnce: true });
+    });
+    
+    const mutedSnapshot = await getDocs(collection(db, 'muted'));
+    const mutedUserIds = new Set();
+    mutedSnapshot.forEach(doc => {
+        mutedUserIds.add(doc.id);
     });
     
     const users = [];
@@ -198,12 +204,13 @@ export async function showMutePanel(database, currentRoom, currentUser, muteUser
             usersData.forEach(child => {
                 const userData = child.val();
                 const userKey = child.key;
-                if (userData.status === 'online' && userKey !== currentUser.userId && !seenUsers.has(userKey)) {
+                const userFirebaseUid = userData.firebaseUid || userKey;
+                if (userData.status === 'online' && userKey !== currentUser.userId && !seenUsers.has(userKey) && !mutedUserIds.has(userFirebaseUid)) {
                     if (userData.role !== 'Administrador') {
                         seenUsers.add(userKey);
                         users.push({
                             userId: userKey,
-                            firebaseUid: userData.firebaseUid || userKey,
+                            firebaseUid: userFirebaseUid,
                             name: userData.name || 'Usuario',
                             avatar: userData.avatar || 'images/profileuser.jpg',
                             isGuest: userData.isGuest || false

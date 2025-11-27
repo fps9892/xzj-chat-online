@@ -1523,11 +1523,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 const messageArea = document.querySelector('.message-area');
                 messageArea.insertBefore(muteTimerPanel, messageArea.firstChild);
                 
-                muteTimerInterval = setInterval(() => {
+                muteTimerInterval = setInterval(async () => {
                     const timeLeft = status.mutedUntil - Date.now();
                     if (timeLeft <= 0) {
                         clearInterval(muteTimerInterval);
                         if (muteTimerPanel) muteTimerPanel.remove();
+                        
+                        try {
+                            const { deleteDoc, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                            const mutedDoc = await getDoc(doc(db, 'muted', userIdToCheck));
+                            if (mutedDoc.exists()) {
+                                const username = mutedDoc.data().username || currentUser.username;
+                                await deleteDoc(doc(db, 'muted', userIdToCheck));
+                                
+                                const messageRef = push(ref(database, 'rooms/' + currentRoom + '/messages'));
+                                await set(messageRef, {
+                                    text: username + ' ha sido desmuteado automáticamente',
+                                    type: 'system',
+                                    timestamp: Date.now(),
+                                    id: messageRef.key
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Error al desmutear:', error);
+                        }
+                        
                         messageInput.disabled = false;
                         messageInput.placeholder = 'Escribe tu mensaje...';
                         imageBtn.style.pointerEvents = 'auto';
@@ -2271,7 +2291,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             if (lowerMessage === '!mute' && (currentUser.isAdmin || currentUser.isModerator)) {
-                showMutePanel(database, currentRoom, currentUser, muteUser, showNotification);
+                showMutePanel(database, currentRoom, currentUser, muteUser, showNotification, db);
                 messageInput.value = '';
                 return;
             }
