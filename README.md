@@ -495,7 +495,9 @@ node server.js
 - ✅ Links temporales únicos (expiran en 20 min)
 - ✅ Bot de juegos envía notificaciones al chat
 - ✅ Estadísticas: rondas, victorias, empates
-- ✅ Permite salir/entrar y jugar múltiples rondas
+- ✅ Permite salir del juego sin cerrar la página
+- ✅ Notificaciones de resultados en sala #juegos con nombres reales
+- ✅ Reinicio automático de rondas después de 3 segundos
 - ✅ Timer visible de 20 minutos
 - ✅ Responsive (móvil, tablet, desktop)
 

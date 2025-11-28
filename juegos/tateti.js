@@ -281,6 +281,8 @@ function showRoundResult(winner) {
 }
 
 async function sendResultNotification(winner) {
+    if (!gameData.player1 || !gameData.player2) return;
+    
     const player1Name = gameData.player1.name;
     const player2Name = gameData.player2.name;
     
@@ -289,16 +291,18 @@ async function sendResultNotification(winner) {
         resultText = `🤝 Empate entre ${player1Name} y ${player2Name}`;
     } else {
         const winnerName = winner === 'X' ? player1Name : player2Name;
-        resultText = `🎉 ${winnerName} ganó la ronda contra ${winner === 'X' ? player2Name : player1Name}`;
+        const loserName = winner === 'X' ? player2Name : player1Name;
+        resultText = `🎉 ${winnerName} ganó la ronda contra ${loserName}`;
     }
     
     const messageRef = ref(database, `rooms/juegos/messages/${Date.now()}`);
     await set(messageRef, {
         userId: 'bot-juegos',
         username: '🎮 Bot de Juegos',
-        message: resultText,
+        text: resultText,
         timestamp: Date.now(),
-        type: 'system'
+        type: 'game-result',
+        userAvatar: '/images/logo.svg'
     });
 }
 
@@ -311,9 +315,19 @@ document.getElementById('newRoundBtn').addEventListener('click', async () => {
     await startNewRound();
 });
 
-// Salir
-document.getElementById('exitBtn').addEventListener('click', () => {
+// Salir del juego (no de la página)
+document.getElementById('exitBtn').addEventListener('click', async () => {
     if (confirm('¿Salir del juego?')) {
+        const myId = currentUser.firebaseUid || currentUser.userId;
+        
+        // Remover jugador del juego
+        if (gameData.player1 && gameData.player1.id === myId) {
+            await update(gameRef, { player1: null });
+        } else if (gameData.player2 && gameData.player2.id === myId) {
+            await update(gameRef, { player2: null });
+        }
+        
+        // Volver a sala juegos
         window.location.href = '../index.html#juegos';
     }
 });

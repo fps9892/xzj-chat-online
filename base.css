@@ -3900,6 +3900,36 @@ body {
   transform: translateY(0);
 }
 
+/* Mensajes de resultados de juegos */
+.game-result-message {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 165, 0, 0.1)) !important;
+  border: 2px solid #ffd700 !important;
+  text-align: center;
+  margin: 15px auto;
+  max-width: 400px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+}
+
+.game-result-message .message-content {
+  padding: 15px 20px;
+  background: transparent !important;
+}
+
+.game-result-message .message-text {
+  color: #ffd700;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Orbitron', monospace;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.game-result-message .message-content::before,
+.game-result-message .message-content::after {
+  display: none;
+}
+
 @media (max-width: 767px) {
   .game-message {
     max-width: 95%;
@@ -3912,6 +3942,19 @@ body {
   
   .game-join-btn {
     padding: 10px 20px;
+    font-size: 13px;
+  }
+  
+  .game-result-message {
+    max-width: 95%;
+    margin: 10px auto;
+  }
+  
+  .game-result-message .message-content {
+    padding: 12px 15px;
+  }
+  
+  .game-result-message .message-text {
     font-size: 13px;
   }
 }

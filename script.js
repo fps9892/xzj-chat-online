@@ -947,6 +947,19 @@ document.addEventListener('DOMContentLoaded', function() {
             return gameEl;
         }
         
+        // Manejar resultados de juegos
+        if (message.type === 'game-result') {
+            return createElement(`
+                <div class="message-container game-result-message" data-message-id="${message.id}">
+                    <div class="message system">
+                        <div class="message-content">
+                            <div class="message-text">${message.text}</div>
+                        </div>
+                    </div>
+                </div>
+            `);
+        }
+        
         // Mostrar rol del usuario
         let displayName = message.userName;
         let roleTag = '';
