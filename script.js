@@ -2414,9 +2414,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Enviar mensaje
+    let isSendingMessage = false;
+    
     function sendMessageHandler() {
         const message = messageInput.value.trim();
-        if (message) {
+        if (message && !isSendingMessage) {
+            isSendingMessage = true;
+            messageInput.placeholder = '';
+            messageInput.disabled = true;
+            sendIcon.style.opacity = '0.5';
+            sendIcon.style.pointerEvents = 'none';
             const commandList = document.querySelector('.private-command-message');
             if (commandList) commandList.remove();
             
@@ -2458,6 +2465,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTypingStatus(false);
                 clearTimeout(typingTimeout);
                 
+                // Rehabilitar input y mantener foco
+                isSendingMessage = false;
+                messageInput.disabled = false;
+                sendIcon.style.opacity = '1';
+                sendIcon.style.pointerEvents = 'auto';
+                messageInput.focus();
+                
                 if (result && result.showDeleteNotification) {
                     showNotification(`⏳ La sala "${result.roomName}" será eliminada`, 'success');
                     return;
@@ -2477,6 +2491,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }).catch(error => {
                 console.error('Error enviando mensaje:', error);
                 showNotification(error.message || 'Error al enviar mensaje', 'error');
+                
+                // Rehabilitar input y mantener foco
+                isSendingMessage = false;
+                messageInput.disabled = false;
+                sendIcon.style.opacity = '1';
+                sendIcon.style.pointerEvents = 'auto';
+                messageInput.focus();
             });
         }
     }
@@ -2700,11 +2721,19 @@ document.addEventListener('DOMContentLoaded', function() {
         showNotification('Audio eliminado', 'info');
     });
     
+    let isSendingAudio = false;
+    
     sendAudioBtn.addEventListener('click', async () => {
         if (!recordedAudioBlob) {
             showNotification('No hay audio para enviar', 'error');
             return;
         }
+        
+        if (isSendingAudio) return;
+        
+        isSendingAudio = true;
+        sendAudioBtn.disabled = true;
+        sendAudioBtn.style.opacity = '0.5';
         
         const duration = Math.floor((Date.now() - recordingStartTime) / 1000);
         
@@ -2717,6 +2746,10 @@ document.addEventListener('DOMContentLoaded', function() {
             closeAudioPanelFunc();
         } catch (error) {
             showNotification('Error al enviar audio', 'error');
+        } finally {
+            isSendingAudio = false;
+            sendAudioBtn.disabled = false;
+            sendAudioBtn.style.opacity = '1';
         }
     });
     
