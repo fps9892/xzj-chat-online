@@ -1,6 +1,6 @@
 // Panel de juegos
 export async function showGamesPanel() {
-    const { createTatetiGame, database, ref, push, serverTimestamp, currentUser, currentRoom } = await import('./firebase.js');
+    const { createTatetiGame, createCarrerasGame, database, ref, push, serverTimestamp, currentUser, currentRoom } = await import('./firebase.js');
     
     const createElement = (html) => {
         const div = document.createElement('div');
