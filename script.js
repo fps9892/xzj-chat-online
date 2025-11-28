@@ -423,7 +423,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                         const ctx = canvas.getContext('2d');
                                         ctx.drawImage(img, 0, 0, width, height);
                                         
-                                        updates.avatar = canvas.toDataURL('image/jpeg', 0.7);
+                                        const mimeType = file.type === 'image/gif' ? 'image/gif' : 'image/jpeg';
+                                        const quality = file.type === 'image/gif' ? 1.0 : 0.7;
+                                        updates.avatar = canvas.toDataURL(mimeType, quality);
                                         const profileImg = document.querySelector('.profile-image');
                                         if (profileImg) profileImg.src = updates.avatar;
                                         
