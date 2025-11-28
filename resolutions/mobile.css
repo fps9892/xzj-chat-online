@@ -77,8 +77,7 @@
     align-items: center;
     gap: 5px;
     position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 10px;
     border: 2px solid #c97a6f;
     border-radius: 6px;
     padding: 5px 8px;
@@ -115,8 +114,7 @@
   .mobile-users-dropdown {
     position: absolute;
     top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0;
     width: 180px;
     background-color: #2a1a1a;
     border: 2px solid #c97a6f;
@@ -314,6 +312,77 @@
 
   .header-username {
     display: none;
+  }
+  
+  .header {
+    position: relative;
+  }
+  
+  .mobile-users-indicator {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  .mobile-users-dropdown {
+    left: 10px;
+    transform: none;
+  }
+  
+  .user-info {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+  
+  .room-selector {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  .rooms-btn {
+    padding: 6px 10px;
+    border-radius: 50%;
+  }
+  
+  .rooms-btn span {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .header {
+    position: relative;
+  }
+  
+  .mobile-users-indicator {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  .mobile-users-dropdown {
+    left: 10px;
+    transform: none;
+  }
+  
+  .user-info {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+  
+  .room-selector {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
   }
 }
 

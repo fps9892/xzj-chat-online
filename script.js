@@ -360,15 +360,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const acceptBtn = item.querySelector('.accept-btn');
         const cancelBtn = item.querySelector('.cancel-btn');
         
-        button.addEventListener('click', function() {
-            if (canChange(configType)) {
-                input.classList.add('active');
-                button.style.display = 'none';
-            } else {
-                const timeLeft = getTimeLeft(configType);
-                showNotification(`Debes esperar ${timeLeft} para cambiar esto`, 'warning');
-            }
-        });
+        if (button) {
+            button.addEventListener('click', function() {
+                if (canChange(configType)) {
+                    if (input) input.classList.add('active');
+                    button.style.display = 'none';
+                } else {
+                    const timeLeft = getTimeLeft(configType);
+                    showNotification(`Debes esperar ${timeLeft} para cambiar esto`, 'warning');
+                }
+            });
+        }
         
         if (cancelBtn) {
             cancelBtn.addEventListener('click', function() {
@@ -399,8 +401,46 @@ document.addEventListener('DOMContentLoaded', function() {
                         const file = inputField.files[0];
                         if (file) {
                             try {
-                                updates.avatar = await fileToBase64(file);
-                                document.querySelector('.profile-image').src = updates.avatar;
+                                const img = new Image();
+                                const reader = new FileReader();
+                                reader.onload = async (e) => {
+                                    img.onload = async () => {
+                                        const canvas = document.createElement('canvas');
+                                        let width = img.width;
+                                        let height = img.height;
+                                        const maxSize = 800;
+                                        
+                                        if (width > height && width > maxSize) {
+                                            height = (height * maxSize) / width;
+                                            width = maxSize;
+                                        } else if (height > maxSize) {
+                                            width = (width * maxSize) / height;
+                                            height = maxSize;
+                                        }
+                                        
+                                        canvas.width = width;
+                                        canvas.height = height;
+                                        const ctx = canvas.getContext('2d');
+                                        ctx.drawImage(img, 0, 0, width, height);
+                                        
+                                        updates.avatar = canvas.toDataURL('image/jpeg', 0.7);
+                                        const profileImg = document.querySelector('.profile-image');
+                                        if (profileImg) profileImg.src = updates.avatar;
+                                        
+                                        const success = await updateUserData(updates);
+                                        if (success) {
+                                            showNotification('Foto de perfil actualizada correctamente', 'success');
+                                        } else {
+                                            showNotification('Error al actualizar', 'error');
+                                        }
+                                        
+                                        input.classList.remove('active');
+                                        button.style.display = 'block';
+                                    };
+                                    img.src = e.target.result;
+                                };
+                                reader.readAsDataURL(file);
+                                return;
                             } catch (error) {
                                 showNotification(error.message, 'error');
                                 return;

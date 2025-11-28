@@ -121,6 +121,9 @@ body {
   gap: 6px;
   cursor: pointer;
   transition: all 0.3s;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .user-info:hover {
@@ -728,8 +731,12 @@ body {
 }
 
 .config-item span {
-  font-weight: 500;
+  font-weight: 600;
   color: #f5e6e3;
+  font-family: "Orbitron", monospace;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .config-item:last-child {
@@ -737,21 +744,25 @@ body {
 }
 
 .config-item button {
-  background: #d4a59a;
+  background: linear-gradient(135deg, #d4a59a 0%, #c97a6f 100%);
   border: 2px solid #c97a6f;
   color: #1a0f0f;
-  padding: 8px 16px;
+  padding: 8px 14px;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
   font-family: "Orbitron", monospace;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(201, 122, 111, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .config-item button:hover {
-  background: #c97a6f;
-  transform: translateY(-2px);
+  background: linear-gradient(135deg, #c97a6f 0%, #b86a5f 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(201, 122, 111, 0.5);
 }
 
 .config-item.danger button {
@@ -860,13 +871,46 @@ body {
 }
 
 .config-input input {
-  background-color: #2a1a1a;
-  border: 1px solid #fff;
-  color: #fff;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 12px;
+  background-color: #1a0f0f;
+  border: 2px solid #c97a6f;
+  color: #f5e6e3;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
   outline: none;
+  font-family: "Inter", sans-serif;
+  transition: all 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.config-input input:focus {
+  border-color: #d4a59a;
+  box-shadow: 0 0 10px rgba(201, 122, 111, 0.3);
+}
+
+.config-input input[type="file"] {
+  padding: 8px;
+  font-size: 12px;
+}
+
+@media (max-width: 1023px) {
+  .config-input input {
+    font-size: 12px;
+    padding: 9px 12px;
+  }
+}
+
+@media (max-width: 767px) {
+  .config-input input {
+    font-size: 11px;
+    padding: 8px 10px;
+  }
+  
+  .config-input input[type="file"] {
+    font-size: 10px;
+    padding: 6px;
+  }
 }
 
 .config-input input::placeholder {
@@ -879,25 +923,35 @@ body {
 }
 
 .config-input button {
-  background-color: #2a1a1a;
-  border: 1px solid #fff;
-  color: #fff;
-  padding: 6px 12px;
-  border-radius: 6px;
+  background: #2a1a1a;
+  border: 2px solid #c97a6f;
+  color: #f5e6e3;
+  padding: 8px 14px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 12px;
+  font-family: "Orbitron", monospace;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 
 .config-input button:hover {
-  background-color: #5c3838;
+  background: #5c3838;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(201, 122, 111, 0.2);
 }
 
 .config-input .accept-btn {
-  border-color: #d4a59a;
-  color: #f5e6e3;
+  background: linear-gradient(135deg, #d4a59a 0%, #c97a6f 100%);
+  border-color: #c97a6f;
+  color: #1a0f0f;
+  font-weight: 700;
 }
 
 .config-input .accept-btn:hover {
+  background: linear-gradient(135deg, #c97a6f 0%, #b86a5f 100%);
+  box-shadow: 0 4px 12px rgba(201, 122, 111, 0.4);
+}
   background-color: #f5e6e3;
   color: #1a0f0f;
 }
@@ -981,7 +1035,7 @@ body {
   padding: 12px 20px;
   font-size: 13px;
   font-family: "Orbitron", monospace;
-  z-index: 3000;
+  z-index: 99999999;
   transform: translateX(400px);
   transition: all 0.3s ease;
   max-width: calc(100% - 40px);
@@ -1136,7 +1190,7 @@ body {
   padding: 10px 16px;
   font-size: 13px;
   font-family: "Orbitron", monospace;
-  z-index: 2500;
+  z-index: 99999999;
   transform: translateX(-400px);
   transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   display: flex;
@@ -2733,15 +2787,20 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 15px;
+  padding: 8px 12px;
   border: 2px solid #c97a6f;
-  border-radius: 20px;
+  border-radius: 50%;
   cursor: pointer;
   background: rgba(201, 122, 111, 0.05);
   color: #fff;
   font-family: "Orbitron", monospace;
   font-size: 14px;
   transition: all 0.3s;
+  margin-left: auto;
+}
+
+.rooms-btn span {
+  display: none;
 }
 
 .rooms-btn:hover {
@@ -3644,6 +3703,7 @@ body {
 @media (max-width: 767px) {
   .room-header {
     top: 60px;
+    background: linear-gradient(to top, transparent, #2a1a1a); !important
   }
 
   .chat-area {

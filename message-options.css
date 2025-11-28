@@ -42,7 +42,8 @@
 
 .message-options-menu {
   position: absolute;
-  top: 28px;
+  bottom: 30px;
+
   right: 8px;
   background: #2a1a1a;
   border: 1px solid #c97a6f;
