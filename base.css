@@ -4051,6 +4051,8 @@ body {
 
 .level-progress-ring {
     transform: rotate(-90deg);
+    width: 80px;
+    height: 80px;
 }
 
 .level-progress-ring-bg {
@@ -4076,6 +4078,7 @@ body {
     font-weight: bold;
     color: #d4a59a;
     font-family: "Orbitron", monospace;
+    pointer-events: none;
 }
 
 .level-info-text {

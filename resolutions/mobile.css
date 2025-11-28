@@ -249,6 +249,37 @@
     gap: 8px;
   }
 
+  /* Controls container adaptado para mobile */
+  .controls-container {
+    padding: 8px 12px;
+    gap: 10px;
+    border-radius: 40px;
+    margin-bottom: 8px;
+  }
+
+  .controls-left,
+  .controls-right {
+    gap: 8px;
+  }
+
+  .controls-center {
+    padding: 0 10px;
+  }
+
+  .controls-logo {
+    width: 28px;
+    height: 28px;
+  }
+
+  .controls-container .image-btn,
+  .controls-container .emote-btn,
+  .controls-container .polls-btn,
+  .controls-container .mic-btn {
+    width: 36px;
+    height: 36px;
+    padding: 8px;
+  }
+
   .standalone-emote {
     width: 48px;
     height: 48px;
