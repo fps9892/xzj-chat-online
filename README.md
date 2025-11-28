@@ -4,7 +4,7 @@
 
 ### ✅ Nuevo en v3.9
 
-1. **Sistema de Juegos** - Comando `!crearjuegos` en sala #juegos para crear partidas
+1. **Sistema de Juegos** - Comando `!crearjuegos` disponible en todas las salas para crear partidas
 2. **Ta-Te-Ti Multijugador** - Juego en tiempo real para 2 jugadores con Firebase
 3. **Links Temporales** - Cada juego tiene un link único que expira en 20 minutos
 4. **Bot de Juegos** - Envía notificaciones automáticas al chat con links
@@ -489,7 +489,7 @@ node server.js
 
 ### Sistema de Juegos 🎮
 
-- ✅ `!crearjuegos` - Abrir panel de juegos (solo en sala #juegos)
+- ✅ `!crearjuegos` - Abrir panel de juegos (disponible en todas las salas)
 - ✅ **Ta-Te-Ti** - Juego para 2 jugadores en tiempo real
 - ✅ Links temporales únicos (expiran en 20 min)
 - ✅ Bot de juegos envía notificaciones al chat
@@ -701,7 +701,7 @@ Tu proyecto FYZAR CHAT v3.9 incluye:
 - **Redirección forzada**: Recarga completa a index.html
 
 ### Sistema de Juegos
-- **Comando**: `!crearjuegos` solo disponible en sala #juegos
+- **Comando**: `!crearjuegos` disponible en todas las salas
 - **Ta-Te-Ti**: Juego multijugador en tiempo real con Firebase
 - **Links temporales**: Cada juego tiene un ID único, expira en 20 min
 - **Bot de juegos**: Envía notificaciones automáticas al chat

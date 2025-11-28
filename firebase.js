@@ -1766,9 +1766,6 @@ export async function processAdminCommand(message) {
                 return { success: true, message: 'Historial de chat eliminado' };
                 
             case '!crearjuegos':
-                if (currentRoom !== 'juegos') {
-                    throw new Error('Este comando solo está disponible en la sala #juegos');
-                }
                 return { success: false, showGamesPanel: true };
                 
             default:
