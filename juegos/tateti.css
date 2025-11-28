@@ -88,6 +88,26 @@ body {
     font-size: 1.8em;
 }
 
+.join-btn {
+    padding: 8px 16px;
+    background: #d4a59a;
+    color: #1a0f0f;
+    border: 2px solid #c97a6f;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Orbitron', monospace;
+    margin-top: 8px;
+}
+
+.join-btn:hover {
+    background: #c97a6f;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(201, 122, 111, 0.4);
+}
+
 .vs {
     font-weight: bold;
     font-size: 1.5em;

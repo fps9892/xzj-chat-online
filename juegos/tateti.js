@@ -42,77 +42,86 @@ onValue(gameRef, (snapshot) => {
     updateUI();
 });
 
-// Unirse al juego
-async function joinGame() {
+// Verificar si ya está unido
+function checkIfJoined() {
     const myId = currentUser.firebaseUid || currentUser.userId;
     
     if (gameData.player1 && gameData.player1.id === myId) {
         mySymbol = 'X';
-        return;
+        return true;
     }
     if (gameData.player2 && gameData.player2.id === myId) {
         mySymbol = 'O';
-        return;
+        return true;
     }
-    
-    if (!gameData.player1 && !gameData.player2) {
-        const choice = confirm('¿Quieres ser X? (Aceptar = X, Cancelar = O)');
-        mySymbol = choice ? 'X' : 'O';
-        
-        if (mySymbol === 'X') {
-            await update(gameRef, {
-                player1: {
-                    id: myId,
-                    name: currentUser.username,
-                    avatar: currentUser.avatar
-                }
-            });
-        } else {
-            await update(gameRef, {
-                player2: {
-                    id: myId,
-                    name: currentUser.username,
-                    avatar: currentUser.avatar
-                }
-            });
-        }
-    } else if (!gameData.player1) {
-        mySymbol = 'X';
-        await update(gameRef, {
-            player1: {
-                id: myId,
-                name: currentUser.username,
-                avatar: currentUser.avatar
-            },
-            status: 'playing',
-            currentTurn: 'X'
-        });
-    } else if (!gameData.player2) {
-        mySymbol = 'O';
-        await update(gameRef, {
-            player2: {
-                id: myId,
-                name: currentUser.username,
-                avatar: currentUser.avatar
-            },
-            status: 'playing',
-            currentTurn: 'X'
-        });
-    }
+    return false;
 }
 
-joinGame();
+// Unirse como X
+document.getElementById('joinX').addEventListener('click', async () => {
+    const myId = currentUser.firebaseUid || currentUser.userId;
+    if (gameData.player1) return;
+    
+    mySymbol = 'X';
+    await update(gameRef, {
+        player1: {
+            id: myId,
+            name: currentUser.username,
+            avatar: currentUser.avatar
+        },
+        status: gameData.player2 ? 'playing' : 'waiting',
+        currentTurn: gameData.player2 ? 'X' : null
+    });
+});
+
+// Unirse como O
+document.getElementById('joinO').addEventListener('click', async () => {
+    const myId = currentUser.firebaseUid || currentUser.userId;
+    if (gameData.player2) return;
+    
+    mySymbol = 'O';
+    await update(gameRef, {
+        player2: {
+            id: myId,
+            name: currentUser.username,
+            avatar: currentUser.avatar
+        },
+        status: gameData.player1 ? 'playing' : 'waiting',
+        currentTurn: gameData.player1 ? 'X' : null
+    });
+});
 
 function updateUI() {
+    const myId = currentUser.firebaseUid || currentUser.userId;
+    const isJoined = checkIfJoined();
+    
+    // Mostrar/ocultar botones de unirse
+    const joinXBtn = document.getElementById('joinX');
+    const joinOBtn = document.getElementById('joinO');
+    
+    if (!isJoined) {
+        joinXBtn.style.display = gameData.player1 ? 'none' : 'block';
+        joinOBtn.style.display = gameData.player2 ? 'none' : 'block';
+    } else {
+        joinXBtn.style.display = 'none';
+        joinOBtn.style.display = 'none';
+    }
+    
     // Actualizar jugadores
     if (gameData.player1) {
         document.getElementById('player1Name').textContent = gameData.player1.name;
         document.getElementById('player1Avatar').style.backgroundImage = `url(${gameData.player1.avatar})`;
+    } else {
+        document.getElementById('player1Name').textContent = 'Esperando...';
+        document.getElementById('player1Avatar').style.backgroundImage = 'none';
     }
     
     if (gameData.player2) {
         document.getElementById('player2Name').textContent = gameData.player2.name;
         document.getElementById('player2Avatar').style.backgroundImage = `url(${gameData.player2.avatar})`;
+    } else {
+        document.getElementById('player2Name').textContent = 'Esperando...';
+        document.getElementById('player2Avatar').style.backgroundImage = 'none';
     }
     
     // Actualizar tablero
@@ -121,6 +130,26 @@ function updateUI() {
         const value = gameData.board[index];
         cell.textContent = value === 'X' ? '❌' : value === 'O' ? '⭕' : '';
         cell.classList.toggle('taken', value !== '');
+        
+        // Resaltar celdas ganadoras
+        if (gameData.winner && gameData.winner !== 'draw') {
+            const winningLines = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+            
+            for (const line of winningLines) {
+                if (line.every(i => gameData.board[i] === gameData.winner)) {
+                    if (line.includes(index)) {
+                        cell.classList.add('winner');
+                    }
+                    break;
+                }
+            }
+        } else {
+            cell.classList.remove('winner');
+        }
     });
     
     // Actualizar estado
@@ -163,6 +192,7 @@ function updateUI() {
 // Click en celda
 document.getElementById('gameBoard').addEventListener('click', async (e) => {
     if (!e.target.classList.contains('cell')) return;
+    if (!mySymbol) return;
     if (gameData.status !== 'playing') return;
     if (gameData.currentTurn !== mySymbol) return;
     
@@ -176,12 +206,21 @@ document.getElementById('gameBoard').addEventListener('click', async (e) => {
     const nextTurn = mySymbol === 'X' ? 'O' : 'X';
     
     if (winner) {
-        await update(gameRef, {
+        const updates = {
             board: newBoard,
             status: 'finished',
-            winner: winner,
-            [`stats/${winner === 'draw' ? 'draws' : winner === 'X' ? 'winsX' : 'winsO'}`]: gameData.stats[winner === 'draw' ? 'draws' : winner === 'X' ? 'winsX' : 'winsO'] + 1
-        });
+            winner: winner
+        };
+        
+        if (winner === 'draw') {
+            updates['stats/draws'] = (gameData.stats.draws || 0) + 1;
+        } else if (winner === 'X') {
+            updates['stats/winsX'] = (gameData.stats.winsX || 0) + 1;
+        } else {
+            updates['stats/winsO'] = (gameData.stats.winsO || 0) + 1;
+        }
+        
+        await update(gameRef, updates);
     } else {
         await update(gameRef, {
             board: newBoard,
@@ -209,12 +248,17 @@ function checkWinner(board) {
 
 // Nueva ronda
 document.getElementById('newRoundBtn').addEventListener('click', async () => {
+    if (!gameData.player1 || !gameData.player2) {
+        alert('Se necesitan 2 jugadores para iniciar una nueva ronda');
+        return;
+    }
+    
     await update(gameRef, {
         board: ['', '', '', '', '', '', '', '', ''],
         status: 'playing',
         currentTurn: 'X',
         winner: null,
-        'stats/rounds': gameData.stats.rounds + 1
+        'stats/rounds': (gameData.stats.rounds || 0) + 1
     });
     document.getElementById('newRoundBtn').style.display = 'none';
 });

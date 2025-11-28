@@ -52,7 +52,7 @@ Campos:
 
 #### Realtime Database Rules:
 
-Agregar en la sección `rooms`:
+Agregar en la sección principal:
 
 ```json
 "games": {
@@ -61,7 +61,93 @@ Agregar en la sección `rooms`:
   "tateti": {
     "$gameId": {
       ".read": true,
+      ".write": true,
+      ".indexOn": ["status", "createdAt"]
+    }
+  }
+}
+```
+
+**Reglas completas de Realtime Database:**
+
+```json
+{
+  "rules": {
+    "rooms": {
+      ".read": true,
+      ".write": true,
+      "$roomId": {
+        ".read": true,
+        ".write": true,
+        "messages": {
+          ".indexOn": ["timestamp"],
+          "$messageId": {
+            ".read": true,
+            ".write": true
+          }
+        },
+        "users": {
+          ".indexOn": ["status", "lastSeen"],
+          "$userId": {
+            ".read": true,
+            ".write": true
+          }
+        },
+        "typing": {
+          "$userId": {
+            ".read": true,
+            ".write": true
+          }
+        }
+      }
+    },
+    "games": {
+      ".read": true,
+      ".write": true,
+      "tateti": {
+        "$gameId": {
+          ".read": true,
+          ".write": true,
+          ".indexOn": ["status", "createdAt"]
+        }
+      }
+    },
+    "globalAnnouncements": {
+      ".read": true,
+      ".write": true,
+      "$announcementId": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "deviceCounts": {
+      ".read": true,
       ".write": true
+    },
+    "roomEvents": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": ["timestamp"],
+      "$eventId": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "roomAccessNotifications": {
+      ".read": true,
+      ".write": true,
+      "$userId": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "roomDeleted": {
+      ".read": true,
+      ".write": true,
+      "$roomId": {
+        ".read": true,
+        ".write": true
+      }
     }
   }
 }
@@ -77,34 +163,39 @@ Agregar en la sección `rooms`:
 4. Click en "Crear Sala" del Ta-Te-Ti
 5. Se envía mensaje al chat con link del juego
 6. Click en el link para abrir el juego en nueva pestaña
-7. Esperar a que entre otro jugador
-8. ¡Jugar!
+7. Click en "Unirse como X" o "Unirse como O"
+8. Esperar a que entre otro jugador
+9. ¡Jugar!
 
 ### Flujo del Juego:
 
 1. **Creación**: Usuario crea sala con `!crearjuegos`
-2. **Link Temporal**: Se genera link único válido por 10 min
-3. **Mensaje Bot**: Bot envía link al chat de #juegos
-4. **Espera**: Juego espera a 2 jugadores
-5. **Inicio**: Cuando entran 2 jugadores, comienza el juego
-6. **Jugar**: Turnos alternados X y O
-7. **Resultado**: Muestra ganador o empate
-8. **Nueva Ronda**: Botón para jugar otra ronda
-9. **Estadísticas**: Contador de victorias y empates
-10. **Expiración**: Sala se elimina automáticamente después de 20 min
+2. **Link Temporal**: Se genera link único válido por 20 min
+3. **Mensaje Bot**: Bot envía link al chat
+4. **Unión**: Jugadores hacen click en "Unirse como X" o "Unirse como O"
+5. **Espera**: Juego espera a que ambos jugadores se unan
+6. **Inicio**: Cuando hay 2 jugadores, comienza el juego
+7. **Jugar**: Turnos alternados X y O
+8. **Resultado**: Muestra ganador o empate con animación
+9. **Nueva Ronda**: Botón para jugar otra ronda
+10. **Estadísticas**: Contador de rondas, victorias y empates
+11. **Expiración**: Sala se elimina automáticamente después de 20 min
 
 ## 🎮 Juegos Disponibles
 
 ### Ta-Te-Ti (Tic-Tac-Toe)
 
-- ✅ 2 jugadores
-- ✅ Turnos alternados
-- ✅ Detección de ganador
+- ✅ 2 jugadores con selección de símbolo (X o O)
+- ✅ Botones "Unirse como X" y "Unirse como O"
+- ✅ Turnos alternados con indicador visual
+- ✅ Detección de ganador con animación
 - ✅ Detección de empate
-- ✅ Múltiples rondas
-- ✅ Estadísticas en tiempo real
-- ✅ Timer de expiración
+- ✅ Múltiples rondas sin recrear sala
+- ✅ Estadísticas en tiempo real (rondas, victorias X/O, empates)
+- ✅ Timer de 20 minutos visible
+- ✅ Avatares de jugadores en header
 - ✅ Responsive (móvil, tablet, desktop)
+- ✅ Diseño con colores del chat principal
 
 ### Próximamente:
 
@@ -151,12 +242,14 @@ games/tateti/{gameId}:
 
 ## 📝 Notas Importantes
 
-1. **Sala #juegos**: El comando `!crearjuegos` SOLO funciona en la sala #juegos
-2. **Links Temporales**: Los links expiran en 10 minutos (mensaje en chat)
-3. **Salas de Juego**: Las salas se eliminan después de 20 minutos
-4. **Persistencia**: Los jugadores pueden salir y volver a entrar
+1. **Comando**: `!crearjuegos` disponible en todas las salas
+2. **Unión**: Los jugadores deben hacer click en "Unirse como X" o "Unirse como O"
+3. **Salas de Juego**: Las salas se eliminan automáticamente después de 20 minutos
+4. **Persistencia**: Los jugadores pueden salir y volver a entrar manteniendo su símbolo
 5. **Múltiples Rondas**: Se pueden jugar varias rondas sin crear nueva sala
 6. **Estadísticas**: Se mantienen durante toda la sesión de juego
+7. **Turnos**: El jugador X siempre comienza
+8. **Ganador**: Se resalta la línea ganadora con animación
 
 ## ✅ Checklist de Verificación
 

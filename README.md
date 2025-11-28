@@ -300,7 +300,8 @@ Firebase Console → Realtime Database → Rules
       "tateti": {
         "$gameId": {
           ".read": true,
-          ".write": true
+          ".write": true,
+          ".indexOn": ["status", "createdAt"]
         }
       }
     },
@@ -703,8 +704,10 @@ Tu proyecto FYZAR CHAT v3.9 incluye:
 ### Sistema de Juegos
 - **Comando**: `!crearjuegos` disponible en todas las salas
 - **Ta-Te-Ti**: Juego multijugador en tiempo real con Firebase
+- **Unión**: Botones "Unirse como X" y "Unirse como O" para elegir símbolo
 - **Links temporales**: Cada juego tiene un ID único, expira en 20 min
 - **Bot de juegos**: Envía notificaciones automáticas al chat
 - **Estadísticas**: Rondas, victorias X/O, empates en tiempo real
 - **Persistencia**: Permite salir/entrar y jugar múltiples rondas
+- **Diseño**: Colores del chat principal, avatares de jugadores en header
 - **Archivos**: `/juegos/tateti.html`, `/juegos/tateti.css`, `/juegos/tateti.js`
