@@ -3805,10 +3805,11 @@ body {
   .room-header {
     top: 60px;
     background: linear-gradient(to bottom, #2a1a1a 0%, rgba(42, 26, 26, 0.95) 50%, transparent 100%) !important;
+    position: fixed;
   }
 
   .chat-area {
-    margin-top: 40px;
+    margin-top: 100px;
   }
 
   .mute-timer-panel {
