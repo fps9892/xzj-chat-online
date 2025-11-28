@@ -3,12 +3,14 @@
 ## ✅ Cambios Implementados
 
 ### 1. Problema del Placeholder Resuelto
+
 - Los comandos `!ban`, `!unban`, `!mute`, `!unmute` ya no bloquean el placeholder
 - La detección de comandos ahora ocurre ANTES de deshabilitar el input
 
 ### 2. Sistema de Juegos Implementado
 
 #### Archivos Creados:
+
 - `/juegos/tateti.html` - Interfaz del juego Ta-Te-Ti
 - `/juegos/tateti.css` - Estilos del juego
 - `/juegos/tateti.js` - Lógica del juego con Firebase
@@ -16,12 +18,13 @@
 - `/games-panel.css` - Estilos del panel
 
 #### Características:
-- ✅ Comando `!crearjuegos` solo disponible en sala #juegos
+
+- ✅ Comando `!crearjuegos` disponible en todas las salas
 - ✅ Panel con lista de juegos disponibles
 - ✅ Ta-Te-Ti funcional para 2 jugadores
 - ✅ Links temporales únicos por cada juego (expiran en 20 min)
 - ✅ Mensaje automático en chat con link del juego
-- ✅ Bot de juegos que envía notificaciones
+- ✅ notificaciones automáticas al chat con links
 - ✅ Sistema de estadísticas (rondas, victorias, empates)
 - ✅ Timer de 20 minutos visible en el juego
 - ✅ Permite salir y volver a entrar al juego
@@ -48,6 +51,7 @@ Campos:
 ### 2. Actualizar Reglas de Firebase
 
 #### Realtime Database Rules:
+
 Agregar en la sección `rooms`:
 
 ```json
@@ -66,7 +70,8 @@ Agregar en la sección `rooms`:
 ## 🎯 Cómo Usar
 
 ### Para Usuarios:
-1. Ir a la sala #juegos: `index.html#juegos`
+
+1. Ir a cualquier sala publica ej: `index.html#general`
 2. Escribir comando: `!crearjuegos`
 3. Se abre panel con juegos disponibles
 4. Click en "Crear Sala" del Ta-Te-Ti
@@ -76,6 +81,7 @@ Agregar en la sección `rooms`:
 8. ¡Jugar!
 
 ### Flujo del Juego:
+
 1. **Creación**: Usuario crea sala con `!crearjuegos`
 2. **Link Temporal**: Se genera link único válido por 10 min
 3. **Mensaje Bot**: Bot envía link al chat de #juegos
@@ -90,6 +96,7 @@ Agregar en la sección `rooms`:
 ## 🎮 Juegos Disponibles
 
 ### Ta-Te-Ti (Tic-Tac-Toe)
+
 - ✅ 2 jugadores
 - ✅ Turnos alternados
 - ✅ Detección de ganador
@@ -100,6 +107,7 @@ Agregar en la sección `rooms`:
 - ✅ Responsive (móvil, tablet, desktop)
 
 ### Próximamente:
+
 - 🎲 Dados
 - 🃏 Cartas
 - 🎯 Más juegos...
@@ -130,11 +138,13 @@ games/tateti/{gameId}:
 ```
 
 ### URLs de Juegos:
+
 - Formato: `/juegos/tateti.html?id={gameId}`
 - Ejemplo: `/juegos/tateti.html?id=abc123xyz789`
 - Cada sala tiene un ID único generado aleatoriamente
 
 ### Auto-eliminación:
+
 - Timeout de 20 minutos desde la creación
 - Se ejecuta automáticamente en el servidor
 - Los jugadores son notificados cuando expira

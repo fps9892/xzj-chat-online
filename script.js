@@ -2451,6 +2451,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 messageInput.value = '';
                 return;
             }
+            if (lowerMessage === '!crearjuegos') {
+                showGamesPanel();
+                messageInput.value = '';
+                return;
+            }
             
             isSendingMessage = true;
             messageInput.placeholder = '';
