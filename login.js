@@ -231,7 +231,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const confetti = document.createElement('div');
             confetti.className = 'confetti';
             confetti.style.left = Math.random() * 100 + '%';
-            confetti.style.background = ['#00ff00', '#00ffff', '#ff00ff'][Math.floor(Math.random() * 3)];
+            confetti.style.background = ['#c97a6f', '#a85a52', '#d89a8f'][Math.floor(Math.random() * 3)];
             confetti.style.animationDelay = Math.random() * 0.5 + 's';
             overlay.appendChild(confetti);
         }
@@ -368,7 +368,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 email: email,
                 avatar: avatarUrl,
                 description: description || 'Nuevo usuario',
-                country: country || 'No especificado',
+                country: country || '🌎',
                 createdAt: now.toISOString(),
                 lastSeen: now.toISOString(),
                 role: 'user',

@@ -42,6 +42,7 @@ body {
   position: absolute;
   opacity: 0.1;
   animation: floatIcon 20s infinite ease-in-out;
+  stroke: #c97a6f;
 }
 
 .bg-icon:nth-child(1) {
@@ -692,16 +693,19 @@ body {
 
 .welcome-content h1 {
   font-family: "Orbitron", monospace;
-  font-size: 36px;
+  font-size: 42px;
   color: #c97a6f;
-  margin-bottom: 20px;
-  text-shadow: 0 0 10px #c97a6f;
+  margin-bottom: 30px;
+  text-shadow: 0 0 20px #c97a6f, 0 0 40px rgba(201, 122, 111, 0.5);
+  letter-spacing: 3px;
 }
 
 .welcome-content p {
-  font-size: 16px;
+  font-size: 18px;
   color: #fff;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
+  font-family: "Inter", sans-serif;
+  opacity: 0.9;
 }
 
 @keyframes scaleIn {
@@ -717,9 +721,11 @@ body {
 
 .confetti {
   position: absolute;
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   background: #c97a6f;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #c97a6f;
   animation: confettiFall 3s ease-out forwards;
 }
 
