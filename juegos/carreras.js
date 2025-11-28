@@ -34,6 +34,8 @@ let raceStarted = false;
 let raceFinished = false;
 let myFinishTime = null;
 
+let hasJoined = false;
+
 onValue(gameRef, (snapshot) => {
     if (!snapshot.exists()) {
         alert('El juego ha finalizado');
@@ -42,6 +44,8 @@ onValue(gameRef, (snapshot) => {
     }
     
     gameData = snapshot.val();
+    const myId = currentUser.firebaseUid || currentUser.userId;
+    hasJoined = gameData.players && gameData.players[myId];
     updateUI();
 });
 
@@ -49,19 +53,24 @@ async function joinRace() {
     const myId = currentUser.firebaseUid || currentUser.userId;
     const players = gameData.players || {};
     
-    if (!players[myId]) {
-        await update(ref(database, `games/carreras/${gameId}/players/${myId}`), {
-            id: myId,
-            name: currentUser.username,
-            avatar: currentUser.avatar,
-            position: 0,
-            finished: false,
-            finishTime: null
-        });
+    if (Object.keys(players).length >= 8) {
+        alert('La carrera está llena (máximo 8 jugadores)');
+        return;
     }
+    
+    await update(ref(database, `games/carreras/${gameId}/players/${myId}`), {
+        id: myId,
+        name: currentUser.username,
+        avatar: currentUser.avatar,
+        position: 0,
+        finished: false,
+        finishTime: null
+    });
+    
+    hasJoined = true;
 }
 
-joinRace();
+document.getElementById('joinBtn').addEventListener('click', joinRace);
 
 function updateUI() {
     const players = gameData.players || {};
@@ -73,6 +82,9 @@ function updateUI() {
         document.getElementById('waitingRoom').style.display = 'block';
         document.getElementById('raceArea').style.display = 'none';
         document.getElementById('resultsScreen').style.display = 'none';
+        
+        const joinBtn = document.getElementById('joinBtn');
+        joinBtn.style.display = hasJoined ? 'none' : 'block';
         
         const playersWaiting = document.getElementById('playersWaiting');
         playersWaiting.innerHTML = '';
@@ -88,7 +100,7 @@ function updateUI() {
         });
         
         const startBtn = document.getElementById('startBtn');
-        startBtn.disabled = playerCount < 2;
+        startBtn.disabled = playerCount < 2 || !hasJoined;
         
         if (!startBtn.dataset.listenerAdded) {
             startBtn.addEventListener('click', startRace);

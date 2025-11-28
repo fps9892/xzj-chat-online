@@ -269,6 +269,20 @@ button {
     font-family: 'Orbitron', monospace;
 }
 
+.btn-join {
+    background: linear-gradient(135deg, #4a9eff, #357abd);
+    color: #fff;
+    border: 2px solid #4a9eff;
+    padding: 15px 40px;
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.btn-join:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(74, 158, 255, 0.5);
+}
+
 .btn-primary {
     background: #d4a59a;
     color: #1a0f0f;

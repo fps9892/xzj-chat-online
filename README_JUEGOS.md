@@ -1,35 +1,46 @@
 # 🎮 Sistema de Juegos - FYZAR CHAT v3.9
 
-## ✅ Cambios Implementados
+## 🎯 Juegos Disponibles
 
-### 1. Problema del Placeholder Resuelto
+### 1. Ta-Te-Ti (Tic-Tac-Toe) ❌⭕
 
-- Los comandos `!ban`, `!unban`, `!mute`, `!unmute` ya no bloquean el placeholder
-- La detección de comandos ahora ocurre ANTES de deshabilitar el input
+**Cómo jugar:**
+- 2 jugadores
+- Click en "Unirse como X" o "Unirse como O" para elegir símbolo
+- Turnos alternados
+- Gana quien complete 3 en línea (horizontal, vertical o diagonal)
+- Múltiples rondas sin recrear sala
 
-### 2. Sistema de Juegos Implementado
+**Controles:**
+- Click en casilla vacía para marcar
+- Botón "Nueva Ronda" después de cada partida
 
-#### Archivos Creados:
+### 2. Carreras 🏎️
 
-- `/juegos/tateti.html` - Interfaz del juego Ta-Te-Ti
-- `/juegos/tateti.css` - Estilos del juego
-- `/juegos/tateti.js` - Lógica del juego con Firebase
-- `/games-panel.js` - Panel de creación de juegos
-- `/games-panel.css` - Estilos del panel
+**Cómo jugar:**
+- 2-8 jugadores
+- Click en "🏎️ Unirse a la Carrera" para participar
+- Cualquier jugador puede iniciar cuando hay mínimo 2
+- Cuenta regresiva 3-2-1
+- Acelera para avanzar hasta la meta (100%)
+- Gana quien llegue primero
 
-#### Características:
+**Controles:**
+- **Desktop:** Presiona ESPACIO para acelerar
+- **Móvil/Tablet:** Toca la pantalla para acelerar
+
+## ✅ Características del Sistema
 
 - ✅ Comando `!crearjuegos` disponible en todas las salas
 - ✅ Panel con lista de juegos disponibles
-- ✅ Ta-Te-Ti funcional para 2 jugadores
-- ✅ Links temporales únicos por cada juego (expiran en 20 min)
-- ✅ Mensaje automático en chat con link del juego
-- ✅ notificaciones automáticas al chat con links
-- ✅ Sistema de estadísticas (rondas, victorias, empates)
-- ✅ Timer de 20 minutos visible en el juego
-- ✅ Permite salir y volver a entrar al juego
-- ✅ Jugar múltiples rondas
+- ✅ Links temporales únicos (expiran en 20 min)
+- ✅ Bot envía notificaciones al chat con botón "Entrar a Jugar"
+- ✅ Botón "Ver Rondas" en resultados para volver al juego
+- ✅ Sistema de estadísticas en tiempo real
+- ✅ Timer de 20 minutos visible
+- ✅ Incremento de nivel (+1) para ganadores
 - ✅ Auto-eliminación de salas después de 20 min
+- ✅ Responsive (móvil, tablet, desktop)
 
 ## 📋 Configuración Necesaria
 
@@ -181,27 +192,7 @@ Agregar en la sección principal:
 10. **Estadísticas**: Contador de rondas, victorias y empates
 11. **Expiración**: Sala se elimina automáticamente después de 20 min
 
-## 🎮 Juegos Disponibles
 
-### Ta-Te-Ti (Tic-Tac-Toe)
-
-- ✅ 2 jugadores con selección de símbolo (X o O)
-- ✅ Botones "Unirse como X" y "Unirse como O"
-- ✅ Turnos alternados con indicador visual
-- ✅ Detección de ganador con animación
-- ✅ Detección de empate
-- ✅ Múltiples rondas sin recrear sala
-- ✅ Estadísticas en tiempo real (rondas, victorias X/O, empates)
-- ✅ Timer de 20 minutos visible
-- ✅ Avatares de jugadores en header
-- ✅ Responsive (móvil, tablet, desktop)
-- ✅ Diseño con colores del chat principal
-
-### Próximamente:
-
-- 🎲 Dados
-- 🃏 Cartas
-- 🎯 Más juegos...
 
 ## 🔧 Detalles Técnicos
 
