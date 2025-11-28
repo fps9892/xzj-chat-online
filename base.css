@@ -531,8 +531,27 @@ body {
 
   .chat-controls {
     bottom: 95px;
-    right: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .controls-container {
+    padding: 8px 12px;
+    gap: 10px;
+  }
+  
+  .controls-left,
+  .controls-right {
     gap: 8px;
+  }
+  
+  .controls-center {
+    padding: 0 10px;
+  }
+  
+  .controls-logo {
+    width: 28px;
+    height: 28px;
   }
 
   .image-btn,
@@ -624,12 +643,39 @@ body {
 .chat-controls {
   position: fixed;
   bottom: 90px;
-  right: 15px;
-  display: flex;
-  flex-direction: row;
-  gap: 12px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 9999;
   pointer-events: auto;
+}
+
+.controls-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: rgba(42, 26, 26, 0.95);
+  padding: 12px 20px;
+  border-radius: 50px;
+  border: 2px solid rgba(201, 122, 111, 0.3);
+}
+
+.controls-left,
+.controls-right {
+  display: flex;
+  gap: 12px;
+}
+
+.controls-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 15px;
+}
+
+.controls-logo {
+  width: 35px;
+  height: 35px;
+  filter: drop-shadow(0 0 8px rgba(201, 122, 111, 0.5));
 }
 
 .image-btn {
@@ -3985,16 +4031,22 @@ body {
 
 .level-display-container {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
+    justify-content: center;
     gap: 20px;
     padding: 20px;
+    background: rgba(201, 122, 111, 0.08);
+    border: 2px solid rgba(201, 122, 111, 0.2);
+    border-radius: 10px;
+    margin-bottom: 15px;
 }
 
 .level-circle-wrapper {
     position: relative;
-    width: 120px;
-    height: 120px;
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
 }
 
 .level-progress-ring {
@@ -4003,14 +4055,14 @@ body {
 
 .level-progress-ring-bg {
     fill: none;
-    stroke: rgba(255, 255, 255, 0.1);
-    stroke-width: 8;
+    stroke: rgba(201, 122, 111, 0.2);
+    stroke-width: 6;
 }
 
 .level-progress-ring-fill {
     fill: none;
-    stroke: #00ff88;
-    stroke-width: 8;
+    stroke: #d4a59a;
+    stroke-width: 6;
     stroke-linecap: round;
     transition: stroke-dashoffset 0.5s ease;
 }
@@ -4020,28 +4072,30 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 36px;
+    font-size: 28px;
     font-weight: bold;
-    color: #00ff88;
-    text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+    color: #d4a59a;
+    font-family: "Orbitron", monospace;
 }
 
 .level-info-text {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     gap: 5px;
 }
 
 .level-label {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
-    color: #ffffff;
+    color: #f5e6e3;
+    font-family: "Orbitron", monospace;
 }
 
 .level-progress-text {
-    font-size: 14px;
+    font-size: 12px;
     color: #888;
+    font-family: "Inter", sans-serif;
 }
 
 
@@ -4072,39 +4126,40 @@ body {
     width: 100%;
     padding: 20px 0;
     margin-top: 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(201, 122, 111, 0.2);
 }
 
 .stat-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px;
+    gap: 8px;
     padding: 15px;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(201, 122, 111, 0.08);
+    border: 2px solid rgba(201, 122, 111, 0.2);
     border-radius: 10px;
     transition: all 0.3s ease;
 }
 
 .stat-item:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(201, 122, 111, 0.15);
     transform: translateY(-2px);
-}
-
-.stat-icon {
-    font-size: 24px;
+    border-color: #c97a6f;
 }
 
 .stat-value {
-    font-size: 20px;
+    font-size: 24px;
     font-weight: bold;
-    color: #00ff88;
+    color: #d4a59a;
+    font-family: "Orbitron", monospace;
 }
 
 .stat-label {
-    font-size: 12px;
+    font-size: 11px;
     color: #888;
     text-transform: uppercase;
+    font-family: "Inter", sans-serif;
+    font-weight: 600;
 }
 
 @media (max-width: 767px) {
@@ -4113,14 +4168,14 @@ body {
     }
     
     .stat-item {
-        padding: 10px;
-    }
-    
-    .stat-icon {
-        font-size: 20px;
+        padding: 12px;
     }
     
     .stat-value {
-        font-size: 18px;
+        font-size: 20px;
+    }
+    
+    .stat-label {
+        font-size: 10px;
     }
 }

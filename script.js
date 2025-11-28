@@ -616,43 +616,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Funcionalidad "ver más" para mensajes largos
-    function getCharacterLimit() {
-        const width = window.innerWidth;
-        if (width <= 767) return 150; // Móvil
-        if (width <= 1023) return 250; // Tablet
-        return 300; // Desktop
-    }
-    
-    function initializeMessages() {
-        const messages = document.querySelectorAll('.message-text');
-        const charLimit = getCharacterLimit();
-        
-        messages.forEach(messageText => {
-            const seeMore = messageText.parentElement.querySelector('.see-more');
-            if (messageText.textContent.length <= charLimit) {
-                if (seeMore) seeMore.classList.add('hidden');
-                return;
-            }
-            
-            if (seeMore) {
-                seeMore.addEventListener('click', function() {
-                    if (messageText.classList.contains('expanded')) {
-                        messageText.classList.remove('expanded');
-                        this.textContent = 'ver más';
-                    } else {
-                        messageText.classList.add('expanded');
-                        this.textContent = 'ver menos';
-                    }
-                });
-            }
-        });
-    }
-    
-    // Reinicializar al cambiar tamaño de ventana
-    window.addEventListener('resize', function() {
-        initializeMessages();
-    });
+
+
     
     // Variable global para controlar acceso a sala privada
     let hasPrivateRoomAccess = false;
@@ -668,7 +633,6 @@ document.addEventListener('DOMContentLoaded', function() {
             enableChatControls();
             listenToMessages((messages) => {
                 renderMessages(messages);
-                initializeMessages();
             });
             return;
         }
@@ -680,7 +644,6 @@ document.addEventListener('DOMContentLoaded', function() {
             enableChatControls();
             listenToMessages((messages) => {
                 renderMessages(messages);
-                initializeMessages();
             });
         } else if (accessCheck.isPending) {
             // Usuario está pendiente de aprobación
@@ -1070,7 +1033,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             ${message.type === 'image' ? 
                                 `<img src="${message.imageData}" alt="Imagen" class="message-image" onclick="showImageModal('${message.imageData}')" />` :
                                 `${message.text ? '<button class="message-options-btn">⋮</button>' : ''}${replyPreview}<div class="message-text copyable-text">${processEmotes(message.text)}</div>
-                                ${message.text && message.text.length > getCharacterLimit() ? '<span class="see-more">ver más</span>' : ''}
                                 ${(() => {
                                     const youtubeId = extractYouTubeId(message.text);
                                     return youtubeId ? `<div class="youtube-embed"><iframe width="100%" height="200" src="https://www.youtube.com/embed/${youtubeId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>` : '';
@@ -1082,22 +1044,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             `);
         
-        // Añadir funcionalidad ver más
-        const seeMore = messageEl.querySelector('.see-more');
-        const messageText = messageEl.querySelector('.message-text');
-        if (seeMore && messageText && message.text.length > getCharacterLimit()) {
-            seeMore.addEventListener('click', function() {
-                if (messageText.classList.contains('expanded')) {
-                    messageText.classList.remove('expanded');
-                    this.textContent = 'ver más';
-                } else {
-                    messageText.classList.add('expanded');
-                    this.textContent = 'ver menos';
-                }
-            });
-        }
-        
-
         
         // Configurar menú de opciones
         if (message.type !== 'audio' && message.type !== 'image' && message.type !== 'emote') {
@@ -1346,17 +1292,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </div>
                                 <div class="profile-stats-grid">
                                     <div class="stat-item">
-                                        <span class="stat-icon">✅</span>
                                         <span class="stat-value">${user.wins || 0}</span>
                                         <span class="stat-label">Victorias</span>
                                     </div>
                                     <div class="stat-item">
-                                        <span class="stat-icon">❌</span>
                                         <span class="stat-value">${user.losses || 0}</span>
                                         <span class="stat-label">Derrotas</span>
                                     </div>
                                     <div class="stat-item">
-                                        <span class="stat-icon">🤝</span>
                                         <span class="stat-value">${user.draws || 0}</span>
                                         <span class="stat-label">Empates</span>
                                     </div>
@@ -2018,8 +1961,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
-    // Inicializar mensajes existentes
-    initializeMessages();
+
 
     // Cerrar dropdowns al hacer click fuera
     document.addEventListener('click', function() {
@@ -2872,26 +2814,21 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Botón de refresh en mobile
+    // Botón de refresh en mobile - aparece al hacer scroll hacia arriba
     if (window.innerWidth <= 767) {
         const refreshBtn = document.createElement('button');
         refreshBtn.className = 'mobile-refresh-btn';
-        refreshBtn.textContent = 'Recargar Página';
+        refreshBtn.innerHTML = '<img src="/images/refresh.svg" alt="Refresh" style="width: 20px; height: 20px;" />';
         document.body.appendChild(refreshBtn);
 
         let lastScrollTop = 0;
-        let scrollDownCount = 0;
         const chatArea = document.querySelector('.chat-area');
 
         chatArea.addEventListener('scroll', function() {
             const scrollTop = chatArea.scrollTop;
-            if (scrollTop > lastScrollTop && scrollTop > 100) {
-                scrollDownCount++;
-                if (scrollDownCount >= 2) {
-                    refreshBtn.classList.add('show');
-                }
-            } else if (scrollTop < lastScrollTop) {
-                scrollDownCount = 0;
+            if (scrollTop < lastScrollTop && scrollTop < chatArea.scrollHeight - chatArea.clientHeight - 100) {
+                refreshBtn.classList.add('show');
+            } else if (scrollTop > lastScrollTop) {
                 refreshBtn.classList.remove('show');
             }
             lastScrollTop = scrollTop;
