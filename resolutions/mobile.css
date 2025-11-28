@@ -26,7 +26,7 @@
     left: 0;
     right: 0;
     z-index: 1000;
-    background: transparent;
+    background: #2a1a1a;
     border-top: 2px solid #c97a6f;
     padding: 10px;
   }
@@ -313,42 +313,42 @@
   .header-username {
     display: none;
   }
-  
+
   .header {
     position: relative;
   }
-  
+
   .mobile-users-indicator {
     position: absolute;
     left: 10px;
     top: 50%;
     transform: translateY(-50%);
   }
-  
+
   .mobile-users-dropdown {
     left: 10px;
     transform: none;
   }
-  
+
   .user-info {
     position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
   }
-  
+
   .room-selector {
     position: absolute;
     right: 10px;
     top: 50%;
     transform: translateY(-50%);
   }
-  
+
   .rooms-btn {
     padding: 6px 10px;
     border-radius: 50%;
   }
-  
+
   .rooms-btn span {
     display: none;
   }
@@ -358,26 +358,26 @@
   .header {
     position: relative;
   }
-  
+
   .mobile-users-indicator {
     position: absolute;
     left: 10px;
     top: 50%;
     transform: translateY(-50%);
   }
-  
+
   .mobile-users-dropdown {
     left: 10px;
     transform: none;
   }
-  
+
   .user-info {
     position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
   }
-  
+
   .room-selector {
     position: absolute;
     right: 10px;
