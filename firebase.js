@@ -2165,4 +2165,70 @@ export async function createCarrerasGame() {
     return gameId;
 }
 
+// Crear juego de Conecta 4
+export async function createConecta4Game() {
+    const gameId = Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+    const gameRef = ref(database, `games/conecta4/${gameId}`);
+    
+    await set(gameRef, {
+        id: gameId,
+        createdBy: currentUser.firebaseUid || currentUser.userId,
+        createdByName: currentUser.username,
+        createdAt: Date.now(),
+        expiresAt: Date.now() + (20 * 60 * 1000),
+        status: 'waiting',
+        playerRed: null,
+        playerYellow: null,
+        board: Array(42).fill(''),
+        currentTurn: 'red',
+        winner: null,
+        stats: { rounds: 0, winsRed: 0, winsYellow: 0, draws: 0 }
+    });
+    
+    setTimeout(async () => {
+        await remove(gameRef);
+    }, 20 * 60 * 1000);
+    
+    return gameId;
+}
+
+// Crear juego de Damas
+export async function createDamasGame() {
+    const gameId = Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+    const gameRef = ref(database, `games/damas/${gameId}`);
+    
+    const initialBoard = Array(64).fill(null);
+    for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 8; col++) {
+            if ((row + col) % 2 === 1) initialBoard[row * 8 + col] = { color: 'black', king: false };
+        }
+    }
+    for (let row = 5; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+            if ((row + col) % 2 === 1) initialBoard[row * 8 + col] = { color: 'white', king: false };
+        }
+    }
+    
+    await set(gameRef, {
+        id: gameId,
+        createdBy: currentUser.firebaseUid || currentUser.userId,
+        createdByName: currentUser.username,
+        createdAt: Date.now(),
+        expiresAt: Date.now() + (20 * 60 * 1000),
+        status: 'waiting',
+        playerWhite: null,
+        playerBlack: null,
+        board: initialBoard,
+        currentTurn: 'white',
+        winner: null,
+        stats: { rounds: 0, winsWhite: 0, winsBlack: 0 }
+    });
+    
+    setTimeout(async () => {
+        await remove(gameRef);
+    }, 20 * 60 * 1000);
+    
+    return gameId;
+}
+
 export { currentUser, currentRoom, database, db, ref, onValue, set, push, serverTimestamp };

@@ -376,7 +376,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 textColor: '#ffffff',
                 background: 'default',
                 firebaseUid: userCredential.user.uid,
-                ip: userIP
+                ip: userIP,
+                level: 1
             };
             
             await setDoc(doc(db, 'users', userCredential.user.uid), userData);
@@ -511,7 +512,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     textColor: '#ffffff',
                     background: 'default',
                     firebaseUid: user.uid,
-                    ip: userIP
+                    ip: userIP,
+                    level: 1
                 };
                 
                 await setDoc(doc(db, 'users', user.uid), userData);

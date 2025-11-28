@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Damas - FYZAR GAMES</title>
+    <link rel="stylesheet" href="damas.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>👑 DAMAS</h1>
+            <div class="game-info">
+                <span id="roomId">Sala: ---</span>
+                <span id="timer">⏱️ 20:00</span>
+                <span id="playerCount">👥 0/2</span>
+            </div>
+        </div>
+
+        <div class="waiting-room" id="waitingRoom">
+            <h2>Esperando jugadores...</h2>
+            <p>Se necesitan 2 jugadores</p>
+            <div class="join-buttons">
+                <button class="btn-join white" id="joinWhite">⚪ Unirse como Blancas</button>
+                <button class="btn-join black" id="joinBlack">⚫ Unirse como Negras</button>
+            </div>
+            <div class="players-waiting" id="playersWaiting"></div>
+        </div>
+
+        <div class="game-area" id="gameArea" style="display: none;">
+            <div class="turn-indicator" id="turnIndicator"></div>
+            <div class="board" id="board"></div>
+            <div class="stats" id="stats"></div>
+        </div>
+
+        <div class="results-screen" id="resultsScreen" style="display: none;">
+            <h2 id="resultTitle"></h2>
+            <div class="winner-info" id="winnerInfo"></div>
+            <button class="btn-primary" id="newRoundBtn">Nueva Ronda</button>
+            <button class="btn-secondary" id="exitBtn">Salir</button>
+        </div>
+    </div>
+
+    <script type="module" src="damas.js"></script>
+</body>
+</html>

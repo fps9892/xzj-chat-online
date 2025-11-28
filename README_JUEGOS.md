@@ -29,6 +29,35 @@
 - **Desktop:** Presiona ESPACIO para acelerar
 - **Móvil/Tablet:** Toca la pantalla para acelerar
 
+### 3. Conecta 4 🔴
+
+**Cómo jugar:**
+- 2 jugadores (Rojo vs Amarillo)
+- Click en "🔴 Unirse como Rojo" o "🟡 Unirse como Amarillo"
+- Turnos alternados
+- Suelta fichas desde arriba en columnas
+- Gana quien conecte 4 fichas en línea (horizontal, vertical o diagonal)
+- Múltiples rondas
+
+**Controles:**
+- Click en columna para soltar ficha
+- Botón "Nueva Ronda" después de cada partida
+
+### 4. Damas 👑
+
+**Cómo jugar:**
+- 2 jugadores (Blancas vs Negras)
+- Click en "⚪ Unirse como Blancas" o "⚫ Unirse como Negras"
+- Mueve fichas en diagonal sobre casillas oscuras
+- Captura fichas del oponente saltando sobre ellas
+- Llega al extremo opuesto para coronar (👑 Rey)
+- Gana quien capture todas las fichas del oponente
+
+**Controles:**
+- Click en ficha para seleccionar
+- Click en casilla válida para mover
+- Botón "Nueva Ronda" después de cada partida
+
 ## ✅ Características del Sistema
 
 - ✅ Comando `!crearjuegos` disponible en todas las salas

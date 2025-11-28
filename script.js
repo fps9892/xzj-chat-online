@@ -1329,7 +1329,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div class="profile-info-row">
                                     <div class="profile-info-half">
                                         <span class="profile-info-label">Nivel</span>
-                                        <span class="profile-info-value" style="font-size: 20px;">${user.level || 1}</span>
+                                        <span class="profile-info-value" style="font-size: 24px; color: #00ff88; font-weight: bold;">${user.level || 1}</span>
                                     </div>
                                     <div class="profile-info-half">
                                         <span class="profile-info-label">Mensajes</span>
