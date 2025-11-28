@@ -221,6 +221,15 @@ document.getElementById('gameBoard').addEventListener('click', async (e) => {
         }
         
         await update(gameRef, updates);
+        
+        // Enviar notificación a sala #juegos
+        sendResultNotification(winner);
+        
+        // Mostrar notificación temporal y reiniciar
+        showRoundResult(winner);
+        setTimeout(() => {
+            startNewRound();
+        }, 3000);
     } else {
         await update(gameRef, {
             board: newBoard,
@@ -246,12 +255,10 @@ function checkWinner(board) {
     return null;
 }
 
-// Nueva ronda
-document.getElementById('newRoundBtn').addEventListener('click', async () => {
-    if (!gameData.player1 || !gameData.player2) {
-        alert('Se necesitan 2 jugadores para iniciar una nueva ronda');
-        return;
-    }
+async function startNewRound() {
+    if (!gameData.player1 || !gameData.player2) return;
+    
+    document.getElementById('gameStatus').textContent = '⏳ Reiniciando ronda...';
     
     await update(gameRef, {
         board: ['', '', '', '', '', '', '', '', ''],
@@ -261,6 +268,47 @@ document.getElementById('newRoundBtn').addEventListener('click', async () => {
         'stats/rounds': (gameData.stats.rounds || 0) + 1
     });
     document.getElementById('newRoundBtn').style.display = 'none';
+}
+
+function showRoundResult(winner) {
+    const statusEl = document.getElementById('gameStatus');
+    if (winner === 'draw') {
+        statusEl.textContent = '🤝 ¡Empate!';
+    } else {
+        const winnerName = winner === 'X' ? gameData.player1.name : gameData.player2.name;
+        statusEl.textContent = `🎉 ¡${winnerName} ganó!`;
+    }
+}
+
+async function sendResultNotification(winner) {
+    const player1Name = gameData.player1.name;
+    const player2Name = gameData.player2.name;
+    
+    let resultText;
+    if (winner === 'draw') {
+        resultText = `🤝 Empate entre ${player1Name} y ${player2Name}`;
+    } else {
+        const winnerName = winner === 'X' ? player1Name : player2Name;
+        resultText = `🎉 ${winnerName} ganó la ronda contra ${winner === 'X' ? player2Name : player1Name}`;
+    }
+    
+    const messageRef = ref(database, `rooms/juegos/messages/${Date.now()}`);
+    await set(messageRef, {
+        userId: 'bot-juegos',
+        username: '🎮 Bot de Juegos',
+        message: resultText,
+        timestamp: Date.now(),
+        type: 'system'
+    });
+}
+
+// Nueva ronda
+document.getElementById('newRoundBtn').addEventListener('click', async () => {
+    if (!gameData.player1 || !gameData.player2) {
+        alert('Se necesitan 2 jugadores para iniciar una nueva ronda');
+        return;
+    }
+    await startNewRound();
 });
 
 // Salir
