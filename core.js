@@ -79,7 +79,9 @@ export async function getUserProfile(userId, isGuest = false) {
             avatar: userData.avatar || 'images/profileuser.jpg',
             textColor: userData.textColor || '#ffffff',
             level: userData.level || 1,
-            messageCount: userData.messageCount || 0,
+            wins: userData.wins || 0,
+            losses: userData.losses || 0,
+            draws: userData.draws || 0,
             isGuest, isAdmin, isModerator, isBanned
         };
     } catch (error) {

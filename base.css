@@ -4069,24 +4069,78 @@ body {
    FIX PULL-TO-REFRESH EN MÓVIL
    ============================================ */
 
-html, body {
+/* Deshabilitar pull-to-refresh en chat-area y body */
+.chat-area, .chat-container {
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
 }
 
-body {
-    touch-action: pan-y;
-    -webkit-user-select: none;
-    -webkit-touch-callout: none;
+/* Permitir pull-to-refresh SOLO en header */
+.header, .mobile-header {
+    overscroll-behavior-y: auto;
 }
 
-/* Deshabilitar pull-to-refresh en chat-area */
-.chat-area {
-    overscroll-behavior-y: contain;
-    -webkit-overflow-scrolling: touch;
+
+/* ============================================
+   PROFILE STATS GRID
+   ============================================ */
+
+.profile-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    width: 100%;
+    padding: 20px 0;
+    margin-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Permitir scroll normal pero sin refresh */
-.chat-container {
-    overscroll-behavior: contain;
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.stat-icon {
+    font-size: 24px;
+}
+
+.stat-value {
+    font-size: 20px;
+    font-weight: bold;
+    color: #00ff88;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #888;
+    text-transform: uppercase;
+}
+
+@media (max-width: 767px) {
+    .profile-stats-grid {
+        gap: 10px;
+    }
+    
+    .stat-item {
+        padding: 10px;
+    }
+    
+    .stat-icon {
+        font-size: 20px;
+    }
+    
+    .stat-value {
+        font-size: 18px;
+    }
 }

@@ -21,24 +21,58 @@ const gameId = urlParams.get('id');
 const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
 // Función para incrementar nivel del usuario (+0.25 por victoria)
-async function incrementUserLevel(userId) {
+async function incrementUserLevel(userId, isWin = true) {
     try {
         const userRef = doc(db, 'users', userId);
         const userDoc = await getDoc(userRef);
         
         if (userDoc.exists()) {
-            const currentLevel = userDoc.data().level || 1;
-            await updateDoc(userRef, {
-                level: currentLevel + 0.25
-            });
+            const data = userDoc.data();
+            const updates = {};
+            
+            if (isWin) {
+                updates.level = (data.level || 1) + 0.25;
+                updates.wins = (data.wins || 0) + 1;
+            } else {
+                updates.losses = (data.losses || 0) + 1;
+            }
+            
+            await updateDoc(userRef, updates);
         } else {
             await setDoc(userRef, {
                 level: 1,
+                wins: isWin ? 1 : 0,
+                losses: isWin ? 0 : 1,
+                draws: 0,
                 userId: userId
             }, { merge: true });
         }
     } catch (error) {
         console.error('Error incrementando nivel:', error);
+    }
+}
+
+async function incrementUserDraw(userId) {
+    try {
+        const userRef = doc(db, 'users', userId);
+        const userDoc = await getDoc(userRef);
+        
+        if (userDoc.exists()) {
+            const data = userDoc.data();
+            await updateDoc(userRef, {
+                draws: (data.draws || 0) + 1
+            });
+        } else {
+            await setDoc(userRef, {
+                level: 1,
+                wins: 0,
+                losses: 0,
+                draws: 1,
+                userId: userId
+            }, { merge: true });
+        }
+    } catch (error) {
+        console.error('Error incrementando empates:', error);
     }
 }
 
@@ -181,9 +215,14 @@ async function finishGame(winner) {
     
     await update(gameRef, { status: 'finished', winner, stats });
     
-    if (winner !== 'draw') {
+    if (winner === 'draw') {
+        if (gameData.playerRed) await incrementUserDraw(gameData.playerRed.id);
+        if (gameData.playerYellow) await incrementUserDraw(gameData.playerYellow.id);
+    } else {
         const winnerId = winner === 'red' ? gameData.playerRed.id : gameData.playerYellow.id;
-        await incrementUserLevel(winnerId);
+        const loserId = winner === 'red' ? gameData.playerYellow.id : gameData.playerRed.id;
+        await incrementUserLevel(winnerId, true);
+        await incrementUserLevel(loserId, false);
     }
     
     await sendResultNotification(winner);

@@ -28,24 +28,59 @@ if (!gameId || !currentUser) {
 document.getElementById('roomId').textContent = gameId.substring(0, 8);
 
 // Función para incrementar nivel del usuario (+0.25 por victoria)
-async function incrementUserLevel(userId) {
+async function incrementUserLevel(userId, isWin = true) {
     try {
         const userRef = doc(db, 'users', userId);
         const userDoc = await getDoc(userRef);
         
         if (userDoc.exists()) {
-            const currentLevel = userDoc.data().level || 1;
-            await updateDoc(userRef, {
-                level: currentLevel + 0.25
-            });
+            const data = userDoc.data();
+            const updates = {};
+            
+            if (isWin) {
+                updates.level = (data.level || 1) + 0.25;
+                updates.wins = (data.wins || 0) + 1;
+            } else {
+                updates.losses = (data.losses || 0) + 1;
+            }
+            
+            await updateDoc(userRef, updates);
         } else {
             await setDoc(userRef, {
                 level: 1,
+                wins: isWin ? 1 : 0,
+                losses: isWin ? 0 : 1,
+                draws: 0,
                 userId: userId
             }, { merge: true });
         }
     } catch (error) {
         console.error('Error incrementando nivel:', error);
+    }
+}
+
+// Función para incrementar empates
+async function incrementUserDraw(userId) {
+    try {
+        const userRef = doc(db, 'users', userId);
+        const userDoc = await getDoc(userRef);
+        
+        if (userDoc.exists()) {
+            const data = userDoc.data();
+            await updateDoc(userRef, {
+                draws: (data.draws || 0) + 1
+            });
+        } else {
+            await setDoc(userRef, {
+                level: 1,
+                wins: 0,
+                losses: 0,
+                draws: 1,
+                userId: userId
+            }, { merge: true });
+        }
+    } catch (error) {
+        console.error('Error incrementando empates:', error);
     }
 }
 
@@ -326,9 +361,16 @@ async function sendResultNotification(winner) {
         winnerId = winner === 'X' ? gameData.player1.id : gameData.player2.id;
         resultText = `🎉 Ta-Te-Ti: ${winnerName} ganó la ronda contra ${loserName}`;
         
-        // Incrementar nivel del ganador
-        if (winnerId) {
-            await incrementUserLevel(winnerId);
+        // Incrementar stats de los jugadores
+        if (winner === 'draw') {
+            // Empate: ambos jugadores suman empate
+            if (gameData.player1) await incrementUserDraw(gameData.player1.id);
+            if (gameData.player2) await incrementUserDraw(gameData.player2.id);
+        } else {
+            // Victoria: ganador suma nivel y victoria, perdedor suma derrota
+            const loserId = winner === 'X' ? gameData.player2.id : gameData.player1.id;
+            if (winnerId) await incrementUserLevel(winnerId, true);
+            if (loserId) await incrementUserLevel(loserId, false);
         }
     }
     

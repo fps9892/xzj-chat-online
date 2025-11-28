@@ -21,19 +21,29 @@ const gameId = urlParams.get('id');
 const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
 // Función para incrementar nivel del usuario (+0.25 por victoria)
-async function incrementUserLevel(userId) {
+async function incrementUserLevel(userId, isWin = true) {
     try {
         const userRef = doc(db, 'users', userId);
         const userDoc = await getDoc(userRef);
         
         if (userDoc.exists()) {
-            const currentLevel = userDoc.data().level || 1;
-            await updateDoc(userRef, {
-                level: currentLevel + 0.25
-            });
+            const data = userDoc.data();
+            const updates = {};
+            
+            if (isWin) {
+                updates.level = (data.level || 1) + 0.25;
+                updates.wins = (data.wins || 0) + 1;
+            } else {
+                updates.losses = (data.losses || 0) + 1;
+            }
+            
+            await updateDoc(userRef, updates);
         } else {
             await setDoc(userRef, {
                 level: 1,
+                wins: isWin ? 1 : 0,
+                losses: isWin ? 0 : 1,
+                draws: 0,
                 userId: userId
             }, { merge: true });
         }
@@ -186,7 +196,9 @@ async function finishGame(winner) {
     await update(gameRef, { status: 'finished', winner, stats });
     
     const winnerId = winner === 'white' ? gameData.playerWhite.id : gameData.playerBlack.id;
-    await incrementUserLevel(winnerId);
+    const loserId = winner === 'white' ? gameData.playerBlack.id : gameData.playerWhite.id;
+    await incrementUserLevel(winnerId, true);
+    await incrementUserLevel(loserId, false);
     
     await sendResultNotification(winner);
 }

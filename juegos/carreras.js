@@ -21,19 +21,29 @@ const gameId = urlParams.get('id');
 const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
 // Función para incrementar nivel del usuario (+0.25 por victoria)
-async function incrementUserLevel(userId) {
+async function incrementUserLevel(userId, isWin = true) {
     try {
         const userRef = doc(db, 'users', userId);
         const userDoc = await getDoc(userRef);
         
         if (userDoc.exists()) {
-            const currentLevel = userDoc.data().level || 1;
-            await updateDoc(userRef, {
-                level: currentLevel + 0.25
-            });
+            const data = userDoc.data();
+            const updates = {};
+            
+            if (isWin) {
+                updates.level = (data.level || 1) + 0.25;
+                updates.wins = (data.wins || 0) + 1;
+            } else {
+                updates.losses = (data.losses || 0) + 1;
+            }
+            
+            await updateDoc(userRef, updates);
         } else {
             await setDoc(userRef, {
                 level: 1,
+                wins: isWin ? 1 : 0,
+                losses: isWin ? 0 : 1,
+                draws: 0,
                 userId: userId
             }, { merge: true });
         }
@@ -261,7 +271,14 @@ async function sendResultsToChat() {
     const winner = sorted[0];
     
     if (winner) {
-        await incrementUserLevel(winner.id);
+        // Ganador suma nivel y victoria
+        await incrementUserLevel(winner.id, true);
+        // Perdedores suman derrota
+        players.forEach(async (player) => {
+            if (player.id !== winner.id) {
+                await incrementUserLevel(player.id, false);
+            }
+        });
     }
     
     const gameLink = window.location.href;

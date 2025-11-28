@@ -1340,6 +1340,23 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <span class="level-progress-text">${Math.floor(((user.level || 1) % 1) * 100)}% al siguiente nivel</span>
                                     </div>
                                 </div>
+                                <div class="profile-stats-grid">
+                                    <div class="stat-item">
+                                        <span class="stat-icon">✅</span>
+                                        <span class="stat-value">${user.wins || 0}</span>
+                                        <span class="stat-label">Victorias</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-icon">❌</span>
+                                        <span class="stat-value">${user.losses || 0}</span>
+                                        <span class="stat-label">Derrotas</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-icon">🤝</span>
+                                        <span class="stat-value">${user.draws || 0}</span>
+                                        <span class="stat-label">Empates</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
