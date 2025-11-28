@@ -139,7 +139,8 @@ function updateUI() {
         document.getElementById('gameArea').style.display = 'block';
         document.getElementById('resultsScreen').style.display = 'none';
         renderBoard();
-        document.getElementById('turnIndicator').textContent = `Turno: ${gameData.currentTurn === 'red' ? '🔴 Rojo' : '🟡 Amarillo'}`;
+        const currentPlayerName = gameData.currentTurn === 'red' ? gameData.playerRed?.name : gameData.playerYellow?.name;
+        document.getElementById('turnIndicator').textContent = `Turno de: ${currentPlayerName || 'Esperando...'}`;
         document.getElementById('stats').textContent = `Rondas: ${gameData.stats.rounds} | 🔴: ${gameData.stats.winsRed} | 🟡: ${gameData.stats.winsYellow} | Empates: ${gameData.stats.draws}`;
     } else if (gameData.status === 'finished') {
         document.getElementById('waitingRoom').style.display = 'none';
@@ -248,14 +249,38 @@ async function sendResultNotification(winner) {
 }
 
 function showResults() {
-    const title = gameData.winner === 'draw' ? '¡Empate!' : `¡${gameData.winner === 'red' ? '🔴 Rojo' : '🟡 Amarillo'} Gana!`;
-    document.getElementById('resultTitle').textContent = title;
+    const resultsDiv = document.getElementById('resultsScreen');
+    if (gameData.winner === 'draw') {
+        resultsDiv.innerHTML = `
+            <h2>🤝 ¡Empate!</h2>
+            <div class="winner-info">
+                <p style="font-size: 1.5em; color: #d4a59a;">Ambos jugadores empataron</p>
+            </div>
+            <button id="newRoundBtn" class="btn-primary">Nueva Ronda</button>
+            <button id="exitBtn" class="btn-secondary">Salir</button>
+        `;
+    } else {
+        const winner = gameData.winner === 'red' ? gameData.playerRed : gameData.playerYellow;
+        const emoji = gameData.winner === 'red' ? '🔴' : '🟡';
+        resultsDiv.innerHTML = `
+            <h2>🏆 ¡${winner.name} Gana!</h2>
+            <div class="winner-info">
+                <div class="winner-avatar" style="background-image: url(${winner.avatar})"></div>
+                <div class="winner-name">${emoji} ${winner.name}</div>
+                <p style="font-size: 1.2em; color: #d4a59a; margin-top: 15px;">¡Felicitaciones por la victoria!</p>
+            </div>
+            <button id="newRoundBtn" class="btn-primary">Nueva Ronda</button>
+            <button id="exitBtn" class="btn-secondary">Salir</button>
+        `;
+    }
+    
+    document.getElementById('newRoundBtn').addEventListener('click', async () => {
+        await update(gameRef, { status: 'playing', board: Array(42).fill(''), currentTurn: 'red', winner: null });
+    });
+    
+    document.getElementById('exitBtn').addEventListener('click', () => {
+        window.location.href = '../index.html#juegos';
+    });
 }
 
-document.getElementById('newRoundBtn').addEventListener('click', async () => {
-    await update(gameRef, { status: 'playing', board: Array(42).fill(''), currentTurn: 'red', winner: null });
-});
 
-document.getElementById('exitBtn').addEventListener('click', () => {
-    window.location.href = '../index.html#juegos';
-});
