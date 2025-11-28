@@ -22,23 +22,11 @@ export async function showGamesPanel() {
                         <p>Juego clásico para 2 jugadores</p>
                         <button class="create-game-btn" data-game="tateti">Crear Sala</button>
                     </div>
-                    <div class="game-card" data-game="carreras">
-                        <div class="game-icon">🏎️</div>
-                        <h3>Carreras</h3>
-                        <p>Compite contra otros jugadores</p>
-                        <button class="create-game-btn" data-game="carreras">Crear Sala</button>
-                    </div>
                     <div class="game-card" data-game="conecta4">
                         <div class="game-icon">🔴</div>
                         <h3>Conecta 4</h3>
                         <p>Conecta 4 fichas en línea</p>
                         <button class="create-game-btn" data-game="conecta4">Crear Sala</button>
-                    </div>
-                    <div class="game-card" data-game="damas">
-                        <div class="game-icon">👑</div>
-                        <h3>Damas</h3>
-                        <p>Juego de estrategia clásico</p>
-                        <button class="create-game-btn" data-game="damas">Crear Sala</button>
                     </div>
                     <div class="game-card" data-game="uno">
                         <div class="game-icon">🎴</div>
@@ -62,9 +50,9 @@ export async function showGamesPanel() {
         btn.addEventListener('click', async () => {
             const gameType = btn.dataset.game;
             
-            const gameNames = { tateti: 'Ta-Te-Ti', carreras: 'Carreras', conecta4: 'Conecta 4', damas: 'Damas', uno: 'UNO' };
-            const gameEmojis = { tateti: '🎮', carreras: '🏎️', conecta4: '🔴', damas: '👑', uno: '🎴' };
-            const gameFunctions = { tateti: createTatetiGame, carreras: createCarrerasGame, conecta4: createConecta4Game, damas: createDamasGame, uno: createUnoGame };
+            const gameNames = { tateti: 'Ta-Te-Ti', conecta4: 'Conecta 4', uno: 'UNO' };
+            const gameEmojis = { tateti: '🎮', conecta4: '🔴', uno: '🎴' };
+            const gameFunctions = { tateti: createTatetiGame, conecta4: createConecta4Game, uno: createUnoGame };
             
             if (gameFunctions[gameType]) {
                 const gameName = gameNames[gameType];

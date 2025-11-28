@@ -310,6 +310,39 @@
     font-size: 10px; /* Ajusta este valor según sea necesario */
   }
 
+  /* Botón de refresh flotante en mobile */
+  .mobile-refresh-btn {
+    position: fixed;
+    bottom: 110px;
+    left: 15px;
+    width: 50px;
+    height: 50px;
+    background: rgba(201, 122, 111, 0.9);
+    border: 2px solid #c97a6f;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 9998;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .mobile-refresh-btn.show {
+    display: flex;
+  }
+
+  .mobile-refresh-btn:active {
+    transform: scale(0.95);
+  }
+
+  .mobile-refresh-btn svg {
+    width: 24px;
+    height: 24px;
+    fill: #fff;
+  }
+
   .header-username {
     display: none;
   }
@@ -346,7 +379,7 @@
 
   .rooms-btn {
     padding: 6px 10px;
-    border-radius: 50%;
+    border-radius: 17%;
   }
 
   .rooms-btn span {

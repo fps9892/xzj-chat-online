@@ -2487,8 +2487,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let isSendingMessage = false;
     
     function sendMessageHandler() {
-        const message = messageInput.value.trim();
+        let message = messageInput.value.trim();
         if (message && !isSendingMessage) {
+            // Procesar menciones @usuario
+            message = message.replace(/@(\w+)/g, '<span class="mention">@$1</span>');
             const commandList = document.querySelector('.private-command-message');
             if (commandList) commandList.remove();
             
@@ -2527,8 +2529,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             isSendingMessage = true;
-            messageInput.placeholder = '';
-            messageInput.disabled = true;
             sendIcon.style.opacity = '0.5';
             sendIcon.style.pointerEvents = 'none';
             
@@ -2541,12 +2541,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTypingStatus(false);
                 clearTimeout(typingTimeout);
                 
-                // Rehabilitar input y mantener foco
+                // Rehabilitar input sin deshabilitar
                 isSendingMessage = false;
-                messageInput.disabled = false;
                 sendIcon.style.opacity = '1';
                 sendIcon.style.pointerEvents = 'auto';
-                messageInput.focus();
                 
                 if (result && result.showDeleteNotification) {
                     showNotification(`⏳ La sala "${result.roomName}" será eliminada`, 'success');
@@ -2865,9 +2863,35 @@ document.addEventListener('DOMContentLoaded', function() {
     
     messageInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
+            e.preventDefault();
             sendMessageHandler();
         }
     });
+
+    // Botón de refresh en mobile
+    if (window.innerWidth <= 767) {
+        const refreshBtn = document.createElement('button');
+        refreshBtn.className = 'mobile-refresh-btn';
+        refreshBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>';
+        document.body.appendChild(refreshBtn);
+
+        let lastScrollTop = 0;
+        const chatArea = document.querySelector('.chat-area');
+
+        chatArea.addEventListener('scroll', function() {
+            const scrollTop = chatArea.scrollTop;
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                refreshBtn.classList.add('show');
+            } else {
+                refreshBtn.classList.remove('show');
+            }
+            lastScrollTop = scrollTop;
+        });
+
+        refreshBtn.addEventListener('click', function() {
+            window.location.href = '/';
+        });
+    }
 
     function updateRoomUserCounts() {
         const rooms = [
