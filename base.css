@@ -126,6 +126,14 @@ body {
   transform: translateX(-50%);
 }
 
+@media (min-width: 1025px) {
+  .user-info {
+    position: relative;
+    left: auto;
+    transform: none;
+  }
+}
+
 
 
 .profile-image {
@@ -341,17 +349,7 @@ body {
   z-index: 998;
 }
 
-.chat-area::after {
-  content: "";
-  position: fixed;
-  bottom: 75px;
-  left: 0;
-  right: 0;
-  height: 60px;
-  background: linear-gradient(to top, #2a1a1a 0%, rgba(42, 26, 26, 0.8) 50%, transparent 100%);
-  pointer-events: none;
-  z-index: 998;
-}
+
 
 .chat-area.loading {
   display: flex;
@@ -408,13 +406,14 @@ body {
 }
 
 @media (min-width: 768px) and (max-width: 1024px) {
+  .user-info {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
   .chat-area::before {
     top: 98px;
-    height: 55px;
-  }
-
-  .chat-area::after {
-    bottom: 75px;
     height: 55px;
   }
 }
@@ -456,11 +455,6 @@ body {
 
   .chat-area::before {
     top: 98px;
-    height: 50px;
-  }
-
-  .chat-area::after {
-    bottom: 90px;
     height: 50px;
   }
 
@@ -2841,6 +2835,17 @@ body {
   font-size: 14px;
   transition: all 0.3s;
   margin-left: auto;
+}
+
+@media (min-width: 1025px) {
+  .rooms-btn {
+    order: 2;
+  }
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+  }
 }
 
 .rooms-btn span {
