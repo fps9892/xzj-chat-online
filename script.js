@@ -927,6 +927,26 @@ document.addEventListener('DOMContentLoaded', function() {
             `);
         }
         
+        // Manejar mensajes de juegos
+        if (message.type === 'game' && message.gameLink) {
+            const gameEl = createElement(`
+                <div class="message-container game-message" data-message-id="${message.id}">
+                    <div class="message system">
+                        <div class="message-content">
+                            <div class="message-text">${message.text}</div>
+                            <button class="game-join-btn" data-game-link="${message.gameLink}">🎮 Entrar a Jugar</button>
+                        </div>
+                    </div>
+                </div>
+            `);
+            
+            gameEl.querySelector('.game-join-btn').addEventListener('click', () => {
+                window.open(message.gameLink, '_blank');
+            });
+            
+            return gameEl;
+        }
+        
         // Mostrar rol del usuario
         let displayName = message.userName;
         let roleTag = '';

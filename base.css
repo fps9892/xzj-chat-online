@@ -3830,3 +3830,88 @@ body {
     font-size: 14px;
   }
 }
+
+/* Mensajes de juegos */
+.game-message {
+  background: linear-gradient(135deg, rgba(0, 255, 136, 0.15), rgba(0, 200, 100, 0.1)) !important;
+  border: 2px solid #00ff88 !important;
+  text-align: center;
+  margin: 15px auto;
+  max-width: 400px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 255, 136, 0.3);
+  animation: gameGlow 2s ease-in-out infinite;
+}
+
+@keyframes gameGlow {
+  0%, 100% {
+    box-shadow: 0 4px 20px rgba(0, 255, 136, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 30px rgba(0, 255, 136, 0.5);
+  }
+}
+
+.game-message .message-content {
+  padding: 20px;
+  background: transparent !important;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.game-message .message-text {
+  color: #00ff88;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: 'Orbitron', monospace;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+.game-message .message-content::before,
+.game-message .message-content::after {
+  display: none;
+}
+
+.game-join-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #00ff88, #00cc66);
+  border: 2px solid #00ff88;
+  border-radius: 10px;
+  color: #1a0f0f;
+  font-size: 14px;
+  font-weight: bold;
+  font-family: 'Orbitron', monospace;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+}
+
+.game-join-btn:hover {
+  background: linear-gradient(135deg, #00cc66, #00ff88);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 255, 136, 0.5);
+}
+
+.game-join-btn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 767px) {
+  .game-message {
+    max-width: 95%;
+    margin: 10px auto;
+  }
+  
+  .game-message .message-content {
+    padding: 15px;
+  }
+  
+  .game-join-btn {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+}

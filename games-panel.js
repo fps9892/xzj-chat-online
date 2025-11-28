@@ -54,13 +54,14 @@ export async function showGamesPanel() {
                     // Enviar mensaje al chat con el link
                     const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
                     await push(messagesRef, {
-                        text: `🎮 Nueva sala de Ta-Te-Ti creada por ${currentUser.username}\n🔗 Link: ${gameLink}\n⏱️ Expira en 10 minutos`,
+                        text: `🎮 Nueva sala de Ta-Te-Ti creada por ${currentUser.username}`,
                         userId: 'bot-juegos',
                         userName: '🤖 Bot de Juegos',
                         userAvatar: 'images/logo.svg',
                         textColor: '#00ff88',
                         timestamp: serverTimestamp(),
-                        type: 'system',
+                        type: 'game',
+                        gameLink: gameLink,
                         isGuest: false,
                         role: 'bot',
                         firebaseUid: null
@@ -78,9 +79,6 @@ export async function showGamesPanel() {
                     }, 3000);
                     
                     panel.remove();
-                    
-                    // Abrir juego en nueva pestaña
-                    window.open(gameLink, '_blank');
                 } catch (error) {
                     const notification = document.createElement('div');
                     notification.className = 'notification error';
