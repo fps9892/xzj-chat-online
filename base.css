@@ -2285,11 +2285,16 @@ body {
 }
 
 .mention {
-  background: rgb(145 73 64);;
+  background: rgb(145 73 64);
   color: #d4a59a;
   padding: 2px 6px;
   border-radius: 4px;
   font-weight: bold;
+}
+
+.message-container.mentioned .message-content {
+  background: rgba(201, 122, 111, 0.25) !important;
+  border: 2px solid rgba(201, 122, 111, 0.5) !important;
 }
 
 .admin-tag {

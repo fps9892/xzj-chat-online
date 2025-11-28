@@ -324,10 +324,16 @@ async function startNewRound() {
     
     document.getElementById('gameStatus').textContent = '⏳ Reiniciando ronda...';
     
+    // El ganador de la ronda anterior empieza
+    let nextStarter = 'X';
+    if (gameData.winner && gameData.winner !== 'draw') {
+        nextStarter = gameData.winner;
+    }
+    
     await update(gameRef, {
         board: ['', '', '', '', '', '', '', '', ''],
         status: 'playing',
-        currentTurn: 'X',
+        currentTurn: nextStarter,
         winner: null,
         'stats/rounds': (gameData.stats.rounds || 0) + 1
     });

@@ -914,6 +914,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const isReplyToMe = message.replyTo && message.replyTo.userId === currentUser.userId;
         const time = message.timestamp ? new Date(message.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
         
+        // Detectar si el mensaje menciona al usuario actual
+        const mentionPattern = new RegExp(`@${currentUser.username}\\b`, 'i');
+        const isMentioned = message.text && mentionPattern.test(message.text);
+        
         // Manejar mensajes del sistema
         if (message.type === 'system') {
             return createElement(`
@@ -1011,7 +1015,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const messageEl = message.type === 'emote' ? 
             createElement(`
-                <div class="message-container" data-message-id="${message.id}">
+                <div class="message-container ${isMentioned ? 'mentioned' : ''}" data-message-id="${message.id}">
                     <div class="message ${isOwn ? 'sent' : 'received'}">
                         <div class="message-header">
                             ${isOwn ? `
@@ -1033,7 +1037,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             `) :
             createElement(`
-                <div class="message-container" data-message-id="${message.id}">
+                <div class="message-container ${isMentioned ? 'mentioned' : ''}" data-message-id="${message.id}">
                     <div class="message ${isOwn ? 'sent' : 'received'}">
                         <div class="message-header">
                             ${isOwn ? `
@@ -2489,8 +2493,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function sendMessageHandler() {
         let message = messageInput.value.trim();
         if (message && !isSendingMessage) {
-            // Procesar menciones @usuario
-            message = message.replace(/@(\w+)/g, '<span class="mention">@$1</span>');
+            // Procesar menciones @usuario (con acentos y caracteres especiales)
+            message = message.replace(/@([\wÀ-ſ]+)/g, '<span class="mention">@$1</span>');
             const commandList = document.querySelector('.private-command-message');
             if (commandList) commandList.remove();
             
@@ -2872,17 +2876,22 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.innerWidth <= 767) {
         const refreshBtn = document.createElement('button');
         refreshBtn.className = 'mobile-refresh-btn';
-        refreshBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>';
+        refreshBtn.textContent = 'Recargar Página';
         document.body.appendChild(refreshBtn);
 
         let lastScrollTop = 0;
+        let scrollDownCount = 0;
         const chatArea = document.querySelector('.chat-area');
 
         chatArea.addEventListener('scroll', function() {
             const scrollTop = chatArea.scrollTop;
             if (scrollTop > lastScrollTop && scrollTop > 100) {
-                refreshBtn.classList.add('show');
-            } else {
+                scrollDownCount++;
+                if (scrollDownCount >= 2) {
+                    refreshBtn.classList.add('show');
+                }
+            } else if (scrollTop < lastScrollTop) {
+                scrollDownCount = 0;
                 refreshBtn.classList.remove('show');
             }
             lastScrollTop = scrollTop;
