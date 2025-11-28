@@ -3997,3 +3997,96 @@ body {
     font-size: 13px;
   }
 }
+
+
+/* ============================================
+   LEVEL DISPLAY WITH CIRCULAR PROGRESS
+   ============================================ */
+
+.level-display-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+}
+
+.level-circle-wrapper {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+
+.level-progress-ring {
+    transform: rotate(-90deg);
+}
+
+.level-progress-ring-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.1);
+    stroke-width: 8;
+}
+
+.level-progress-ring-fill {
+    fill: none;
+    stroke: #00ff88;
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.5s ease;
+}
+
+.level-number {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 36px;
+    font-weight: bold;
+    color: #00ff88;
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+.level-info-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.level-label {
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.level-progress-text {
+    font-size: 14px;
+    color: #888;
+}
+
+
+/* ============================================
+   FIX PULL-TO-REFRESH EN MÓVIL
+   ============================================ */
+
+html, body {
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+body {
+    touch-action: pan-y;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* Deshabilitar pull-to-refresh en chat-area */
+.chat-area {
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Permitir scroll normal pero sin refresh */
+.chat-container {
+    overscroll-behavior: contain;
+}

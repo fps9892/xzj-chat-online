@@ -160,7 +160,7 @@ users/{uid} {
 Cuando un jugador gana una partida:
 
 ```javascript
-// Cualquier juego llama a esta función
+// Cualquier juego llama a esta función (+0.25 puntos)
 await incrementUserLevel(winnerId);
 ```
 
@@ -172,9 +172,10 @@ async function incrementUserLevel(userId) {
         const userDoc = await getDoc(userRef);
         
         if (userDoc.exists()) {
-            // Usuario existe: incrementar nivel
+            // Usuario existe: incrementar +0.25
+            const currentLevel = userDoc.data().level || 1;
             await updateDoc(userRef, {
-                level: increment(1)
+                level: currentLevel + 0.25
             });
         } else {
             // Usuario nuevo: crear con nivel 1
@@ -192,7 +193,8 @@ async function incrementUserLevel(userId) {
 ### 3. Almacenamiento
 - **Usuarios registrados**: `users/{firebaseUid}/level`
 - **Invitados**: `guests/{guestId}/level`
-- **Incremento**: Firestore `increment(1)` garantiza atomicidad
+- **Incremento**: +0.25 puntos por victoria (4 victorias = 1 nivel)
+- **Formato**: Número decimal (ej: 4.25, 5.75, 10.50)
 
 ## 🧪 Pruebas Recomendadas
 

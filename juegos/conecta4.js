@@ -20,15 +20,16 @@ const urlParams = new URLSearchParams(window.location.search);
 const gameId = urlParams.get('id');
 const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
-// Función para incrementar nivel del usuario
+// Función para incrementar nivel del usuario (+0.25 por victoria)
 async function incrementUserLevel(userId) {
     try {
         const userRef = doc(db, 'users', userId);
         const userDoc = await getDoc(userRef);
         
         if (userDoc.exists()) {
+            const currentLevel = userDoc.data().level || 1;
             await updateDoc(userRef, {
-                level: increment(1)
+                level: currentLevel + 0.25
             });
         } else {
             await setDoc(userRef, {

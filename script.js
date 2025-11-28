@@ -1326,24 +1326,18 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                             
                             <div class="profile-section" data-section="stats">
-                                <div class="profile-info-row">
-                                    <div class="profile-info-half">
-                                        <span class="profile-info-label">Nivel</span>
-                                        <span class="profile-info-value" style="font-size: 24px; color: #00ff88; font-weight: bold;">${user.level || 1}</span>
+                                <div class="level-display-container">
+                                    <div class="level-circle-wrapper">
+                                        <svg class="level-progress-ring" width="120" height="120">
+                                            <circle class="level-progress-ring-bg" cx="60" cy="60" r="52" />
+                                            <circle class="level-progress-ring-fill" cx="60" cy="60" r="52" 
+                                                style="stroke-dasharray: ${326.73}; stroke-dashoffset: ${326.73 - (((user.level || 1) % 1) * 326.73)};" />
+                                        </svg>
+                                        <div class="level-number">${Math.floor(user.level || 1)}</div>
                                     </div>
-                                    <div class="profile-info-half">
-                                        <span class="profile-info-label">Mensajes</span>
-                                        <span class="profile-info-value" style="font-size: 20px;">${user.messageCount || 0}</span>
-                                    </div>
-                                </div>
-                                <div class="profile-info-row">
-                                    <div class="profile-info-half">
-                                        <span class="profile-info-label">Tiempo Online</span>
-                                        <span class="profile-info-value">${user.onlineTime || '0h'}</span>
-                                    </div>
-                                    <div class="profile-info-half">
-                                        <span class="profile-info-label">Reputación</span>
-                                        <span class="profile-info-value" style="font-size: 20px;">${user.reputation || 0}</span>
+                                    <div class="level-info-text">
+                                        <span class="level-label">Nivel</span>
+                                        <span class="level-progress-text">${Math.floor(((user.level || 1) % 1) * 100)}% al siguiente nivel</span>
                                     </div>
                                 </div>
                             </div>

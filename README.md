@@ -4,11 +4,12 @@
 
 ### ✅ Nuevo en v3.9.1 (Sistema de Niveles Corregido)
 
-1. **Sistema de Niveles Unificado** - Todos los niveles se guardan en Firestore `users/{uid}/level`
-2. **Incremento por Victorias** - +1 nivel por ganar en Ta-Te-Ti, Carreras, Conecta 4 o Damas
-3. **Compatibilidad Total** - Funciona para usuarios de Google, email e invitados
-4. **Reglas Firebase Optimizadas** - Escritura pública en colección `users` para juegos
-5. **4 Juegos Multijugador** - Ta-Te-Ti, Carreras, Conecta 4 y Damas completamente funcionales
+1. **Sistema de Niveles con Decimales** - +0.25 puntos por victoria (4 victorias = 1 nivel)
+2. **Loader Circular de Progreso** - Visualización del progreso con decimales (0-100%)
+3. **Stats Simplificados** - Solo muestra nivel con loader, sin stats innecesarios
+4. **Compatibilidad Total** - Funciona para usuarios de Google, email e invitados
+5. **Fix Pull-to-Refresh Móvil** - Deshabilitado el refresh al hacer scroll hacia abajo
+6. **4 Juegos Multijugador** - Ta-Te-Ti, Carreras, Conecta 4 y Damas completamente funcionales
 
 ### ✅ Nuevo en v3.9
 
@@ -187,10 +188,6 @@ service cloud.firestore {
       return request.auth != null && exists(/databases/$(database)/documents/moderators/$(request.auth.uid));
     }
 
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-
     match /admins/{firebaseUid} {
       allow read: if true;
       allow write: if isAdmin();
@@ -211,7 +208,8 @@ service cloud.firestore {
       allow write: if isAdmin() || isModerator();
     }
 
-    // Colección principal de usuarios - Almacena TODOS los datos incluyendo nivel
+    // Colección de usuarios - Almacena nivel con decimales (ej: 4.25)
+    // Cada victoria suma +0.25 puntos (4 victorias = 1 nivel)
     match /users/{firebaseUid} {
       allow read: if true;
       allow create: if true;
@@ -368,8 +366,8 @@ Firebase Console → Realtime Database → Rules
 - `games/conecta4`: Sistema de juegos Conecta 4 multijugador
 - `games/damas`: Sistema de juegos Damas multijugador
 - `roomDeleted`: Sistema de temporizador de 15 segundos antes de eliminar salas
-- `roomPresence`: Notificaciones de entrada/salida de usuarios usando Firestore (sin consumir Realtime Database)
-- `users`: Permitir escritura pública para incrementar nivel desde juegos (campo `level`)
+- `roomPresence`: Notificaciones de entrada/salida de usuarios usando Firestore
+- `users`: Escritura pública para incrementar nivel (+0.25 por victoria, formato decimal)
 
 ### 2. Iniciar el Proyecto
 
@@ -470,11 +468,12 @@ node server.js
 
 #### Incremento de Nivel
 
-1. **Por Victorias en Juegos**: +1 nivel por cada victoria en:
+1. **Por Victorias en Juegos**: +0.25 puntos por cada victoria en:
    - Ta-Te-Ti (ganador de cada ronda)
    - Carreras (primer lugar)
    - Conecta 4 (ganador de cada partida)
    - Damas (ganador de cada partida)
+   - **4 victorias = 1 nivel completo**
 
 2. **Almacenamiento**:
    - Usuarios registrados: `users/{firebaseUid}/level`
@@ -483,8 +482,10 @@ node server.js
 
 3. **Visualización**:
    - Badge de nivel en mensajes del chat
-   - Perfil de usuario muestra nivel actual
-   - Estadísticas en panel de configuración
+   - Loader circular en perfil muestra progreso (decimales)
+   - Número entero = nivel actual
+   - Progreso circular = decimales (0-100%)
+   - Ejemplo: Nivel 4.25 = muestra "4" con loader al 25%
 
 #### Estructura de Datos en Firestore
 

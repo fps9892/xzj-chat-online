@@ -27,18 +27,18 @@ if (!gameId || !currentUser) {
 
 document.getElementById('roomId').textContent = gameId.substring(0, 8);
 
-// Función para incrementar nivel del usuario
+// Función para incrementar nivel del usuario (+0.25 por victoria)
 async function incrementUserLevel(userId) {
     try {
         const userRef = doc(db, 'users', userId);
         const userDoc = await getDoc(userRef);
         
         if (userDoc.exists()) {
+            const currentLevel = userDoc.data().level || 1;
             await updateDoc(userRef, {
-                level: increment(1)
+                level: currentLevel + 0.25
             });
         } else {
-            // Si no existe, crear con nivel 1
             await setDoc(userRef, {
                 level: 1,
                 userId: userId
