@@ -1765,6 +1765,12 @@ export async function processAdminCommand(message) {
                 await clearRoomMessages();
                 return { success: true, message: 'Historial de chat eliminado' };
                 
+            case '!crearjuegos':
+                if (currentRoom !== 'juegos') {
+                    throw new Error('Este comando solo está disponible en la sala #juegos');
+                }
+                return { success: false, showGamesPanel: true };
+                
             default:
                 return false;
         }
@@ -2104,6 +2110,39 @@ function showUsersListPanel(message, command) {
             panel.remove();
         };
     }
+}
+
+// Crear juego de Ta-Te-Ti
+export async function createTatetiGame() {
+    const gameId = Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+    const gameRef = ref(database, `games/tateti/${gameId}`);
+    
+    await set(gameRef, {
+        id: gameId,
+        createdBy: currentUser.firebaseUid || currentUser.userId,
+        createdByName: currentUser.username,
+        createdAt: Date.now(),
+        expiresAt: Date.now() + (20 * 60 * 1000), // 20 minutos
+        status: 'waiting',
+        player1: null,
+        player2: null,
+        board: ['', '', '', '', '', '', '', '', ''],
+        currentTurn: null,
+        winner: null,
+        stats: {
+            rounds: 0,
+            winsX: 0,
+            winsO: 0,
+            draws: 0
+        }
+    });
+    
+    // Auto-eliminar después de 20 minutos
+    setTimeout(async () => {
+        await remove(gameRef);
+    }, 20 * 60 * 1000);
+    
+    return gameId;
 }
 
 export { currentUser, currentRoom, database, db, ref, onValue, set, push, serverTimestamp };

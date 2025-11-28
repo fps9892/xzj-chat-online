@@ -3,6 +3,7 @@ import { AudioRecorder, formatTime, blobToBase64 } from './audio-recorder.js';
 import { getUserProfile, findUserByUsername, animateMessageDeletion, initAdminListener } from './core.js';
 import { setupMessageOptions, replyingTo, clearReply } from './message-options.js';
 import { showBanPanel, showUnbanPanel, showMutePanel, showUnmutePanel } from './moderation-panels.js';
+import { showGamesPanel } from './games-panel.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     // Elementos de la pantalla de carga
@@ -423,8 +424,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                         const ctx = canvas.getContext('2d');
                                         ctx.drawImage(img, 0, 0, width, height);
                                         
-                                        const mimeType = file.type === 'image/gif' ? 'image/gif' : 'image/jpeg';
-                                        const quality = file.type === 'image/gif' ? 1.0 : 0.7;
+                                        const mimeType = file.type || 'image/jpeg';
+                                        const quality = (file.type === 'image/png' || file.type === 'image/gif') ? 1.0 : 0.7;
                                         updates.avatar = canvas.toDataURL(mimeType, quality);
                                         const profileImg = document.querySelector('.profile-image');
                                         if (profileImg) profileImg.src = updates.avatar;
@@ -2419,11 +2420,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function sendMessageHandler() {
         const message = messageInput.value.trim();
         if (message && !isSendingMessage) {
-            isSendingMessage = true;
-            messageInput.placeholder = '';
-            messageInput.disabled = true;
-            sendIcon.style.opacity = '0.5';
-            sendIcon.style.pointerEvents = 'none';
             const commandList = document.querySelector('.private-command-message');
             if (commandList) commandList.remove();
             
@@ -2456,6 +2452,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
+            isSendingMessage = true;
+            messageInput.placeholder = '';
+            messageInput.disabled = true;
+            sendIcon.style.opacity = '0.5';
+            sendIcon.style.pointerEvents = 'none';
+            
             sendMessage(message, 'text', null, null, replyingTo).then((result) => {
                 clearReply();
                 
@@ -2479,6 +2481,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (result && result.showRoomsPanel) {
                     showRoomsManagementPanel(result.rooms);
+                    return;
+                }
+                
+                if (result && result.showGamesPanel) {
+                    showGamesPanel();
                     return;
                 }
                 

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ta-Te-Ti - FYZAR CHAT</title>
+    <link rel="stylesheet" href="tateti.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>🎮 Ta-Te-Ti</h1>
+            <div class="game-info">
+                <span class="room-id">Sala: <span id="roomId">...</span></span>
+                <span class="timer">⏱️ <span id="timer">20:00</span></span>
+            </div>
+        </div>
+        
+        <div class="players-info">
+            <div class="player player-x">
+                <div class="player-avatar" id="player1Avatar"></div>
+                <span id="player1Name">Esperando...</span>
+                <span class="player-symbol">❌</span>
+            </div>
+            <div class="vs">VS</div>
+            <div class="player player-o">
+                <div class="player-avatar" id="player2Avatar"></div>
+                <span id="player2Name">Esperando...</span>
+                <span class="player-symbol">⭕</span>
+            </div>
+        </div>
+        
+        <div class="game-status" id="gameStatus">Esperando jugadores...</div>
+        
+        <div class="game-board" id="gameBoard">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+        </div>
+        
+        <div class="game-actions">
+            <button id="newRoundBtn" class="btn-secondary" style="display:none;">Nueva Ronda</button>
+            <button id="exitBtn" class="btn-danger">Salir</button>
+        </div>
+        
+        <div class="game-stats">
+            <div class="stat">
+                <span class="stat-label">Rondas</span>
+                <span class="stat-value" id="rounds">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Victorias X</span>
+                <span class="stat-value" id="winsX">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Empates</span>
+                <span class="stat-value" id="draws">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Victorias O</span>
+                <span class="stat-value" id="winsO">0</span>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module" src="tateti.js"></script>
+</body>
+</html>

@@ -1,6 +1,15 @@
-# 🚀 FYZAR CHAT v3.8.1
+# 🚀 FYZAR CHAT v3.9
 
 ## 📋 Resumen de Cambios
+
+### ✅ Nuevo en v3.9
+
+1. **Sistema de Juegos** - Comando `!crearjuegos` en sala #juegos para crear partidas
+2. **Ta-Te-Ti Multijugador** - Juego en tiempo real para 2 jugadores con Firebase
+3. **Links Temporales** - Cada juego tiene un link único que expira en 20 minutos
+4. **Bot de Juegos** - Envía notificaciones automáticas al chat con links
+5. **Estadísticas en Vivo** - Contador de rondas, victorias y empates
+6. **Fix Placeholder** - Comandos !ban/!unban/!mute/!unmute ya no bloquean el input
 
 ### ✅ Nuevo en v3.8
 
@@ -285,6 +294,16 @@ Firebase Console → Realtime Database → Rules
         }
       }
     },
+    "games": {
+      ".read": true,
+      ".write": true,
+      "tateti": {
+        "$gameId": {
+          ".read": true,
+          ".write": true
+        }
+      }
+    },
     "globalAnnouncements": {
       ".read": true,
       ".write": true,
@@ -327,6 +346,7 @@ Firebase Console → Realtime Database → Rules
 ```
 
 **Notas importantes**:
+- `games/tateti`: Sistema de juegos Ta-Te-Ti con salas temporales
 - `roomDeleted`: Sistema de temporizador de 15 segundos antes de eliminar salas
 - `roomPresence`: Notificaciones de entrada/salida de usuarios usando Firestore (sin consumir Realtime Database)
 
@@ -466,6 +486,17 @@ node server.js
 - ✅ `!unban <userId>` - Desbanear usuarios
 - ✅ `!borrarchat` - Borrar historial de sala
 - ✅ Otorgar/revocar rol de moderador
+
+### Sistema de Juegos 🎮
+
+- ✅ `!crearjuegos` - Abrir panel de juegos (solo en sala #juegos)
+- ✅ **Ta-Te-Ti** - Juego para 2 jugadores en tiempo real
+- ✅ Links temporales únicos (expiran en 20 min)
+- ✅ Bot de juegos envía notificaciones al chat
+- ✅ Estadísticas: rondas, victorias, empates
+- ✅ Permite salir/entrar y jugar múltiples rondas
+- ✅ Timer visible de 20 minutos
+- ✅ Responsive (móvil, tablet, desktop)
 
 ---
 
@@ -613,7 +644,7 @@ showUserNotification(`${username} se fue a ${roomName}`, "room-change");
 ## 📞 Información del Proyecto
 
 - **Proyecto**: fyzar-80936
-- **Versión**: 3.8
+- **Versión**: 3.9
 - **Estado**: ✅ Listo para producción
 - **Calidad**: ⭐⭐⭐⭐⭐
 
@@ -621,7 +652,7 @@ showUserNotification(`${username} se fue a ${roomName}`, "room-change");
 
 ## 🎉 ¡Listo!
 
-Tu proyecto FYZAR CHAT v3.8 incluye:
+Tu proyecto FYZAR CHAT v3.9 incluye:
 
 - ✅ Sistema completo de moderación
 - ✅ Baneo y muteo temporal/permanente
@@ -641,8 +672,11 @@ Tu proyecto FYZAR CHAT v3.8 incluye:
 - ✅ Sistema de routing con hash para URLs específicas por sala
 - ✅ Verificación de autenticación automática
 - ✅ Links compartibles a salas específicas
+- ✅ **Sistema de juegos con Ta-Te-Ti multijugador**
+- ✅ **Bot de juegos con notificaciones automáticas**
+- ✅ **Links temporales únicos para cada partida**
 
-**¡Disfruta tu chat profesional con moderación avanzada, encuestas interactivas y URLs compartibles!** 🚀
+**¡Disfruta tu chat profesional con moderación avanzada, encuestas interactivas, URLs compartibles y juegos multijugador!** 🚀
 
 ---
 
@@ -652,6 +686,7 @@ Tu proyecto FYZAR CHAT v3.8 incluye:
 - **Firestore**: Permite crear, leer, actualizar y eliminar salas (isPrivate incluido)
 - **Firestore roomPresence**: Sistema de notificaciones de entrada/salida de usuarios
 - **Realtime Database**: Incluye roomDeleted para temporizador de eliminación
+- **Realtime Database games/tateti**: Sistema de juegos Ta-Te-Ti con salas temporales
 - **roomAccessNotifications**: Sistema de notificaciones para salas privadas
 
 ### Panel de Salas
@@ -664,3 +699,12 @@ Tu proyecto FYZAR CHAT v3.8 incluye:
 - **Temporizador**: 15 segundos de aviso antes de eliminar
 - **Contador regresivo**: Actualización cada segundo
 - **Redirección forzada**: Recarga completa a index.html
+
+### Sistema de Juegos
+- **Comando**: `!crearjuegos` solo disponible en sala #juegos
+- **Ta-Te-Ti**: Juego multijugador en tiempo real con Firebase
+- **Links temporales**: Cada juego tiene un ID único, expira en 20 min
+- **Bot de juegos**: Envía notificaciones automáticas al chat
+- **Estadísticas**: Rondas, victorias X/O, empates en tiempo real
+- **Persistencia**: Permite salir/entrar y jugar múltiples rondas
+- **Archivos**: `/juegos/tateti.html`, `/juegos/tateti.css`, `/juegos/tateti.js`
