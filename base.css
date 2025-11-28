@@ -359,11 +359,6 @@ body {
 
 .room-header {
   background: linear-gradient(to top, transparent, #2a1a1a);
-  position: fixed;
-  top: 60px;
-  left: 0;
-  right: 0;
-  z-index: 999;
   text-align: center;
   padding: 12px 0;
 }
@@ -382,7 +377,6 @@ body {
 
 .chat-area {
   flex: 1;
-  margin-top: 100px;
   margin-bottom: 80px;
   padding: 20px;
   overflow-y: auto;
@@ -445,17 +439,7 @@ body {
   background: #d4a59a;
 }
 
-@media (max-width: 767px) {
-  .chat-area::-webkit-scrollbar {
-    display: none;
-  }
 
-  .chat-area {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-  }
-}
 
 @media (min-width: 768px) and (max-width: 1024px) {
   .user-info {
@@ -485,7 +469,7 @@ body {
   body {
     width: 100%;
     min-height: 100vh;
-    overflow-x: hidden;
+    overflow: hidden;
   }
 
   .main-content {
@@ -503,6 +487,7 @@ body {
   .chat-area {
     padding-bottom: 40px;
     margin-bottom: 30px;
+    margin-top: 100px;
   }
 
   .chat-area::before {
@@ -3803,13 +3788,11 @@ body {
 
 @media (max-width: 767px) {
   .room-header {
-    top: 60px;
-    background: linear-gradient(to bottom, #2a1a1a 0%, rgba(42, 26, 26, 0.95) 50%, transparent 100%) !important;
-    position: fixed;
+    background: linear-gradient(to bottom, #2a1a1a 0%, rgba(42, 26, 26, 0.95) 50%, transparent 100%);
   }
 
   .chat-area {
-    margin-top: 100px;
+    margin-top: 0px;
   }
 
   .mute-timer-panel {
@@ -3901,6 +3884,19 @@ body {
   transform: translateY(0);
 }
 
+.game-join-btn.expired {
+  background: linear-gradient(135deg, #666, #444);
+  border-color: #666;
+  color: #999;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.game-join-btn.expired:hover {
+  transform: none;
+  box-shadow: none;
+}
+
 /* Mensajes de resultados de juegos */
 .game-result-message {
   background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 165, 0, 0.1)) !important;
@@ -3910,6 +3906,21 @@ body {
   max-width: 400px;
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+  animation: surpriseAppear 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes surpriseAppear {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.2) rotate(10deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
 }
 
 .game-result-message .message-content {

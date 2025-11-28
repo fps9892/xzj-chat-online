@@ -929,20 +929,36 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Manejar mensajes de juegos
         if (message.type === 'game' && message.gameLink) {
+            const createdAt = message.timestamp || Date.now();
+            const expiresAt = createdAt + (20 * 60 * 1000);
+            const isExpired = Date.now() > expiresAt;
+            
             const gameEl = createElement(`
-                <div class="message-container game-message" data-message-id="${message.id}">
+                <div class="message-container game-message" data-message-id="${message.id}" data-expires="${expiresAt}">
                     <div class="message system">
                         <div class="message-content">
                             <div class="message-text">${message.text}</div>
-                            <button class="game-join-btn" data-game-link="${message.gameLink}">🎮 Entrar a Jugar</button>
+                            <button class="game-join-btn ${isExpired ? 'expired' : ''}" data-game-link="${message.gameLink}" ${isExpired ? 'disabled' : ''}>${isExpired ? '⏱️ Juego Finalizado' : '🎮 Entrar a Jugar'}</button>
                         </div>
                     </div>
                 </div>
             `);
             
-            gameEl.querySelector('.game-join-btn').addEventListener('click', () => {
-                window.open(message.gameLink, '_blank');
-            });
+            const btn = gameEl.querySelector('.game-join-btn');
+            if (!isExpired) {
+                btn.addEventListener('click', () => {
+                    window.open(message.gameLink, '_blank');
+                });
+                
+                const timeUntilExpiry = expiresAt - Date.now();
+                if (timeUntilExpiry > 0) {
+                    setTimeout(() => {
+                        btn.textContent = '⏱️ Juego Finalizado';
+                        btn.classList.add('expired');
+                        btn.disabled = true;
+                    }, timeUntilExpiry);
+                }
+            }
             
             return gameEl;
         }

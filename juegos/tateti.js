@@ -128,7 +128,12 @@ function updateUI() {
     const cells = document.querySelectorAll('.cell');
     cells.forEach((cell, index) => {
         const value = gameData.board[index];
-        cell.textContent = value === 'X' ? '❌' : value === 'O' ? '⭕' : '';
+        cell.innerHTML = '';
+        if (value === 'X') {
+            cell.innerHTML = '<img src="../images/x.svg" style="width: 60%; height: 60%; filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(326deg) brightness(104%) contrast(97%);" />';
+        } else if (value === 'O') {
+            cell.innerHTML = '<img src="../images/o.svg" style="width: 60%; height: 60%; filter: invert(64%) sepia(23%) saturate(1234%) hue-rotate(318deg) brightness(91%) contrast(89%);" />';
+        }
         cell.classList.toggle('taken', value !== '');
         
         // Resaltar celdas ganadoras
@@ -285,14 +290,47 @@ async function sendResultNotification(winner) {
     
     const player1Name = gameData.player1.name;
     const player2Name = gameData.player2.name;
+    const gameLink = window.location.href;
     
     let resultText;
+    let winnerId = null;
     if (winner === 'draw') {
-        resultText = `🤝 Empate entre ${player1Name} y ${player2Name}`;
+        resultText = `🤝 Ta-Te-Ti: Empate entre ${player1Name} y ${player2Name} - ${gameLink}`;
     } else {
         const winnerName = winner === 'X' ? player1Name : player2Name;
         const loserName = winner === 'X' ? player2Name : player1Name;
-        resultText = `🎉 ${winnerName} ganó la ronda contra ${loserName}`;
+        winnerId = winner === 'X' ? gameData.player1.id : gameData.player2.id;
+        resultText = `🎉 Ta-Te-Ti: ${winnerName} ganó la ronda contra ${loserName} - ${gameLink}`;
+        
+        // Incrementar nivel del ganador
+        try {
+            const { getFirestore, doc, getDoc, updateDoc, increment } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+            
+            const firebaseConfig = {
+                apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
+                authDomain: "fyzar-80936.firebaseapp.com",
+                databaseURL: "https://fyzar-80936-default-rtdb.firebaseio.com",
+                projectId: "fyzar-80936",
+                storageBucket: "fyzar-80936.firebasestorage.app",
+                messagingSenderId: "718553577005",
+                appId: "1:718553577005:web:74b5b9e790232edf6e2aa4"
+            };
+            
+            const app = initializeApp(firebaseConfig, 'tateti-app');
+            const db = getFirestore(app);
+            
+            const userRef = doc(db, 'users', winnerId);
+            const userDoc = await getDoc(userRef);
+            
+            if (userDoc.exists()) {
+                await updateDoc(userRef, {
+                    level: increment(1)
+                });
+            }
+        } catch (error) {
+            console.error('Error incrementando nivel:', error);
+        }
     }
     
     const messageRef = ref(database, `rooms/juegos/messages/${Date.now()}`);
