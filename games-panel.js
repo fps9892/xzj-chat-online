@@ -1,6 +1,6 @@
 // Panel de juegos
 export async function showGamesPanel() {
-    const { createTatetiGame, createCarrerasGame, createConecta4Game, createDamasGame, database, ref, push, serverTimestamp, currentUser, currentRoom } = await import('./firebase.js');
+    const { createTatetiGame, createCarrerasGame, createConecta4Game, createDamasGame, createUnoGame, database, ref, push, serverTimestamp, currentUser, currentRoom } = await import('./firebase.js');
     
     const createElement = (html) => {
         const div = document.createElement('div');
@@ -40,6 +40,12 @@ export async function showGamesPanel() {
                         <p>Juego de estrategia clásico</p>
                         <button class="create-game-btn" data-game="damas">Crear Sala</button>
                     </div>
+                    <div class="game-card" data-game="uno">
+                        <div class="game-icon">🎴</div>
+                        <h3>UNO</h3>
+                        <p>Juego de cartas para 2-8 jugadores</p>
+                        <button class="create-game-btn" data-game="uno">Crear Sala</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -56,9 +62,9 @@ export async function showGamesPanel() {
         btn.addEventListener('click', async () => {
             const gameType = btn.dataset.game;
             
-            const gameNames = { tateti: 'Ta-Te-Ti', carreras: 'Carreras', conecta4: 'Conecta 4', damas: 'Damas' };
-            const gameEmojis = { tateti: '🎮', carreras: '🏎️', conecta4: '🔴', damas: '👑' };
-            const gameFunctions = { tateti: createTatetiGame, carreras: createCarrerasGame, conecta4: createConecta4Game, damas: createDamasGame };
+            const gameNames = { tateti: 'Ta-Te-Ti', carreras: 'Carreras', conecta4: 'Conecta 4', damas: 'Damas', uno: 'UNO' };
+            const gameEmojis = { tateti: '🎮', carreras: '🏎️', conecta4: '🔴', damas: '👑', uno: '🎴' };
+            const gameFunctions = { tateti: createTatetiGame, carreras: createCarrerasGame, conecta4: createConecta4Game, damas: createDamasGame, uno: createUnoGame };
             
             if (gameFunctions[gameType]) {
                 const gameName = gameNames[gameType];

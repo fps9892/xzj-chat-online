@@ -1,6 +1,17 @@
-# 🚀 FYZAR CHAT v3.9.1
+# 🚀 FYZAR CHAT v3.9.2
 
 ## 📋 Resumen de Cambios
+
+### ✅ Nuevo en v3.9.2 (Juego UNO + Bug Fix)
+
+1. **Juego UNO Multijugador** - Juego de cartas para 2-8 jugadores con reglas clásicas
+2. **Cartas Especiales** - Skip, Reverse, +2, +4, Wild con selección de color
+3. **Botón ¡UNO!** - Aparece automáticamente cuando tienes 2 cartas
+4. **Sistema de Niveles** - +0.25 puntos por victoria en UNO
+5. **Bug Fix Notificaciones** - Arreglado orden de mensajes de resultados en sala #juegos
+6. **Responsive Design** - Adaptado para PC, tablet y mobile
+7. **Timer de 20 minutos** - Partidas expiran automáticamente
+8. **5 Juegos Disponibles** - Ta-Te-Ti, Carreras, Conecta 4, Damas, UNO
 
 ### ✅ Nuevo en v3.9.1 (Sistema de Niveles Corregido)
 
@@ -317,6 +328,27 @@ Firebase Console → Realtime Database → Rules
           ".write": true,
           ".indexOn": ["status", "createdAt"]
         }
+      },
+      "conecta4": {
+        "$gameId": {
+          ".read": true,
+          ".write": true,
+          ".indexOn": ["status", "createdAt"]
+        }
+      },
+      "damas": {
+        "$gameId": {
+          ".read": true,
+          ".write": true,
+          ".indexOn": ["status", "createdAt"]
+        }
+      },
+      "uno": {
+        "$gameId": {
+          ".read": true,
+          ".write": true,
+          ".indexOn": ["status", "createdAt"]
+        }
       }
     },
     "globalAnnouncements": {
@@ -365,6 +397,7 @@ Firebase Console → Realtime Database → Rules
 - `games/carreras`: Sistema de juegos de Carreras multijugador
 - `games/conecta4`: Sistema de juegos Conecta 4 multijugador
 - `games/damas`: Sistema de juegos Damas multijugador
+- `games/uno`: Sistema de juegos UNO multijugador (2-8 jugadores)
 - `roomDeleted`: Sistema de temporizador de 15 segundos antes de eliminar salas
 - `roomPresence`: Notificaciones de entrada/salida de usuarios usando Firestore
 - `users`: Escritura pública para incrementar nivel (+0.25 por victoria, formato decimal)
@@ -473,6 +506,7 @@ node server.js
    - Carreras (primer lugar)
    - Conecta 4 (ganador de cada partida)
    - Damas (ganador de cada partida)
+   - UNO (ganador de cada ronda)
    - **4 victorias = 1 nivel completo**
 
 2. **Almacenamiento**:
@@ -557,6 +591,7 @@ users/{firebaseUid} {
 - ✅ **Carreras** - Juego multijugador (hasta 8 jugadores) con controles responsive
 - ✅ **Conecta 4** - Juego para 2 jugadores con tablero 6x7
 - ✅ **Damas** - Juego de estrategia para 2 jugadores
+- ✅ **UNO** - Juego de cartas para 2-8 jugadores con reglas clásicas
 - ✅ Links temporales únicos (expiran en 20 min)
 - ✅ Bot de juegos envía notificaciones al chat con botón "Ver Rondas"
 - ✅ Estadísticas: rondas, victorias, empates
@@ -713,16 +748,16 @@ showUserNotification(`${username} se fue a ${roomName}`, "room-change");
 ## 📞 Información del Proyecto
 
 - **Proyecto**: fyzar-80936
-- **Versión**: 3.9.1
+- **Versión**: 3.9.2
 - **Estado**: ✅ Listo para producción
 - **Calidad**: ⭐⭐⭐⭐⭐
-- **Última Actualización**: Sistema de niveles unificado en Firestore
+- **Última Actualización**: Juego UNO + Bug fix notificaciones
 
 ---
 
 ## 🎉 ¡Listo!
 
-Tu proyecto FYZAR CHAT v3.9.1 incluye:
+Tu proyecto FYZAR CHAT v3.9.2 incluye:
 
 - ✅ Sistema completo de moderación
 - ✅ Baneo y muteo temporal/permanente
@@ -742,7 +777,7 @@ Tu proyecto FYZAR CHAT v3.9.1 incluye:
 - ✅ Sistema de routing con hash para URLs específicas por sala
 - ✅ Verificación de autenticación automática
 - ✅ Links compartibles a salas específicas
-- ✅ **4 juegos multijugador**: Ta-Te-Ti, Carreras, Conecta 4, Damas
+- ✅ **5 juegos multijugador**: Ta-Te-Ti, Carreras, Conecta 4, Damas, UNO
 - ✅ **Bot de juegos con notificaciones automáticas**
 - ✅ **Links temporales únicos para cada partida**
 - ✅ **Sistema de niveles unificado en Firestore**
@@ -774,7 +809,7 @@ Tu proyecto FYZAR CHAT v3.9.1 incluye:
 
 ### Sistema de Juegos
 - **Comando**: `!crearjuegos` disponible en todas las salas
-- **4 Juegos Disponibles**: Ta-Te-Ti, Carreras, Conecta 4, Damas
+- **5 Juegos Disponibles**: Ta-Te-Ti, Carreras, Conecta 4, Damas, UNO
 - **Links temporales**: Cada juego tiene un ID único, expira en 20 min
 - **Bot de juegos**: Envía notificaciones automáticas al chat
 - **Estadísticas**: Rondas, victorias, empates en tiempo real

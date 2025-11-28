@@ -374,12 +374,12 @@ async function sendResultNotification(winner) {
         }
     }
     
-    const messageRef = ref(database, `rooms/juegos/messages/${Date.now()}`);
-    await set(messageRef, {
+    const messageRef = ref(database, `rooms/juegos/messages`);
+    await push(messageRef, {
         userId: 'bot-juegos',
         username: '🎮 Bot de Juegos',
         text: resultText,
-        timestamp: Date.now(),
+        timestamp: serverTimestamp(),
         type: 'game-result',
         userAvatar: '/images/logo.svg',
         gameLink: gameLink
