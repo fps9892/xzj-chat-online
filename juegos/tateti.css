@@ -5,8 +5,8 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Orbitron', Arial, sans-serif;
+    background: #2a1a1a;
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -15,23 +15,28 @@ body {
 }
 
 .game-container {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 20px;
+    background: #1a0f0f;
+    border: 2px solid #c97a6f;
+    border-radius: 16px;
     padding: 30px;
     max-width: 600px;
     width: 100%;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 32px rgba(201, 122, 111, 0.3);
 }
 
 .game-header {
     text-align: center;
     margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid rgba(201, 122, 111, 0.3);
 }
 
 .game-header h1 {
-    color: #667eea;
-    font-size: 2.5em;
+    color: #f5e6e3;
+    font-size: 2em;
     margin-bottom: 10px;
+    font-family: 'Orbitron', monospace;
+    letter-spacing: 2px;
 }
 
 .game-info {
@@ -39,7 +44,8 @@ body {
     justify-content: space-around;
     gap: 20px;
     font-size: 0.9em;
-    color: #666;
+    color: #888;
+    font-family: 'Orbitron', monospace;
 }
 
 .players-info {
@@ -47,9 +53,10 @@ body {
     justify-content: space-between;
     align-items: center;
     margin: 20px 0;
-    padding: 15px;
-    background: #f8f9fa;
-    border-radius: 10px;
+    padding: 20px;
+    background: rgba(201, 122, 111, 0.08);
+    border: 2px solid rgba(201, 122, 111, 0.2);
+    border-radius: 12px;
 }
 
 .player {
@@ -60,37 +67,49 @@ body {
 }
 
 .player-avatar {
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
     border-radius: 50%;
-    background: #ddd;
+    background: #3d2626;
     background-size: cover;
     background-position: center;
+    border: 3px solid #c97a6f;
+    box-shadow: 0 4px 12px rgba(201, 122, 111, 0.3);
+}
+
+.player span {
+    color: #f5e6e3;
+    font-size: 14px;
+    font-weight: bold;
+    font-family: 'Orbitron', monospace;
 }
 
 .player-symbol {
-    font-size: 1.5em;
+    font-size: 1.8em;
 }
 
 .vs {
     font-weight: bold;
-    font-size: 1.2em;
-    color: #667eea;
+    font-size: 1.5em;
+    color: #d4a59a;
+    font-family: 'Orbitron', monospace;
 }
 
 .game-status {
     text-align: center;
     font-size: 1.2em;
     font-weight: bold;
-    color: #667eea;
+    color: #d4a59a;
     margin: 20px 0;
     min-height: 30px;
+    font-family: 'Orbitron', monospace;
+    letter-spacing: 1px;
 }
 
 .game-board {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    gap: 12px;
     margin: 20px 0;
     max-width: 400px;
     margin-left: auto;
@@ -99,9 +118,9 @@ body {
 
 .cell {
     aspect-ratio: 1;
-    background: white;
-    border: 3px solid #667eea;
-    border-radius: 10px;
+    background: #2a1a1a;
+    border: 3px solid #c97a6f;
+    border-radius: 12px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -111,8 +130,9 @@ body {
 }
 
 .cell:hover:not(.taken) {
-    background: #f0f0f0;
+    background: rgba(201, 122, 111, 0.15);
     transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(201, 122, 111, 0.4);
 }
 
 .cell.taken {
@@ -120,7 +140,7 @@ body {
 }
 
 .cell.winner {
-    background: #4caf50;
+    background: rgba(212, 165, 154, 0.3);
     animation: pulse 0.5s;
 }
 
@@ -138,31 +158,35 @@ body {
 
 button {
     padding: 12px 30px;
-    border: none;
+    border: 2px solid #c97a6f;
     border-radius: 8px;
     font-size: 1em;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s;
+    font-family: 'Orbitron', monospace;
 }
 
 .btn-secondary {
-    background: #667eea;
-    color: white;
+    background: #d4a59a;
+    color: #1a0f0f;
 }
 
 .btn-secondary:hover {
-    background: #5568d3;
+    background: #c97a6f;
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(201, 122, 111, 0.4);
 }
 
 .btn-danger {
-    background: #ff4444;
-    color: white;
+    background: transparent;
+    color: #ff4444;
+    border-color: #ff4444;
 }
 
 .btn-danger:hover {
-    background: #cc0000;
+    background: #ff4444;
+    color: #fff;
     transform: translateY(-2px);
 }
 
@@ -175,23 +199,32 @@ button {
 
 .stat {
     text-align: center;
-    padding: 10px;
-    background: #f8f9fa;
+    padding: 12px;
+    background: rgba(201, 122, 111, 0.08);
+    border: 2px solid rgba(201, 122, 111, 0.2);
     border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.stat:hover {
+    background: rgba(201, 122, 111, 0.15);
+    transform: translateY(-2px);
 }
 
 .stat-label {
     display: block;
-    font-size: 0.8em;
-    color: #666;
+    font-size: 0.75em;
+    color: #888;
     margin-bottom: 5px;
+    font-family: 'Inter', sans-serif;
 }
 
 .stat-value {
     display: block;
     font-size: 1.5em;
     font-weight: bold;
-    color: #667eea;
+    color: #d4a59a;
+    font-family: 'Orbitron', monospace;
 }
 
 @media (max-width: 600px) {
@@ -200,7 +233,16 @@ button {
     }
     
     .game-header h1 {
-        font-size: 2em;
+        font-size: 1.5em;
+    }
+    
+    .players-info {
+        padding: 15px;
+    }
+    
+    .player-avatar {
+        width: 50px;
+        height: 50px;
     }
     
     .cell {

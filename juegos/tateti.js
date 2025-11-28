@@ -44,30 +44,60 @@ onValue(gameRef, (snapshot) => {
 
 // Unirse al juego
 async function joinGame() {
-    if (!gameData.player1) {
+    const myId = currentUser.firebaseUid || currentUser.userId;
+    
+    if (gameData.player1 && gameData.player1.id === myId) {
+        mySymbol = 'X';
+        return;
+    }
+    if (gameData.player2 && gameData.player2.id === myId) {
+        mySymbol = 'O';
+        return;
+    }
+    
+    if (!gameData.player1 && !gameData.player2) {
+        const choice = confirm('¿Quieres ser X? (Aceptar = X, Cancelar = O)');
+        mySymbol = choice ? 'X' : 'O';
+        
+        if (mySymbol === 'X') {
+            await update(gameRef, {
+                player1: {
+                    id: myId,
+                    name: currentUser.username,
+                    avatar: currentUser.avatar
+                }
+            });
+        } else {
+            await update(gameRef, {
+                player2: {
+                    id: myId,
+                    name: currentUser.username,
+                    avatar: currentUser.avatar
+                }
+            });
+        }
+    } else if (!gameData.player1) {
         mySymbol = 'X';
         await update(gameRef, {
             player1: {
-                id: currentUser.firebaseUid || currentUser.userId,
-                name: currentUser.username,
-                avatar: currentUser.avatar
-            }
-        });
-    } else if (!gameData.player2 && (currentUser.firebaseUid || currentUser.userId) !== gameData.player1.id) {
-        mySymbol = 'O';
-        await update(gameRef, {
-            player2: {
-                id: currentUser.firebaseUid || currentUser.userId,
+                id: myId,
                 name: currentUser.username,
                 avatar: currentUser.avatar
             },
             status: 'playing',
             currentTurn: 'X'
         });
-    } else if (gameData.player1 && (currentUser.firebaseUid || currentUser.userId) === gameData.player1.id) {
-        mySymbol = 'X';
-    } else if (gameData.player2 && (currentUser.firebaseUid || currentUser.userId) === gameData.player2.id) {
+    } else if (!gameData.player2) {
         mySymbol = 'O';
+        await update(gameRef, {
+            player2: {
+                id: myId,
+                name: currentUser.username,
+                avatar: currentUser.avatar
+            },
+            status: 'playing',
+            currentTurn: 'X'
+        });
     }
 }
 
