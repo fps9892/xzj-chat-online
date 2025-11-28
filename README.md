@@ -206,7 +206,7 @@ service cloud.firestore {
     match /users/{firebaseUid} {
       allow read: if true;
       allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && (request.auth.uid == firebaseUid || isAdmin());
+      allow update: if true;
       allow delete: if isAdmin();
     }
     
@@ -303,6 +303,13 @@ Firebase Console → Realtime Database → Rules
           ".write": true,
           ".indexOn": ["status", "createdAt"]
         }
+      },
+      "carreras": {
+        "$gameId": {
+          ".read": true,
+          ".write": true,
+          ".indexOn": ["status", "createdAt"]
+        }
       }
     },
     "globalAnnouncements": {
@@ -348,8 +355,10 @@ Firebase Console → Realtime Database → Rules
 
 **Notas importantes**:
 - `games/tateti`: Sistema de juegos Ta-Te-Ti con salas temporales
+- `games/carreras`: Sistema de juegos de Carreras multijugador
 - `roomDeleted`: Sistema de temporizador de 15 segundos antes de eliminar salas
 - `roomPresence`: Notificaciones de entrada/salida de usuarios usando Firestore (sin consumir Realtime Database)
+- `users`: Permitir escritura sin autenticación para incrementar nivel desde juegos
 
 ### 2. Iniciar el Proyecto
 
@@ -491,13 +500,14 @@ node server.js
 ### Sistema de Juegos 🎮
 
 - ✅ `!crearjuegos` - Abrir panel de juegos (disponible en todas las salas)
-- ✅ **Ta-Te-Ti** - Juego para 2 jugadores en tiempo real
+- ✅ **Ta-Te-Ti** - Juego para 2 jugadores en tiempo real con iconos SVG
+- ✅ **Carreras** - Juego multijugador (hasta 8 jugadores) con controles responsive
 - ✅ Links temporales únicos (expiran en 20 min)
-- ✅ Bot de juegos envía notificaciones al chat
+- ✅ Bot de juegos envía notificaciones al chat con botón "Ver Rondas"
 - ✅ Estadísticas: rondas, victorias, empates
+- ✅ Incremento de nivel por victoria (+1 nivel al ganador)
 - ✅ Permite salir del juego sin cerrar la página
-- ✅ Notificaciones de resultados en sala #juegos con nombres reales
-- ✅ Reinicio automático de rondas después de 3 segundos
+- ✅ Notificaciones de resultados con animación de sorpresa
 - ✅ Timer visible de 20 minutos
 - ✅ Responsive (móvil, tablet, desktop)
 

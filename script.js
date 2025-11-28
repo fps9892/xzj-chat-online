@@ -965,15 +965,24 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Manejar resultados de juegos
         if (message.type === 'game-result') {
-            return createElement(`
+            const resultEl = createElement(`
                 <div class="message-container game-result-message" data-message-id="${message.id}">
                     <div class="message system">
                         <div class="message-content">
                             <div class="message-text">${message.text}</div>
+                            ${message.gameLink ? `<button class="game-view-btn" data-game-link="${message.gameLink}">👁️ Ver Rondas</button>` : ''}
                         </div>
                     </div>
                 </div>
             `);
+            
+            if (message.gameLink) {
+                resultEl.querySelector('.game-view-btn').addEventListener('click', () => {
+                    window.open(message.gameLink, '_blank');
+                });
+            }
+            
+            return resultEl;
         }
         
         // Mostrar rol del usuario

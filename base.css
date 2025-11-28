@@ -3942,6 +3942,33 @@ body {
   display: none;
 }
 
+.game-view-btn {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #ffd700, #ffaa00);
+  border: 2px solid #ffd700;
+  border-radius: 10px;
+  color: #1a0f0f;
+  font-size: 13px;
+  font-weight: bold;
+  font-family: 'Orbitron', monospace;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+  margin-top: 10px;
+}
+
+.game-view-btn:hover {
+  background: linear-gradient(135deg, #ffaa00, #ffd700);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
+}
+
+.game-view-btn:active {
+  transform: translateY(0);
+}
+
 @media (max-width: 767px) {
   .game-message {
     max-width: 95%;

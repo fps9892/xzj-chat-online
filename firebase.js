@@ -2142,4 +2142,27 @@ export async function createTatetiGame() {
     return gameId;
 }
 
+// Crear juego de Carreras
+export async function createCarrerasGame() {
+    const gameId = Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+    const gameRef = ref(database, `games/carreras/${gameId}`);
+    
+    await set(gameRef, {
+        id: gameId,
+        createdBy: currentUser.firebaseUid || currentUser.userId,
+        createdByName: currentUser.username,
+        createdAt: Date.now(),
+        expiresAt: Date.now() + (20 * 60 * 1000),
+        status: 'waiting',
+        players: {},
+        startTime: null
+    });
+    
+    setTimeout(async () => {
+        await remove(gameRef);
+    }, 20 * 60 * 1000);
+    
+    return gameId;
+}
+
 export { currentUser, currentRoom, database, db, ref, onValue, set, push, serverTimestamp };

@@ -295,12 +295,12 @@ async function sendResultNotification(winner) {
     let resultText;
     let winnerId = null;
     if (winner === 'draw') {
-        resultText = `🤝 Ta-Te-Ti: Empate entre ${player1Name} y ${player2Name} - ${gameLink}`;
+        resultText = `🤝 Ta-Te-Ti: Empate entre ${player1Name} y ${player2Name}`;
     } else {
         const winnerName = winner === 'X' ? player1Name : player2Name;
         const loserName = winner === 'X' ? player2Name : player1Name;
         winnerId = winner === 'X' ? gameData.player1.id : gameData.player2.id;
-        resultText = `🎉 Ta-Te-Ti: ${winnerName} ganó la ronda contra ${loserName} - ${gameLink}`;
+        resultText = `🎉 Ta-Te-Ti: ${winnerName} ganó la ronda contra ${loserName}`;
         
         // Incrementar nivel del ganador
         try {
@@ -340,7 +340,8 @@ async function sendResultNotification(winner) {
         text: resultText,
         timestamp: Date.now(),
         type: 'game-result',
-        userAvatar: '/images/logo.svg'
+        userAvatar: '/images/logo.svg',
+        gameLink: gameLink
     });
 }
 

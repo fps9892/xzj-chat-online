@@ -22,10 +22,11 @@ export async function showGamesPanel() {
                         <p>Juego clásico para 2 jugadores</p>
                         <button class="create-game-btn" data-game="tateti">Crear Sala</button>
                     </div>
-                    <div class="game-card coming-soon">
-                        <div class="game-icon">🎲</div>
-                        <h3>Próximamente</h3>
-                        <p>Más juegos en desarrollo</p>
+                    <div class="game-card" data-game="carreras">
+                        <div class="game-icon">🏎️</div>
+                        <h3>Carreras</h3>
+                        <p>Compite contra otros jugadores</p>
+                        <button class="create-game-btn" data-game="carreras">Crear Sala</button>
                     </div>
                 </div>
             </div>
@@ -43,18 +44,20 @@ export async function showGamesPanel() {
         btn.addEventListener('click', async () => {
             const gameType = btn.dataset.game;
             
-            if (gameType === 'tateti') {
+            if (gameType === 'tateti' || gameType === 'carreras') {
+                const gameName = gameType === 'tateti' ? 'Ta-Te-Ti' : 'Carreras';
+                const gameEmoji = gameType === 'tateti' ? '🎮' : '🏎️';
                 try {
                     btn.textContent = 'Creando...';
                     btn.disabled = true;
                     
-                    const gameId = await createTatetiGame();
-                    const gameLink = `${window.location.origin}/juegos/tateti.html?id=${gameId}`;
+                    const gameId = gameType === 'tateti' ? await createTatetiGame() : await createCarrerasGame();
+                    const gameLink = `${window.location.origin}/juegos/${gameType}.html?id=${gameId}`;
                     
                     // Enviar mensaje al chat con el link
                     const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
                     await push(messagesRef, {
-                        text: `🎮 Nueva sala de Ta-Te-Ti creada por ${currentUser.username}`,
+                        text: `${gameEmoji} Nueva sala de ${gameName} creada por ${currentUser.username}`,
                         userId: 'bot-juegos',
                         userName: '🤖 Bot de Juegos',
                         userAvatar: 'images/logo.svg',
