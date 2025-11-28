@@ -1,6 +1,14 @@
-# 🚀 FYZAR CHAT v3.9
+# 🚀 FYZAR CHAT v3.9.1
 
 ## 📋 Resumen de Cambios
+
+### ✅ Nuevo en v3.9.1 (Sistema de Niveles Corregido)
+
+1. **Sistema de Niveles Unificado** - Todos los niveles se guardan en Firestore `users/{uid}/level`
+2. **Incremento por Victorias** - +1 nivel por ganar en Ta-Te-Ti, Carreras, Conecta 4 o Damas
+3. **Compatibilidad Total** - Funciona para usuarios de Google, email e invitados
+4. **Reglas Firebase Optimizadas** - Escritura pública en colección `users` para juegos
+5. **4 Juegos Multijugador** - Ta-Te-Ti, Carreras, Conecta 4 y Damas completamente funcionales
 
 ### ✅ Nuevo en v3.9
 
@@ -203,16 +211,12 @@ service cloud.firestore {
       allow write: if isAdmin() || isModerator();
     }
 
+    // Colección principal de usuarios - Almacena TODOS los datos incluyendo nivel
     match /users/{firebaseUid} {
       allow read: if true;
-      allow create: if isAuthenticated();
+      allow create: if true;
       allow update: if true;
       allow delete: if isAdmin();
-    }
-    
-    match /userStats/{firebaseUid} {
-      allow read: if true;
-      allow write: if isAuthenticated() && (request.auth.uid == firebaseUid || isAdmin());
     }
 
     match /guests/{guestId} {
@@ -233,6 +237,11 @@ service cloud.firestore {
     }
 
     match /roomPresence/{roomId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /polls/{pollId} {
       allow read: if true;
       allow write: if true;
     }
@@ -356,9 +365,11 @@ Firebase Console → Realtime Database → Rules
 **Notas importantes**:
 - `games/tateti`: Sistema de juegos Ta-Te-Ti con salas temporales
 - `games/carreras`: Sistema de juegos de Carreras multijugador
+- `games/conecta4`: Sistema de juegos Conecta 4 multijugador
+- `games/damas`: Sistema de juegos Damas multijugador
 - `roomDeleted`: Sistema de temporizador de 15 segundos antes de eliminar salas
 - `roomPresence`: Notificaciones de entrada/salida de usuarios usando Firestore (sin consumir Realtime Database)
-- `users`: Permitir escritura sin autenticación para incrementar nivel desde juegos
+- `users`: Permitir escritura pública para incrementar nivel desde juegos (campo `level`)
 
 ### 2. Iniciar el Proyecto
 
@@ -451,6 +462,47 @@ node server.js
 
 ---
 
+## 🎮 Sistema de Niveles
+
+### Cómo Funciona
+
+**Todos los niveles se almacenan en Firestore en la colección `users` con el campo `level`**
+
+#### Incremento de Nivel
+
+1. **Por Victorias en Juegos**: +1 nivel por cada victoria en:
+   - Ta-Te-Ti (ganador de cada ronda)
+   - Carreras (primer lugar)
+   - Conecta 4 (ganador de cada partida)
+   - Damas (ganador de cada partida)
+
+2. **Almacenamiento**:
+   - Usuarios registrados: `users/{firebaseUid}/level`
+   - Invitados: `guests/{guestId}/level`
+   - Todos los datos de perfil (nombre, avatar, nivel, etc.) están en el mismo documento
+
+3. **Visualización**:
+   - Badge de nivel en mensajes del chat
+   - Perfil de usuario muestra nivel actual
+   - Estadísticas en panel de configuración
+
+#### Estructura de Datos en Firestore
+
+```javascript
+users/{firebaseUid} {
+  username: "NombreUsuario",
+  avatar: "url_imagen",
+  level: 5,  // ← Campo de nivel unificado
+  textColor: "#ffffff",
+  country: "🇦🇷",
+  description: "Mi descripción",
+  createdAt: "2024-01-01T00:00:00.000Z",
+  // ... otros campos
+}
+```
+
+---
+
 ## 🎯 Funcionalidades
 
 ### Para Todos los Usuarios
@@ -502,10 +554,13 @@ node server.js
 - ✅ `!crearjuegos` - Abrir panel de juegos (disponible en todas las salas)
 - ✅ **Ta-Te-Ti** - Juego para 2 jugadores en tiempo real con iconos SVG
 - ✅ **Carreras** - Juego multijugador (hasta 8 jugadores) con controles responsive
+- ✅ **Conecta 4** - Juego para 2 jugadores con tablero 6x7
+- ✅ **Damas** - Juego de estrategia para 2 jugadores
 - ✅ Links temporales únicos (expiran en 20 min)
 - ✅ Bot de juegos envía notificaciones al chat con botón "Ver Rondas"
 - ✅ Estadísticas: rondas, victorias, empates
-- ✅ Incremento de nivel por victoria (+1 nivel al ganador)
+- ✅ **Sistema de Niveles Unificado**: +1 nivel por victoria en cualquier juego
+- ✅ Niveles guardados en Firestore colección `users` (campo `level`)
 - ✅ Permite salir del juego sin cerrar la página
 - ✅ Notificaciones de resultados con animación de sorpresa
 - ✅ Timer visible de 20 minutos
@@ -657,15 +712,16 @@ showUserNotification(`${username} se fue a ${roomName}`, "room-change");
 ## 📞 Información del Proyecto
 
 - **Proyecto**: fyzar-80936
-- **Versión**: 3.9
+- **Versión**: 3.9.1
 - **Estado**: ✅ Listo para producción
 - **Calidad**: ⭐⭐⭐⭐⭐
+- **Última Actualización**: Sistema de niveles unificado en Firestore
 
 ---
 
 ## 🎉 ¡Listo!
 
-Tu proyecto FYZAR CHAT v3.9 incluye:
+Tu proyecto FYZAR CHAT v3.9.1 incluye:
 
 - ✅ Sistema completo de moderación
 - ✅ Baneo y muteo temporal/permanente
@@ -685,11 +741,13 @@ Tu proyecto FYZAR CHAT v3.9 incluye:
 - ✅ Sistema de routing con hash para URLs específicas por sala
 - ✅ Verificación de autenticación automática
 - ✅ Links compartibles a salas específicas
-- ✅ **Sistema de juegos con Ta-Te-Ti multijugador**
+- ✅ **4 juegos multijugador**: Ta-Te-Ti, Carreras, Conecta 4, Damas
 - ✅ **Bot de juegos con notificaciones automáticas**
 - ✅ **Links temporales únicos para cada partida**
+- ✅ **Sistema de niveles unificado en Firestore**
+- ✅ **+1 nivel por victoria en cualquier juego**
 
-**¡Disfruta tu chat profesional con moderación avanzada, encuestas interactivas, URLs compartibles y juegos multijugador!** 🚀
+**¡Disfruta tu chat profesional con moderación avanzada, encuestas interactivas, URLs compartibles, juegos multijugador y sistema de niveles!** 🚀
 
 ---
 
@@ -715,11 +773,18 @@ Tu proyecto FYZAR CHAT v3.9 incluye:
 
 ### Sistema de Juegos
 - **Comando**: `!crearjuegos` disponible en todas las salas
-- **Ta-Te-Ti**: Juego multijugador en tiempo real con Firebase
-- **Unión**: Botones "Unirse como X" y "Unirse como O" para elegir símbolo
+- **4 Juegos Disponibles**: Ta-Te-Ti, Carreras, Conecta 4, Damas
 - **Links temporales**: Cada juego tiene un ID único, expira en 20 min
 - **Bot de juegos**: Envía notificaciones automáticas al chat
-- **Estadísticas**: Rondas, victorias X/O, empates en tiempo real
+- **Estadísticas**: Rondas, victorias, empates en tiempo real
+- **Sistema de Niveles**: +1 nivel por victoria guardado en Firestore `users/{uid}/level`
 - **Persistencia**: Permite salir/entrar y jugar múltiples rondas
 - **Diseño**: Colores del chat principal, avatares de jugadores en header
-- **Archivos**: `/juegos/tateti.html`, `/juegos/tateti.css`, `/juegos/tateti.js`
+- **Archivos**: `/juegos/*.html`, `/juegos/*.css`, `/juegos/*.js`
+
+### Sistema de Niveles Unificado
+- **Almacenamiento**: Todos los niveles en Firestore colección `users` campo `level`
+- **Incremento**: +1 nivel por cada victoria en cualquier juego
+- **Compatibilidad**: Funciona para usuarios registrados (Google, email) e invitados
+- **Visualización**: Badge de nivel en mensajes y perfil de usuario
+- **Reglas Firebase**: Escritura pública en `users` para permitir incremento desde juegos

@@ -1,5 +1,6 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, onValue, set, update, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
@@ -13,6 +14,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
+const db = getFirestore(app);
 
 const urlParams = new URLSearchParams(window.location.search);
 const gameId = urlParams.get('id');
@@ -24,6 +26,28 @@ if (!gameId || !currentUser) {
 }
 
 document.getElementById('roomId').textContent = gameId.substring(0, 8);
+
+// Función para incrementar nivel del usuario
+async function incrementUserLevel(userId) {
+    try {
+        const userRef = doc(db, 'users', userId);
+        const userDoc = await getDoc(userRef);
+        
+        if (userDoc.exists()) {
+            await updateDoc(userRef, {
+                level: increment(1)
+            });
+        } else {
+            // Si no existe, crear con nivel 1
+            await setDoc(userRef, {
+                level: 1,
+                userId: userId
+            }, { merge: true });
+        }
+    } catch (error) {
+        console.error('Error incrementando nivel:', error);
+    }
+}
 
 const gameRef = ref(database, `games/tateti/${gameId}`);
 let mySymbol = null;
@@ -303,33 +327,8 @@ async function sendResultNotification(winner) {
         resultText = `🎉 Ta-Te-Ti: ${winnerName} ganó la ronda contra ${loserName}`;
         
         // Incrementar nivel del ganador
-        try {
-            const { getFirestore, doc, getDoc, updateDoc, increment } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-            const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
-            
-            const firebaseConfig = {
-                apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
-                authDomain: "fyzar-80936.firebaseapp.com",
-                databaseURL: "https://fyzar-80936-default-rtdb.firebaseio.com",
-                projectId: "fyzar-80936",
-                storageBucket: "fyzar-80936.firebasestorage.app",
-                messagingSenderId: "718553577005",
-                appId: "1:718553577005:web:74b5b9e790232edf6e2aa4"
-            };
-            
-            const app = initializeApp(firebaseConfig, 'tateti-app');
-            const db = getFirestore(app);
-            
-            const userRef = doc(db, 'users', winnerId);
-            const userDoc = await getDoc(userRef);
-            
-            if (userDoc.exists()) {
-                await updateDoc(userRef, {
-                    level: increment(1)
-                });
-            }
-        } catch (error) {
-            console.error('Error incrementando nivel:', error);
+        if (winnerId) {
+            await incrementUserLevel(winnerId);
         }
     }
     

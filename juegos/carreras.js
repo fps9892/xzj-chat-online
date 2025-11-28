@@ -20,6 +20,27 @@ const urlParams = new URLSearchParams(window.location.search);
 const gameId = urlParams.get('id');
 const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
+// Función para incrementar nivel del usuario
+async function incrementUserLevel(userId) {
+    try {
+        const userRef = doc(db, 'users', userId);
+        const userDoc = await getDoc(userRef);
+        
+        if (userDoc.exists()) {
+            await updateDoc(userRef, {
+                level: increment(1)
+            });
+        } else {
+            await setDoc(userRef, {
+                level: 1,
+                userId: userId
+            }, { merge: true });
+        }
+    } catch (error) {
+        console.error('Error incrementando nivel:', error);
+    }
+}
+
 if (!gameId || !currentUser) {
     alert('Sesión inválida');
     window.location.href = '../index.html#juegos';
@@ -238,13 +259,8 @@ async function sendResultsToChat() {
     const sorted = players.sort((a, b) => a.finishTime - b.finishTime);
     const winner = sorted[0];
     
-    if (winner && !winner.id.startsWith('guest-')) {
-        try {
-            const userRef = doc(db, 'users', winner.id);
-            await updateDoc(userRef, { level: increment(1) });
-        } catch (error) {
-            console.error('Error incrementando nivel:', error);
-        }
+    if (winner) {
+        await incrementUserLevel(winner.id);
     }
     
     const gameLink = window.location.href;

@@ -1,6 +1,6 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, onValue, set, update, push } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-import { getFirestore, doc, updateDoc, increment } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
@@ -19,6 +19,27 @@ const db = getFirestore(app);
 const urlParams = new URLSearchParams(window.location.search);
 const gameId = urlParams.get('id');
 const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
+// Función para incrementar nivel del usuario
+async function incrementUserLevel(userId) {
+    try {
+        const userRef = doc(db, 'users', userId);
+        const userDoc = await getDoc(userRef);
+        
+        if (userDoc.exists()) {
+            await updateDoc(userRef, {
+                level: increment(1)
+            });
+        } else {
+            await setDoc(userRef, {
+                level: 1,
+                userId: userId
+            }, { merge: true });
+        }
+    } catch (error) {
+        console.error('Error incrementando nivel:', error);
+    }
+}
 
 if (!gameId || !currentUser) {
     alert('Sesión inválida');
@@ -161,13 +182,7 @@ async function finishGame(winner) {
     
     if (winner !== 'draw') {
         const winnerId = winner === 'red' ? gameData.playerRed.id : gameData.playerYellow.id;
-        if (!winnerId.startsWith('guest-')) {
-            try {
-                await updateDoc(doc(db, 'users', winnerId), { level: increment(1) });
-            } catch (error) {
-                console.error('Error incrementando nivel:', error);
-            }
-        }
+        await incrementUserLevel(winnerId);
     }
     
     await sendResultNotification(winner);
