@@ -624,7 +624,11 @@ export async function deleteMessage(messageId, messageData = null) {
         if (currentUser.firebaseUid && !currentUser.isGuest) {
             const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
             const isModerator = await checkModeratorStatus(currentUser.firebaseUid);
-            const isOwner = messageData && messageData.firebaseUid === currentUser.firebaseUid;
+            const isOwner = messageData && (
+                messageData.firebaseUid === currentUser.firebaseUid || 
+                messageData.userId === currentUser.firebaseUid ||
+                messageData.userId === currentUser.userId
+            );
             
             if (!isAdmin && !isModerator && !isOwner) {
                 throw new Error('No tienes permisos para eliminar este mensaje');
