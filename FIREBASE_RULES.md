@@ -1,11 +1,8 @@
-# 🚀 FYZAR CHAT
+# Reglas de Firebase - FYZAR CHAT
 
-## 📋 Descripción
-Chat en tiempo real con Firebase, sistema de moderación, juegos multijugador y sistema de niveles.
+## Realtime Database Rules
 
-## 🔥 Reglas de Firebase
-
-### Realtime Database Rules
+Copia y pega estas reglas en Firebase Console > Realtime Database > Rules:
 
 ```json
 {
@@ -79,7 +76,9 @@ Chat en tiempo real con Firebase, sistema de moderación, juegos multijugador y 
 }
 ```
 
-### Firestore Rules
+## Firestore Rules
+
+Copia y pega estas reglas en Firebase Console > Firestore Database > Rules:
 
 ```javascript
 rules_version = '2';
@@ -181,68 +180,30 @@ service cloud.firestore {
 }
 ```
 
-## 🎮 Juegos Disponibles
+## Notas Importantes
 
-- **Ta-Te-Ti** (2 jugadores)
-- **Conecta 4** (2 jugadores)
+### Realtime Database
+- Los mensajes pueden ser eliminados por:
+  - El usuario que los creó
+  - Administradores
+  - Moderadores
+- La regla `"auth != null || data.exists()"` permite escribir si está autenticado O si el dato ya existe (para eliminar)
 
-## 👥 Sistema de Roles
+### Firestore
+- Acceso público de lectura en colecciones de moderación para evitar errores de permisos
+- Solo developers pueden modificar configuraciones del sistema
+- Los usuarios solo pueden modificar su propio perfil
+- Encuestas pueden ser eliminadas por su creador o por admins/developers
 
-- **Desarrollador** (DEV) - Acceso total + panel administrativo
-- **Administrador** (ADMIN) - Gestión completa del chat
-- **Moderador** (MOD) - Moderación de usuarios
-- **Usuario** - Acceso estándar
-- **Invitado** - Acceso temporal
+## Aplicar las Reglas
 
-## 📊 Sistema de Estadísticas
-
-Cada usuario tiene:
-- **Nivel**: Incrementa con victorias en juegos (+0.25 por victoria). El nivel se muestra con un loader circular que indica el progreso decimal (0.00-0.99) y el número entero en el centro
-- **Victorias**: Total de juegos ganados
-- **Derrotas**: Total de juegos perdidos
-- **Empates**: Total de juegos empatados
-
-## 🎯 Comandos
-
-### Todos los Usuarios
-- `!crearprivada` - Crear sala privada
-- `!aceptar` - Ver solicitudes de acceso
-- `!crearjuegos` - Panel de juegos
-
-### Moderadores
-- `!crearsala <nombre>` - Crear sala pública
-- `!ban` - Panel de baneo
-- `!mute` - Panel de muteo
-- `!unmute` - Panel de desmuteo
-- `!anuncio <mensaje>` - Anuncio global
-
-### Administradores
-- `!versalas` - Gestión de salas
-- `!borrar <nombre>` - Eliminar sala
-- `!unban` - Panel de desbaneo
-- `!borrarchat` - Limpiar historial
-
-### Desarrolladores
-- `!developer` - Panel de configuración del sistema (habilitar/deshabilitar funciones)
-- Todos los comandos anteriores
-
-## 🔐 Configuración de Desarrollador
-
-Para agregar un desarrollador:
-1. Ir a Firestore
-2. Crear colección `developers`
-3. Crear documento con el UID del usuario
-4. Agregar campo: `{ "isDeveloper": true }`
-
-## 📱 Compatibilidad
-
-- ✅ Chrome/Edge
-- ✅ Firefox
-- ✅ Safari
-- ✅ Mobile (iOS/Android)
-- ✅ Tablet
-
----
-
-**Versión**: 3.9.4  
-**Proyecto**: fyzar-80936
+1. Ve a [Firebase Console](https://console.firebase.google.com/)
+2. Selecciona el proyecto **fyzar-80936**
+3. Para Realtime Database:
+   - Ve a Realtime Database > Rules
+   - Copia y pega las reglas de arriba
+   - Haz clic en "Publicar"
+4. Para Firestore:
+   - Ve a Firestore Database > Rules
+   - Copia y pega las reglas de arriba
+   - Haz clic en "Publicar"
