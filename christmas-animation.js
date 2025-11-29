@@ -34,7 +34,12 @@ function createSnowflake() {
 }
 
 export function checkChristmasKeywords(text) {
-  const keywords = ['navidad', 'fiestas', 'feliz navidad', 'felices fiestas'];
+  if (!text) return false;
   const lowerText = text.toLowerCase();
-  return keywords.some(keyword => lowerText.includes(keyword));
+  const keywords = ['navidad', 'fiestas', 'feliz navidad', 'felices fiestas'];
+  
+  return keywords.some(keyword => {
+    const regex = new RegExp(`\\b${keyword}\\b`, 'i');
+    return regex.test(lowerText);
+  });
 }
