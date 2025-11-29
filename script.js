@@ -4,6 +4,7 @@ import { getUserProfile, findUserByUsername, animateMessageDeletion, initAdminLi
 import { setupMessageOptions, replyingTo, clearReply } from './message-options.js';
 import { showBanPanel, showUnbanPanel, showMutePanel, showUnmutePanel } from './moderation-panels.js';
 import { showGamesPanel } from './games-panel.js';
+import { triggerChristmasAnimation, checkChristmasKeywords } from './christmas-animation.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     // Elementos de la pantalla de carga
@@ -1075,6 +1076,11 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
+        // Detectar palabras de Navidad y activar animación
+        if (message.text && checkChristmasKeywords(message.text)) {
+            setTimeout(() => triggerChristmasAnimation(messageEl), 100);
+        }
+        
         return messageEl;
     }
     
@@ -1278,10 +1284,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="profile-section" data-section="stats">
                                 <div class="level-display-container">
                                     <div class="level-circle-wrapper">
-                                        <svg class="level-progress-ring" width="120" height="120">
-                                            <circle class="level-progress-ring-bg" cx="60" cy="60" r="52" />
-                                            <circle class="level-progress-ring-fill" cx="60" cy="60" r="52" 
-                                                style="stroke-dasharray: ${326.73}; stroke-dashoffset: ${326.73 - (((user.level || 1) % 1) * 326.73)};" />
+                                        <svg class="level-progress-ring" width="60" height="60">
+                                            <circle class="level-progress-ring-bg" cx="30" cy="30" r="26" />
+                                            <circle class="level-progress-ring-fill" cx="30" cy="30" r="26" 
+                                                style="stroke-dasharray: ${163.36}; stroke-dashoffset: ${163.36 - (((user.level || 1) % 1) * 163.36)};" />
                                         </svg>
                                         <div class="level-number">${Math.floor(user.level || 1)}</div>
                                     </div>

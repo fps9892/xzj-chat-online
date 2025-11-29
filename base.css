@@ -463,6 +463,9 @@ body {
   left: 0;
   right: 0;
   z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 @media (max-width: 767px) {
@@ -652,11 +655,14 @@ body {
 .controls-container {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 15px;
   background: rgba(42, 26, 26, 0.95);
-  padding: 12px 20px;
+  padding: 10px 18px;
   border-radius: 50px;
   border: 2px solid rgba(201, 122, 111, 0.3);
+  width: fit-content;
+  margin: 0 auto;
 }
 
 .controls-left,
@@ -4044,27 +4050,27 @@ body {
 
 .level-circle-wrapper {
     position: relative;
-    width: 80px;
-    height: 80px;
+    width: 60px;
+    height: 60px;
     flex-shrink: 0;
 }
 
 .level-progress-ring {
     transform: rotate(-90deg);
-    width: 80px;
-    height: 80px;
+    width: 60px;
+    height: 60px;
 }
 
 .level-progress-ring-bg {
     fill: none;
     stroke: rgba(201, 122, 111, 0.2);
-    stroke-width: 6;
+    stroke-width: 4;
 }
 
 .level-progress-ring-fill {
     fill: none;
     stroke: #d4a59a;
-    stroke-width: 6;
+    stroke-width: 4;
     stroke-linecap: round;
     transition: stroke-dashoffset 0.5s ease;
 }
@@ -4074,7 +4080,7 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 28px;
+    font-size: 20px;
     font-weight: bold;
     color: #d4a59a;
     font-family: "Orbitron", monospace;

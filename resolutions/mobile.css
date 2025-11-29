@@ -251,10 +251,9 @@
 
   /* Controls container adaptado para mobile */
   .controls-container {
-    padding: 8px 12px;
+    padding: 8px 14px;
     gap: 10px;
     border-radius: 40px;
-    margin-bottom: 8px;
   }
 
   .controls-left,
@@ -263,21 +262,21 @@
   }
 
   .controls-center {
-    padding: 0 10px;
+    padding: 0 8px;
   }
 
   .controls-logo {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
   }
 
   .controls-container .image-btn,
   .controls-container .emote-btn,
   .controls-container .polls-btn,
   .controls-container .mic-btn {
-    width: 36px;
-    height: 36px;
-    padding: 8px;
+    width: 34px;
+    height: 34px;
+    padding: 7px;
   }
 
   .standalone-emote {
