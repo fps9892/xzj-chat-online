@@ -1328,15 +1328,17 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div class="profile-stats-grid">
                                     <div class="stat-item level-stat">
                                         <div class="level-circle">
-                                            <svg width="80" height="80">
-                                                <circle class="level-circle-bg" cx="40" cy="40" r="35"></circle>
-                                                <circle class="level-circle-progress" cx="40" cy="40" r="35" 
-                                                    stroke-dasharray="${2 * Math.PI * 35}" 
-                                                    stroke-dashoffset="${2 * Math.PI * 35 * (1 - ((user.level || 1) % 1))}"></circle>
+                                            <svg width="60" height="60">
+                                                <circle class="level-circle-bg" cx="30" cy="30" r="26"></circle>
+                                                <circle class="level-circle-progress" cx="30" cy="30" r="26" 
+                                                    stroke-dasharray="${2 * Math.PI * 26}" 
+                                                    stroke-dashoffset="${2 * Math.PI * 26 * (1 - ((user.level || 1) % 1))}"></circle>
                                             </svg>
-                                            <div class="level-number">${Math.floor(user.level || 1)}</div>
+                                            <div class="level-number">
+                                                <span class="level-value">${Math.floor(user.level || 1)}</span>
+                                                <span class="level-text">Nivel</span>
+                                            </div>
                                         </div>
-                                        <span class="stat-label">Nivel</span>
                                     </div>
                                     <div class="stat-item">
                                         <span class="stat-value">${user.wins || 0}</span>
@@ -2856,35 +2858,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Botón de recargar página al hacer scroll hacia abajo
-    const refreshPageBtn = document.createElement('button');
-    refreshPageBtn.className = 'refresh-page-btn';
-    refreshPageBtn.innerHTML = '<img src="/images/refresh.svg" alt="Refresh" style="width: 20px; height: 20px;" />';
-    document.body.appendChild(refreshPageBtn);
 
-    let lastScrollTop = 0;
-    let refreshTimeout = null;
-    chatArea.addEventListener('scroll', function() {
-        const scrollTop = chatArea.scrollTop;
-        
-        // Detectar scroll hacia arriba
-        if (scrollTop < lastScrollTop && scrollTop > 100) {
-            refreshPageBtn.classList.add('show');
-            
-            // Limpiar timeout anterior
-            if (refreshTimeout) clearTimeout(refreshTimeout);
-            
-            // Ocultar después de 10 segundos
-            refreshTimeout = setTimeout(() => {
-                refreshPageBtn.classList.remove('show');
-            }, 10000);
-        }
-        lastScrollTop = scrollTop;
-    });
-
-    refreshPageBtn.addEventListener('click', function() {
-        window.location.reload();
-    });
 
     function updateRoomUserCounts() {
         const rooms = [
