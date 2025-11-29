@@ -167,16 +167,25 @@
     border-radius: 3px;
   }
 
-  .chat-controls {
-    bottom: 82px;
-    left: 0;
+  .input-area {
     right: 200px;
   }
 
-  .controls-container {
+  .input-header {
     padding: 8px 16px;
+  }
+
+  .controls-container {
     gap: 12px;
-    border-radius: 30px;
+  }
+
+  .chat-controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 200px;
+    pointer-events: none;
+    z-index: 999;
   }
 
   .controls-left,
@@ -207,5 +216,6 @@
     right: 20px;
     width: 280px;
     height: 200px;
+    pointer-events: auto;
   }
 }

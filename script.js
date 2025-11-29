@@ -5,6 +5,7 @@ import { setupMessageOptions, replyingTo, clearReply } from './message-options.j
 import { showBanPanel, showUnbanPanel, showMutePanel, showUnmutePanel } from './moderation-panels.js';
 import { showGamesPanel } from './games-panel.js';
 import { triggerChristmasAnimation, checkChristmasKeywords } from './christmas-animation.js';
+import { checkDeveloperStatus, showDeveloperPanel, loadDeveloperSettings } from './developer-panel.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     // Elementos de la pantalla de carga
@@ -959,6 +960,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (message.isGuest) {
             displayName += ' (invitado)';
+        } else if (message.role === 'Desarrollador') {
+            roleTag = '<span class="dev-tag">DEV</span>';
         } else if (message.role === 'Administrador') {
             roleTag = '<span class="admin-tag">ADMIN</span>';
         } else if (message.role === 'Moderador') {
@@ -1094,7 +1097,9 @@ document.addEventListener('DOMContentLoaded', function() {
         let userNumId = '';
         let roleTag = '';
         
-        if (user.role === 'Administrador') {
+        if (user.role === 'Desarrollador') {
+            roleTag = '<span class="dev-tag">DEV</span>';
+        } else if (user.role === 'Administrador') {
             roleTag = '<span class="admin-tag">ADMIN</span>';
         } else if (user.role === 'Moderador') {
             roleTag = '<span class="mod-tag">MOD</span>';
@@ -1196,7 +1201,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function createMobileUserElement(user) {
         let roleTag = '';
-        if (user.role === 'Administrador') {
+        if (user.role === 'Desarrollador') {
+            roleTag = '<span class="dev-tag">DEV</span>';
+        } else if (user.role === 'Administrador') {
             roleTag = '<span class="admin-tag">ADMIN</span>';
         } else if (user.role === 'Moderador') {
             roleTag = '<span class="mod-tag">MOD</span>';
@@ -1245,8 +1252,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                         <div class="profile-username" style="color: ${userColor};">${user.username || user.name}</div>
                         <div class="profile-role-tag">
-                            <span class="profile-role-badge ${user.role === 'Administrador' ? 'admin' : user.role === 'Moderador' ? 'mod' : 'user'}">${user.role || 'Usuario'}</span>
+                            <span class="profile-role-badge ${user.role === 'Desarrollador' ? 'dev' : user.role === 'Administrador' ? 'admin' : user.role === 'Moderador' ? 'mod' : 'user'}">${user.role === 'Desarrollador' ? 'Desarrollador' : user.role || 'Usuario'}</span>
                         </div>
+                        ${currentUser.isDeveloper && user.ip ? `<div class="profile-info-item"><span class="profile-info-label">IP</span><span class="profile-info-value">${user.ip}</span></div>` : ''}
                         ${user.description ? `<div class="profile-user-description">${user.description}</div>` : ''}
                         
                         <div class="profile-tabs">
@@ -1567,6 +1575,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         await updateUserRole();
+        
+        // Check developer status
+        if (!currentUser.isGuest && currentUser.firebaseUid) {
+            currentUser.isDeveloper = await checkDeveloperStatus(currentUser.firebaseUid);
+            if (currentUser.isDeveloper) {
+                await loadDeveloperSettings();
+            }
+        }
+        
         updateUserHeader();
         updateAdminUI();
         updateGuestUI();
@@ -2476,6 +2493,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             if (lowerMessage === '!crearjuegos') {
                 showGamesPanel();
+                messageInput.value = '';
+                return;
+            }
+            if (lowerMessage === '!developer' && currentUser.isDeveloper) {
+                showDeveloperPanel();
                 messageInput.value = '';
                 return;
             }

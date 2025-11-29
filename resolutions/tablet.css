@@ -178,14 +178,12 @@
     width: 450px;
   }
 
-  .chat-controls {
-    bottom: 78px;
+  .input-header {
+    padding: 7px 14px;
   }
 
   .controls-container {
-    padding: 7px 14px;
     gap: 10px;
-    border-radius: 28px;
   }
 
   .controls-left,
@@ -216,12 +214,22 @@
     height: 56px;
   }
 
+  .chat-controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    pointer-events: none;
+    z-index: 999;
+  }
+
   .emote-panel {
     width: 250px;
     height: 190px;
     padding: 7px;
     bottom: 145px;
     right: 15px;
+    pointer-events: auto;
   }
 
   .emote-grid {

@@ -457,7 +457,7 @@ body {
 .input-area {
   background-color: #2a1a1a;
   border-top: 2px solid #c97a6f;
-  padding: 15px 20px;
+  padding: 0;
   position: fixed;
   bottom: 0;
   left: 0;
@@ -465,7 +465,19 @@ body {
   z-index: 1000;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+}
+
+.input-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 20px;
+  background: rgba(42, 26, 26, 0.5);
+  border-bottom: 1px solid rgba(201, 122, 111, 0.2);
+}
+
+.input-body {
+  padding: 15px 20px;
 }
 
 @media (max-width: 767px) {
@@ -652,27 +664,13 @@ body {
   pointer-events: auto;
 }
 
-.chat-controls {
-  position: fixed;
-  bottom: 80px;
-  left: 0;
-  right: 0;
-  z-index: 999;
-  pointer-events: none;
-}
-
 .controls-container {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  background: rgba(42, 26, 26, 0.95);
-  padding: 8px 16px;
-  border-radius: 30px;
-  border: 2px solid rgba(201, 122, 111, 0.3);
   width: fit-content;
   margin: 0 auto;
-  pointer-events: auto;
 }
 
 .controls-left,
@@ -2192,6 +2190,12 @@ body {
   background: #ffaa00;
   color: #1a0f0f;
   box-shadow: 0 0 10px rgba(255, 170, 0, 0.5);
+}
+
+.profile-role-badge.dev {
+  background: linear-gradient(135deg, #00d4ff, #0099ff);
+  color: #fff;
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.6);
 }
 
 .profile-role-badge.user {

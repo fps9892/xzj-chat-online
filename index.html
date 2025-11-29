@@ -25,6 +25,7 @@
     <link rel="stylesheet" href="/level-system.css" />
     <link rel="stylesheet" href="/message-options.css" />
     <link rel="stylesheet" href="/christmas-animation.css" />
+    <link rel="stylesheet" href="/developer-panel.css" />
     <!-- Verificación de autenticación ANTES de cargar el body -->
     <script src="/auth-check.js"></script>
   </head>
@@ -127,33 +128,20 @@
       usuario está escribiendo...
     </div>
     <footer class="input-area">
-      <div class="input-container">
+      <div class="input-header">
         <input
-          type="text"
-          class="message-input"
-          placeholder="Escribe tu mensaje..."
-          maxlength="250"
+          type="file"
+          accept="image/*"
+          class="image-input"
+          style="display: none"
         />
-        <span class="char-counter">0/250</span>
-        <img src="/images/send.svg" alt="Send" class="send-icon" />
-      </div>
-    </footer>
-
-    <!-- Controles flotantes independientes -->
-    <div class="chat-controls">
-      <input
-        type="file"
-        accept="image/*"
-        class="image-input"
-        style="display: none"
-      />
-      <input
-        type="file"
-        accept="audio/*"
-        class="audio-input"
-        style="display: none"
-      />
-      <div class="controls-container">
+        <input
+          type="file"
+          accept="audio/*"
+          class="audio-input"
+          style="display: none"
+        />
+        <div class="controls-container">
         <div class="controls-left">
           <img
             src="/images/image-load.svg"
@@ -185,7 +173,24 @@
             title="Emotes"
           />
         </div>
+        </div>
       </div>
+      <div class="input-body">
+        <div class="input-container">
+          <input
+            type="text"
+            class="message-input"
+            placeholder="Escribe tu mensaje..."
+            maxlength="250"
+          />
+          <span class="char-counter">0/250</span>
+          <img src="/images/send.svg" alt="Send" class="send-icon" />
+        </div>
+      </div>
+    </footer>
+
+    <!-- Panel de emotes -->
+    <div class="chat-controls">
       <div class="emote-panel">
         <div class="emote-tabs">
           <div class="emote-tab active" data-tab="emotes">Emotes</div>
@@ -315,6 +320,7 @@
     <script type="module" src="/level-init.js"></script>
     <script type="module" src="/emote-manager.js"></script>
     <script type="module" src="/polls.js"></script>
+    <script type="module" src="/developer-panel.js"></script>
     <!-- Panel de Salas -->
     <div class="rooms-panel-overlay" id="roomsPanelOverlay">
       <div class="rooms-panel" id="roomsPanel">
