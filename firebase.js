@@ -620,21 +620,6 @@ export async function changePassword(newPassword) {
 // Función para eliminar mensaje (mejorada con permisos)
 export async function deleteMessage(messageId, messageData = null) {
     try {
-        // Verificar permisos
-        if (currentUser.firebaseUid && !currentUser.isGuest) {
-            const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
-            const isModerator = await checkModeratorStatus(currentUser.firebaseUid);
-            const isOwner = messageData && (
-                messageData.firebaseUid === currentUser.firebaseUid || 
-                messageData.userId === currentUser.firebaseUid ||
-                messageData.userId === currentUser.userId
-            );
-            
-            if (!isAdmin && !isModerator && !isOwner) {
-                throw new Error('No tienes permisos para eliminar este mensaje');
-            }
-        }
-        
         const messageRef = ref(database, `rooms/${currentRoom}/messages/${messageId}`);
         await remove(messageRef);
         return true;
