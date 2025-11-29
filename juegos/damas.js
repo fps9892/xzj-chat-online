@@ -1,6 +1,6 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, onValue, set, update, push } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirestore, doc, updateDoc, increment } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
@@ -19,38 +19,6 @@ const db = getFirestore(app);
 const urlParams = new URLSearchParams(window.location.search);
 const gameId = urlParams.get('id');
 const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-
-// Función para incrementar nivel del usuario (+0.25 por victoria)
-async function incrementUserLevel(userId, isWin = true) {
-    try {
-        const userRef = doc(db, 'users', userId);
-        const userDoc = await getDoc(userRef);
-        
-        if (userDoc.exists()) {
-            const data = userDoc.data();
-            const updates = {};
-            
-            if (isWin) {
-                updates.level = (data.level || 1) + 0.25;
-                updates.wins = (data.wins || 0) + 1;
-            } else {
-                updates.losses = (data.losses || 0) + 1;
-            }
-            
-            await updateDoc(userRef, updates);
-        } else {
-            await setDoc(userRef, {
-                level: 1,
-                wins: isWin ? 1 : 0,
-                losses: isWin ? 0 : 1,
-                draws: 0,
-                userId: userId
-            }, { merge: true });
-        }
-    } catch (error) {
-        console.error('Error incrementando nivel:', error);
-    }
-}
 
 if (!gameId || !currentUser) {
     alert('Sesión inválida');
@@ -196,9 +164,13 @@ async function finishGame(winner) {
     await update(gameRef, { status: 'finished', winner, stats });
     
     const winnerId = winner === 'white' ? gameData.playerWhite.id : gameData.playerBlack.id;
-    const loserId = winner === 'white' ? gameData.playerBlack.id : gameData.playerWhite.id;
-    await incrementUserLevel(winnerId, true);
-    await incrementUserLevel(loserId, false);
+    if (!winnerId.startsWith('guest-')) {
+        try {
+            await updateDoc(doc(db, 'users', winnerId), { level: increment(1) });
+        } catch (error) {
+            console.error('Error incrementando nivel:', error);
+        }
+    }
     
     await sendResultNotification(winner);
 }

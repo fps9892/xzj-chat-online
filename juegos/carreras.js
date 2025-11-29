@@ -20,38 +20,6 @@ const urlParams = new URLSearchParams(window.location.search);
 const gameId = urlParams.get('id');
 const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
-// Función para incrementar nivel del usuario (+0.25 por victoria)
-async function incrementUserLevel(userId, isWin = true) {
-    try {
-        const userRef = doc(db, 'users', userId);
-        const userDoc = await getDoc(userRef);
-        
-        if (userDoc.exists()) {
-            const data = userDoc.data();
-            const updates = {};
-            
-            if (isWin) {
-                updates.level = (data.level || 1) + 0.25;
-                updates.wins = (data.wins || 0) + 1;
-            } else {
-                updates.losses = (data.losses || 0) + 1;
-            }
-            
-            await updateDoc(userRef, updates);
-        } else {
-            await setDoc(userRef, {
-                level: 1,
-                wins: isWin ? 1 : 0,
-                losses: isWin ? 0 : 1,
-                draws: 0,
-                userId: userId
-            }, { merge: true });
-        }
-    } catch (error) {
-        console.error('Error incrementando nivel:', error);
-    }
-}
-
 if (!gameId || !currentUser) {
     alert('Sesión inválida');
     window.location.href = '../index.html#juegos';
@@ -270,15 +238,13 @@ async function sendResultsToChat() {
     const sorted = players.sort((a, b) => a.finishTime - b.finishTime);
     const winner = sorted[0];
     
-    if (winner) {
-        // Ganador suma nivel y victoria
-        await incrementUserLevel(winner.id, true);
-        // Perdedores suman derrota
-        players.forEach(async (player) => {
-            if (player.id !== winner.id) {
-                await incrementUserLevel(player.id, false);
-            }
-        });
+    if (winner && !winner.id.startsWith('guest-')) {
+        try {
+            const userRef = doc(db, 'users', winner.id);
+            await updateDoc(userRef, { level: increment(1) });
+        } catch (error) {
+            console.error('Error incrementando nivel:', error);
+        }
     }
     
     const gameLink = window.location.href;

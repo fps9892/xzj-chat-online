@@ -70,8 +70,7 @@
 }
 
 .game-card {
-    background: linear-gradient(135deg, #c97a6f 0%, #a85a52 100%);
-    border: 2px solid rgba(201, 122, 111, 0.3);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 12px;
     padding: 25px;
     text-align: center;
@@ -81,8 +80,7 @@
 
 .game-card:hover {
     transform: translateY(-5px);
-    border-color: #d4a59a;
-    box-shadow: 0 4px 15px rgba(201, 122, 111, 0.3);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
 }
 
 .game-card.coming-soon {

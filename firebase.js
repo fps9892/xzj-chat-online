@@ -2231,33 +2231,4 @@ export async function createDamasGame() {
     return gameId;
 }
 
-// Crear juego de UNO
-export async function createUnoGame() {
-    const gameId = Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
-    const gameRef = ref(database, `games/uno/${gameId}`);
-    
-    await set(gameRef, {
-        id: gameId,
-        createdBy: currentUser.firebaseUid || currentUser.userId,
-        createdByName: currentUser.username,
-        createdAt: Date.now(),
-        expiresAt: Date.now() + (20 * 60 * 1000),
-        status: 'waiting',
-        players: {},
-        deck: [],
-        discardPile: [],
-        currentTurn: null,
-        currentColor: null,
-        direction: 1,
-        winner: null,
-        stats: { rounds: 0 }
-    });
-    
-    setTimeout(async () => {
-        await remove(gameRef);
-    }, 20 * 60 * 1000);
-    
-    return gameId;
-}
-
 export { currentUser, currentRoom, database, db, ref, onValue, set, push, serverTimestamp };

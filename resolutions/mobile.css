@@ -243,36 +243,10 @@
     font-size: 13px;
   }
 
-  .input-header {
-    padding: 6px 12px;
-    background-color: #0084ff00;
-  }
-
-  .controls-container {
+  .chat-controls {
+    bottom: 90px;
+    right: 10px;
     gap: 8px;
-  }
-
-  .controls-left,
-  .controls-right {
-    gap: 6px;
-  }
-
-  .controls-center {
-    padding: 0 8px;
-  }
-
-  .controls-logo {
-    width: 24px;
-    height: 24px;
-  }
-
-  .image-btn,
-  .emote-btn,
-  .polls-btn,
-  .mic-btn {
-    width: 32px;
-    height: 32px;
-    padding: 6px;
   }
 
   .standalone-emote {
@@ -280,13 +254,21 @@
     height: 48px;
   }
 
-  .chat-controls {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    pointer-events: none;
-    z-index: 999;
+  .image-btn {
+    width: 35px;
+    height: 35px;
+    padding: 6px;
+  }
+
+  .emote-btn {
+    width: 35px;
+    height: 35px;
+    padding: 6px;
+  }
+
+  .image-btn,
+  .emote-btn {
+    background-color: #00000000;
   }
 
   .emote-panel {
@@ -295,7 +277,6 @@
     padding: 6px;
     bottom: 135px;
     right: 10px;
-    pointer-events: auto;
   }
 
   .emote-grid {
@@ -327,36 +308,6 @@
 
   .room-item {
     font-size: 10px; /* Ajusta este valor según sea necesario */
-  }
-
-  /* Botón de refresh en mobile */
-  .mobile-refresh-btn {
-    position: fixed;
-    top: 70px;
-    left: 50%;
-    transform: translateX(-50%) translateY(-100px);
-    padding: 10px;
-    background: rgba(201, 122, 111, 0.95);
-    border: 2px solid #c97a6f;
-    border-radius: 50%;
-    color: #fff;
-    cursor: pointer;
-    z-index: 9998;
-    transition: transform 0.3s;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-  }
-
-  .mobile-refresh-btn.show {
-    transform: translateX(-50%) translateY(0);
-  }
-
-  .mobile-refresh-btn:active {
-    transform: translateX(-50%) translateY(0) scale(0.95);
   }
 
   .header-username {
@@ -395,7 +346,7 @@
 
   .rooms-btn {
     padding: 6px 10px;
-    border-radius: 17%;
+    border-radius: 50%;
   }
 
   .rooms-btn span {

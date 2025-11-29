@@ -1,6 +1,6 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, onValue, set, update, push } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirestore, doc, updateDoc, increment } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
@@ -19,62 +19,6 @@ const db = getFirestore(app);
 const urlParams = new URLSearchParams(window.location.search);
 const gameId = urlParams.get('id');
 const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-
-// Función para incrementar nivel del usuario (+0.25 por victoria)
-async function incrementUserLevel(userId, isWin = true) {
-    try {
-        const userRef = doc(db, 'users', userId);
-        const userDoc = await getDoc(userRef);
-        
-        if (userDoc.exists()) {
-            const data = userDoc.data();
-            const updates = {};
-            
-            if (isWin) {
-                updates.level = (data.level || 1) + 0.25;
-                updates.wins = (data.wins || 0) + 1;
-            } else {
-                updates.losses = (data.losses || 0) + 1;
-            }
-            
-            await updateDoc(userRef, updates);
-        } else {
-            await setDoc(userRef, {
-                level: 1,
-                wins: isWin ? 1 : 0,
-                losses: isWin ? 0 : 1,
-                draws: 0,
-                userId: userId
-            }, { merge: true });
-        }
-    } catch (error) {
-        console.error('Error incrementando nivel:', error);
-    }
-}
-
-async function incrementUserDraw(userId) {
-    try {
-        const userRef = doc(db, 'users', userId);
-        const userDoc = await getDoc(userRef);
-        
-        if (userDoc.exists()) {
-            const data = userDoc.data();
-            await updateDoc(userRef, {
-                draws: (data.draws || 0) + 1
-            });
-        } else {
-            await setDoc(userRef, {
-                level: 1,
-                wins: 0,
-                losses: 0,
-                draws: 1,
-                userId: userId
-            }, { merge: true });
-        }
-    } catch (error) {
-        console.error('Error incrementando empates:', error);
-    }
-}
 
 if (!gameId || !currentUser) {
     alert('Sesión inválida');
@@ -139,8 +83,7 @@ function updateUI() {
         document.getElementById('gameArea').style.display = 'block';
         document.getElementById('resultsScreen').style.display = 'none';
         renderBoard();
-        const currentPlayerName = gameData.currentTurn === 'red' ? gameData.playerRed?.name : gameData.playerYellow?.name;
-        document.getElementById('turnIndicator').textContent = `Turno de: ${currentPlayerName || 'Esperando...'}`;
+        document.getElementById('turnIndicator').textContent = `Turno: ${gameData.currentTurn === 'red' ? '🔴 Rojo' : '🟡 Amarillo'}`;
         document.getElementById('stats').textContent = `Rondas: ${gameData.stats.rounds} | 🔴: ${gameData.stats.winsRed} | 🟡: ${gameData.stats.winsYellow} | Empates: ${gameData.stats.draws}`;
     } else if (gameData.status === 'finished') {
         document.getElementById('waitingRoom').style.display = 'none';
@@ -216,14 +159,15 @@ async function finishGame(winner) {
     
     await update(gameRef, { status: 'finished', winner, stats });
     
-    if (winner === 'draw') {
-        if (gameData.playerRed) await incrementUserDraw(gameData.playerRed.id);
-        if (gameData.playerYellow) await incrementUserDraw(gameData.playerYellow.id);
-    } else {
+    if (winner !== 'draw') {
         const winnerId = winner === 'red' ? gameData.playerRed.id : gameData.playerYellow.id;
-        const loserId = winner === 'red' ? gameData.playerYellow.id : gameData.playerRed.id;
-        await incrementUserLevel(winnerId, true);
-        await incrementUserLevel(loserId, false);
+        if (!winnerId.startsWith('guest-')) {
+            try {
+                await updateDoc(doc(db, 'users', winnerId), { level: increment(1) });
+            } catch (error) {
+                console.error('Error incrementando nivel:', error);
+            }
+        }
     }
     
     await sendResultNotification(winner);
@@ -249,38 +193,14 @@ async function sendResultNotification(winner) {
 }
 
 function showResults() {
-    const resultsDiv = document.getElementById('resultsScreen');
-    if (gameData.winner === 'draw') {
-        resultsDiv.innerHTML = `
-            <h2>🤝 ¡Empate!</h2>
-            <div class="winner-info">
-                <p style="font-size: 1.5em; color: #d4a59a;">Ambos jugadores empataron</p>
-            </div>
-            <button id="newRoundBtn" class="btn-primary">Nueva Ronda</button>
-            <button id="exitBtn" class="btn-secondary">Salir</button>
-        `;
-    } else {
-        const winner = gameData.winner === 'red' ? gameData.playerRed : gameData.playerYellow;
-        const emoji = gameData.winner === 'red' ? '🔴' : '🟡';
-        resultsDiv.innerHTML = `
-            <h2>🏆 ¡${winner.name} Gana!</h2>
-            <div class="winner-info">
-                <div class="winner-avatar" style="background-image: url(${winner.avatar})"></div>
-                <div class="winner-name">${emoji} ${winner.name}</div>
-                <p style="font-size: 1.2em; color: #d4a59a; margin-top: 15px;">¡Felicitaciones por la victoria!</p>
-            </div>
-            <button id="newRoundBtn" class="btn-primary">Nueva Ronda</button>
-            <button id="exitBtn" class="btn-secondary">Salir</button>
-        `;
-    }
-    
-    document.getElementById('newRoundBtn').addEventListener('click', async () => {
-        await update(gameRef, { status: 'playing', board: Array(42).fill(''), currentTurn: 'red', winner: null });
-    });
-    
-    document.getElementById('exitBtn').addEventListener('click', () => {
-        window.location.href = '../index.html#juegos';
-    });
+    const title = gameData.winner === 'draw' ? '¡Empate!' : `¡${gameData.winner === 'red' ? '🔴 Rojo' : '🟡 Amarillo'} Gana!`;
+    document.getElementById('resultTitle').textContent = title;
 }
 
+document.getElementById('newRoundBtn').addEventListener('click', async () => {
+    await update(gameRef, { status: 'playing', board: Array(42).fill(''), currentTurn: 'red', winner: null });
+});
 
+document.getElementById('exitBtn').addEventListener('click', () => {
+    window.location.href = '../index.html#juegos';
+});

@@ -4,8 +4,6 @@ import { getUserProfile, findUserByUsername, animateMessageDeletion, initAdminLi
 import { setupMessageOptions, replyingTo, clearReply } from './message-options.js';
 import { showBanPanel, showUnbanPanel, showMutePanel, showUnmutePanel } from './moderation-panels.js';
 import { showGamesPanel } from './games-panel.js';
-import { triggerChristmasAnimation, checkChristmasKeywords } from './christmas-animation.js';
-import { checkDeveloperStatus, showDeveloperPanel, loadDeveloperSettings } from './developer-panel.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     // Elementos de la pantalla de carga
@@ -618,8 +616,43 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-
-
+    // Funcionalidad "ver más" para mensajes largos
+    function getCharacterLimit() {
+        const width = window.innerWidth;
+        if (width <= 767) return 150; // Móvil
+        if (width <= 1023) return 250; // Tablet
+        return 300; // Desktop
+    }
+    
+    function initializeMessages() {
+        const messages = document.querySelectorAll('.message-text');
+        const charLimit = getCharacterLimit();
+        
+        messages.forEach(messageText => {
+            const seeMore = messageText.parentElement.querySelector('.see-more');
+            if (messageText.textContent.length <= charLimit) {
+                if (seeMore) seeMore.classList.add('hidden');
+                return;
+            }
+            
+            if (seeMore) {
+                seeMore.addEventListener('click', function() {
+                    if (messageText.classList.contains('expanded')) {
+                        messageText.classList.remove('expanded');
+                        this.textContent = 'ver más';
+                    } else {
+                        messageText.classList.add('expanded');
+                        this.textContent = 'ver menos';
+                    }
+                });
+            }
+        });
+    }
+    
+    // Reinicializar al cambiar tamaño de ventana
+    window.addEventListener('resize', function() {
+        initializeMessages();
+    });
     
     // Variable global para controlar acceso a sala privada
     let hasPrivateRoomAccess = false;
@@ -635,6 +668,7 @@ document.addEventListener('DOMContentLoaded', function() {
             enableChatControls();
             listenToMessages((messages) => {
                 renderMessages(messages);
+                initializeMessages();
             });
             return;
         }
@@ -646,6 +680,7 @@ document.addEventListener('DOMContentLoaded', function() {
             enableChatControls();
             listenToMessages((messages) => {
                 renderMessages(messages);
+                initializeMessages();
             });
         } else if (accessCheck.isPending) {
             // Usuario está pendiente de aprobación
@@ -879,10 +914,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const isReplyToMe = message.replyTo && message.replyTo.userId === currentUser.userId;
         const time = message.timestamp ? new Date(message.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
         
-        // Detectar si el mensaje menciona al usuario actual
-        const mentionPattern = new RegExp(`@${currentUser.username}\\b`, 'i');
-        const isMentioned = message.text && mentionPattern.test(message.text);
-        
         // Manejar mensajes del sistema
         if (message.type === 'system') {
             return createElement(`
@@ -960,8 +991,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (message.isGuest) {
             displayName += ' (invitado)';
-        } else if (message.role === 'Desarrollador') {
-            roleTag = '<span class="dev-tag">DEV</span>';
         } else if (message.role === 'Administrador') {
             roleTag = '<span class="admin-tag">ADMIN</span>';
         } else if (message.role === 'Moderador') {
@@ -982,7 +1011,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const messageEl = message.type === 'emote' ? 
             createElement(`
-                <div class="message-container ${isMentioned ? 'mentioned' : ''}" data-message-id="${message.id}">
+                <div class="message-container" data-message-id="${message.id}">
                     <div class="message ${isOwn ? 'sent' : 'received'}">
                         <div class="message-header">
                             ${isOwn ? `
@@ -1004,7 +1033,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             `) :
             createElement(`
-                <div class="message-container ${isMentioned ? 'mentioned' : ''}" data-message-id="${message.id}">
+                <div class="message-container" data-message-id="${message.id}">
                     <div class="message ${isOwn ? 'sent' : 'received'}">
                         <div class="message-header">
                             ${isOwn ? `
@@ -1037,6 +1066,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             ${message.type === 'image' ? 
                                 `<img src="${message.imageData}" alt="Imagen" class="message-image" onclick="showImageModal('${message.imageData}')" />` :
                                 `${message.text ? '<button class="message-options-btn">⋮</button>' : ''}${replyPreview}<div class="message-text copyable-text">${processEmotes(message.text)}</div>
+                                ${message.text && message.text.length > getCharacterLimit() ? '<span class="see-more">ver más</span>' : ''}
                                 ${(() => {
                                     const youtubeId = extractYouTubeId(message.text);
                                     return youtubeId ? `<div class="youtube-embed"><iframe width="100%" height="200" src="https://www.youtube.com/embed/${youtubeId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>` : '';
@@ -1048,6 +1078,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             `);
         
+        // Añadir funcionalidad ver más
+        const seeMore = messageEl.querySelector('.see-more');
+        const messageText = messageEl.querySelector('.message-text');
+        if (seeMore && messageText && message.text.length > getCharacterLimit()) {
+            seeMore.addEventListener('click', function() {
+                if (messageText.classList.contains('expanded')) {
+                    messageText.classList.remove('expanded');
+                    this.textContent = 'ver más';
+                } else {
+                    messageText.classList.add('expanded');
+                    this.textContent = 'ver menos';
+                }
+            });
+        }
+        
+
         
         // Configurar menú de opciones
         if (message.type !== 'audio' && message.type !== 'image' && message.type !== 'emote') {
@@ -1079,11 +1125,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // Detectar palabras de Navidad y activar animación
-        if (message.text && checkChristmasKeywords(message.text)) {
-            setTimeout(() => triggerChristmasAnimation(messageEl), 100);
-        }
-        
         return messageEl;
     }
     
@@ -1097,9 +1138,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let userNumId = '';
         let roleTag = '';
         
-        if (user.role === 'Desarrollador') {
-            roleTag = '<span class="dev-tag">DEV</span>';
-        } else if (user.role === 'Administrador') {
+        if (user.role === 'Administrador') {
             roleTag = '<span class="admin-tag">ADMIN</span>';
         } else if (user.role === 'Moderador') {
             roleTag = '<span class="mod-tag">MOD</span>';
@@ -1201,9 +1240,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function createMobileUserElement(user) {
         let roleTag = '';
-        if (user.role === 'Desarrollador') {
-            roleTag = '<span class="dev-tag">DEV</span>';
-        } else if (user.role === 'Administrador') {
+        if (user.role === 'Administrador') {
             roleTag = '<span class="admin-tag">ADMIN</span>';
         } else if (user.role === 'Moderador') {
             roleTag = '<span class="mod-tag">MOD</span>';
@@ -1252,9 +1289,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                         <div class="profile-username" style="color: ${userColor};">${user.username || user.name}</div>
                         <div class="profile-role-tag">
-                            <span class="profile-role-badge ${user.role === 'Desarrollador' ? 'dev' : user.role === 'Administrador' ? 'admin' : user.role === 'Moderador' ? 'mod' : 'user'}">${user.role === 'Desarrollador' ? 'Desarrollador' : user.role || 'Usuario'}</span>
+                            <span class="profile-role-badge ${user.role === 'Administrador' ? 'admin' : user.role === 'Moderador' ? 'mod' : 'user'}">${user.role || 'Usuario'}</span>
                         </div>
-                        ${currentUser.isDeveloper && user.ip ? `<div class="profile-info-item"><span class="profile-info-label">IP</span><span class="profile-info-value">${user.ip}</span></div>` : ''}
                         ${user.description ? `<div class="profile-user-description">${user.description}</div>` : ''}
                         
                         <div class="profile-tabs">
@@ -1290,32 +1326,24 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                             
                             <div class="profile-section" data-section="stats">
-                                <div class="level-display-container">
-                                    <div class="level-circle-wrapper">
-                                        <svg class="level-progress-ring" width="60" height="60">
-                                            <circle class="level-progress-ring-bg" cx="30" cy="30" r="26" />
-                                            <circle class="level-progress-ring-fill" cx="30" cy="30" r="26" 
-                                                style="stroke-dasharray: ${163.36}; stroke-dashoffset: ${163.36 - (((user.level || 1) % 1) * 163.36)};" />
-                                        </svg>
-                                        <div class="level-number">${Math.floor(user.level || 1)}</div>
+                                <div class="profile-info-row">
+                                    <div class="profile-info-half">
+                                        <span class="profile-info-label">Nivel</span>
+                                        <span class="profile-info-value" style="font-size: 24px; color: #00ff88; font-weight: bold;">${user.level || 1}</span>
                                     </div>
-                                    <div class="level-info-text">
-                                        <span class="level-label">Nivel</span>
-                                        <span class="level-progress-text">${Math.floor(((user.level || 1) % 1) * 100)}% al siguiente nivel</span>
+                                    <div class="profile-info-half">
+                                        <span class="profile-info-label">Mensajes</span>
+                                        <span class="profile-info-value" style="font-size: 20px;">${user.messageCount || 0}</span>
                                     </div>
                                 </div>
-                                <div class="profile-stats-grid">
-                                    <div class="stat-item">
-                                        <span class="stat-value">${user.wins || 0}</span>
-                                        <span class="stat-label">Victorias</span>
+                                <div class="profile-info-row">
+                                    <div class="profile-info-half">
+                                        <span class="profile-info-label">Tiempo Online</span>
+                                        <span class="profile-info-value">${user.onlineTime || '0h'}</span>
                                     </div>
-                                    <div class="stat-item">
-                                        <span class="stat-value">${user.losses || 0}</span>
-                                        <span class="stat-label">Derrotas</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-value">${user.draws || 0}</span>
-                                        <span class="stat-label">Empates</span>
+                                    <div class="profile-info-half">
+                                        <span class="profile-info-label">Reputación</span>
+                                        <span class="profile-info-value" style="font-size: 20px;">${user.reputation || 0}</span>
                                     </div>
                                 </div>
                             </div>
@@ -1575,15 +1603,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         await updateUserRole();
-        
-        // Check developer status
-        if (!currentUser.isGuest && currentUser.firebaseUid) {
-            currentUser.isDeveloper = await checkDeveloperStatus(currentUser.firebaseUid);
-            if (currentUser.isDeveloper) {
-                await loadDeveloperSettings();
-            }
-        }
-        
         updateUserHeader();
         updateAdminUI();
         updateGuestUI();
@@ -1984,7 +2003,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
-
+    // Inicializar mensajes existentes
+    initializeMessages();
 
     // Cerrar dropdowns al hacer click fuera
     document.addEventListener('click', function() {
@@ -2456,10 +2476,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let isSendingMessage = false;
     
     function sendMessageHandler() {
-        let message = messageInput.value.trim();
+        const message = messageInput.value.trim();
         if (message && !isSendingMessage) {
-            // Procesar menciones @usuario (con acentos y caracteres especiales)
-            message = message.replace(/@([\wÀ-ſ]+)/g, '<span class="mention">@$1</span>');
             const commandList = document.querySelector('.private-command-message');
             if (commandList) commandList.remove();
             
@@ -2496,13 +2514,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 messageInput.value = '';
                 return;
             }
-            if (lowerMessage === '!developer' && currentUser.isDeveloper) {
-                showDeveloperPanel();
-                messageInput.value = '';
-                return;
-            }
             
             isSendingMessage = true;
+            messageInput.placeholder = '';
+            messageInput.disabled = true;
             sendIcon.style.opacity = '0.5';
             sendIcon.style.pointerEvents = 'none';
             
@@ -2515,10 +2530,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTypingStatus(false);
                 clearTimeout(typingTimeout);
                 
-                // Rehabilitar input sin deshabilitar
+                // Rehabilitar input y mantener foco
                 isSendingMessage = false;
+                messageInput.disabled = false;
                 sendIcon.style.opacity = '1';
                 sendIcon.style.pointerEvents = 'auto';
+                messageInput.focus();
                 
                 if (result && result.showDeleteNotification) {
                     showNotification(`⏳ La sala "${result.roomName}" será eliminada`, 'success');
@@ -2837,35 +2854,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     messageInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
-            e.preventDefault();
             sendMessageHandler();
         }
     });
-
-    // Botón de refresh en mobile - aparece al hacer scroll hacia arriba
-    if (window.innerWidth <= 767) {
-        const refreshBtn = document.createElement('button');
-        refreshBtn.className = 'mobile-refresh-btn';
-        refreshBtn.innerHTML = '<img src="/images/refresh.svg" alt="Refresh" style="width: 20px; height: 20px;" />';
-        document.body.appendChild(refreshBtn);
-
-        let lastScrollTop = 0;
-        const chatArea = document.querySelector('.chat-area');
-
-        chatArea.addEventListener('scroll', function() {
-            const scrollTop = chatArea.scrollTop;
-            if (scrollTop < lastScrollTop && scrollTop < chatArea.scrollHeight - chatArea.clientHeight - 100) {
-                refreshBtn.classList.add('show');
-            } else if (scrollTop > lastScrollTop) {
-                refreshBtn.classList.remove('show');
-            }
-            lastScrollTop = scrollTop;
-        });
-
-        refreshBtn.addEventListener('click', function() {
-            window.location.href = '/';
-        });
-    }
 
     function updateRoomUserCounts() {
         const rooms = [

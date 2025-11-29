@@ -1,6 +1,5 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, onValue, set, update, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
@@ -14,7 +13,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
-const db = getFirestore(app);
 
 const urlParams = new URLSearchParams(window.location.search);
 const gameId = urlParams.get('id');
@@ -26,63 +24,6 @@ if (!gameId || !currentUser) {
 }
 
 document.getElementById('roomId').textContent = gameId.substring(0, 8);
-
-// Función para incrementar nivel del usuario (+0.25 por victoria)
-async function incrementUserLevel(userId, isWin = true) {
-    try {
-        const userRef = doc(db, 'users', userId);
-        const userDoc = await getDoc(userRef);
-        
-        if (userDoc.exists()) {
-            const data = userDoc.data();
-            const updates = {};
-            
-            if (isWin) {
-                updates.level = (data.level || 1) + 0.25;
-                updates.wins = (data.wins || 0) + 1;
-            } else {
-                updates.losses = (data.losses || 0) + 1;
-            }
-            
-            await updateDoc(userRef, updates);
-        } else {
-            await setDoc(userRef, {
-                level: 1,
-                wins: isWin ? 1 : 0,
-                losses: isWin ? 0 : 1,
-                draws: 0,
-                userId: userId
-            }, { merge: true });
-        }
-    } catch (error) {
-        console.error('Error incrementando nivel:', error);
-    }
-}
-
-// Función para incrementar empates
-async function incrementUserDraw(userId) {
-    try {
-        const userRef = doc(db, 'users', userId);
-        const userDoc = await getDoc(userRef);
-        
-        if (userDoc.exists()) {
-            const data = userDoc.data();
-            await updateDoc(userRef, {
-                draws: (data.draws || 0) + 1
-            });
-        } else {
-            await setDoc(userRef, {
-                level: 1,
-                wins: 0,
-                losses: 0,
-                draws: 1,
-                userId: userId
-            }, { merge: true });
-        }
-    } catch (error) {
-        console.error('Error incrementando empates:', error);
-    }
-}
 
 const gameRef = ref(database, `games/tateti/${gameId}`);
 let mySymbol = null;
@@ -324,16 +265,10 @@ async function startNewRound() {
     
     document.getElementById('gameStatus').textContent = '⏳ Reiniciando ronda...';
     
-    // El ganador de la ronda anterior empieza
-    let nextStarter = 'X';
-    if (gameData.winner && gameData.winner !== 'draw') {
-        nextStarter = gameData.winner;
-    }
-    
     await update(gameRef, {
         board: ['', '', '', '', '', '', '', '', ''],
         status: 'playing',
-        currentTurn: nextStarter,
+        currentTurn: 'X',
         winner: null,
         'stats/rounds': (gameData.stats.rounds || 0) + 1
     });
@@ -367,25 +302,43 @@ async function sendResultNotification(winner) {
         winnerId = winner === 'X' ? gameData.player1.id : gameData.player2.id;
         resultText = `🎉 Ta-Te-Ti: ${winnerName} ganó la ronda contra ${loserName}`;
         
-        // Incrementar stats de los jugadores
-        if (winner === 'draw') {
-            // Empate: ambos jugadores suman empate
-            if (gameData.player1) await incrementUserDraw(gameData.player1.id);
-            if (gameData.player2) await incrementUserDraw(gameData.player2.id);
-        } else {
-            // Victoria: ganador suma nivel y victoria, perdedor suma derrota
-            const loserId = winner === 'X' ? gameData.player2.id : gameData.player1.id;
-            if (winnerId) await incrementUserLevel(winnerId, true);
-            if (loserId) await incrementUserLevel(loserId, false);
+        // Incrementar nivel del ganador
+        try {
+            const { getFirestore, doc, getDoc, updateDoc, increment } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+            
+            const firebaseConfig = {
+                apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
+                authDomain: "fyzar-80936.firebaseapp.com",
+                databaseURL: "https://fyzar-80936-default-rtdb.firebaseio.com",
+                projectId: "fyzar-80936",
+                storageBucket: "fyzar-80936.firebasestorage.app",
+                messagingSenderId: "718553577005",
+                appId: "1:718553577005:web:74b5b9e790232edf6e2aa4"
+            };
+            
+            const app = initializeApp(firebaseConfig, 'tateti-app');
+            const db = getFirestore(app);
+            
+            const userRef = doc(db, 'users', winnerId);
+            const userDoc = await getDoc(userRef);
+            
+            if (userDoc.exists()) {
+                await updateDoc(userRef, {
+                    level: increment(1)
+                });
+            }
+        } catch (error) {
+            console.error('Error incrementando nivel:', error);
         }
     }
     
-    const messageRef = ref(database, `rooms/juegos/messages`);
-    await push(messageRef, {
+    const messageRef = ref(database, `rooms/juegos/messages/${Date.now()}`);
+    await set(messageRef, {
         userId: 'bot-juegos',
         username: '🎮 Bot de Juegos',
         text: resultText,
-        timestamp: serverTimestamp(),
+        timestamp: Date.now(),
         type: 'game-result',
         userAvatar: '/images/logo.svg',
         gameLink: gameLink
