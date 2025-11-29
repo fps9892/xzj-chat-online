@@ -20,17 +20,3 @@
   animation: snowfall linear forwards;
   text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
 }
-
-@keyframes christmasGlow {
-  0%, 100% {
-    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5), 0 0 20px rgba(0, 255, 0, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(0, 255, 0, 0.5), 0 0 30px rgba(255, 0, 0, 0.3);
-  }
-}
-
-.christmas-message {
-  animation: christmasGlow 2s ease-in-out;
-  border-color: rgba(255, 0, 0, 0.4) !important;
-}
