@@ -1326,30 +1326,29 @@ document.addEventListener('DOMContentLoaded', function() {
                             
                             <div class="profile-section" data-section="stats">
                                 <div class="profile-stats-grid">
-                                    <div class="level-circle-container">
+                                    <div class="stat-item level-stat">
                                         <div class="level-circle">
-                                            <svg width="120" height="120">
-                                                <circle class="level-circle-bg" cx="60" cy="60" r="52"></circle>
-                                                <circle class="level-circle-progress" cx="60" cy="60" r="52" 
-                                                    stroke-dasharray="${2 * Math.PI * 52}" 
-                                                    stroke-dashoffset="${2 * Math.PI * 52 * (1 - ((user.level || 1) % 1))}"></circle>
+                                            <svg width="80" height="80">
+                                                <circle class="level-circle-bg" cx="40" cy="40" r="35"></circle>
+                                                <circle class="level-circle-progress" cx="40" cy="40" r="35" 
+                                                    stroke-dasharray="${2 * Math.PI * 35}" 
+                                                    stroke-dashoffset="${2 * Math.PI * 35 * (1 - ((user.level || 1) % 1))}"></circle>
                                             </svg>
                                             <div class="level-number">${Math.floor(user.level || 1)}</div>
                                         </div>
+                                        <span class="stat-label">Nivel</span>
                                     </div>
-                                    <div class="stats-row">
-                                        <div class="stat-item">
-                                            <span class="stat-value">${user.wins || 0}</span>
-                                            <span class="stat-label">Victorias</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-value">${user.losses || 0}</span>
-                                            <span class="stat-label">Derrotas</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-value">${user.draws || 0}</span>
-                                            <span class="stat-label">Empates</span>
-                                        </div>
+                                    <div class="stat-item">
+                                        <span class="stat-value">${user.wins || 0}</span>
+                                        <span class="stat-label">Victorias</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-value">${user.losses || 0}</span>
+                                        <span class="stat-label">Derrotas</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-value">${user.draws || 0}</span>
+                                        <span class="stat-label">Empates</span>
                                     </div>
                                 </div>
                             </div>

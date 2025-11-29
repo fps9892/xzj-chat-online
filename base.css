@@ -1777,59 +1777,10 @@ body {
 }
 
 .profile-stats-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  margin-top: 0;
-}
-
-.level-circle-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px 0;
-}
-
-.level-circle {
-  position: relative;
-  width: 120px;
-  height: 120px;
-}
-
-.level-circle svg {
-  transform: rotate(-90deg);
-}
-
-.level-circle-bg {
-  fill: none;
-  stroke: rgba(201, 122, 111, 0.2);
-  stroke-width: 8;
-}
-
-.level-circle-progress {
-  fill: none;
-  stroke: #d4a59a;
-  stroke-width: 8;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 0.5s ease;
-}
-
-.level-number {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-family: "Orbitron", monospace;
-  font-size: 32px;
-  font-weight: bold;
-  color: #f5e6e3;
-  text-shadow: 0 0 10px rgba(201, 122, 111, 0.5);
-}
-
-.stats-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
+  margin-top: 0;
 }
 
 .stat-item {
@@ -1847,6 +1798,46 @@ body {
 .stat-item:hover {
   background: rgba(201, 122, 111, 0.15);
   transform: translateY(-2px);
+}
+
+.stat-item.level-stat {
+  position: relative;
+}
+
+.level-circle {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin-bottom: 8px;
+}
+
+.level-circle svg {
+  transform: rotate(-90deg);
+}
+
+.level-circle-bg {
+  fill: none;
+  stroke: rgba(201, 122, 111, 0.2);
+  stroke-width: 6;
+}
+
+.level-circle-progress {
+  fill: none;
+  stroke: #d4a59a;
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+.level-number {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: "Orbitron", monospace;
+  font-size: 24px;
+  font-weight: bold;
+  color: #f5e6e3;
 }
 
 .stat-value {
@@ -3926,40 +3917,27 @@ body {
 
 /* Mensajes de juegos */
 .game-message {
-  background: linear-gradient(135deg, rgba(0, 255, 136, 0.15), rgba(0, 200, 100, 0.1)) !important;
-  border: 2px solid #00ff88 !important;
+  background: rgba(201, 122, 111, 0.1) !important;
+  border: 1px solid rgba(201, 122, 111, 0.3) !important;
   text-align: center;
   margin: 15px auto;
   max-width: 400px;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 255, 136, 0.3);
-  animation: gameGlow 2s ease-in-out infinite;
-}
-
-@keyframes gameGlow {
-  0%, 100% {
-    box-shadow: 0 4px 20px rgba(0, 255, 136, 0.3);
-  }
-  50% {
-    box-shadow: 0 4px 30px rgba(0, 255, 136, 0.5);
-  }
+  border-radius: 12px;
 }
 
 .game-message .message-content {
-  padding: 20px;
+  padding: 15px;
   background: transparent !important;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 10px;
 }
 
 .game-message .message-text {
-  color: #00ff88;
-  font-size: 15px;
-  font-weight: 700;
+  color: #f5e6e3;
+  font-size: 14px;
+  font-weight: 600;
   font-family: 'Orbitron', monospace;
-  letter-spacing: 1px;
-  text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
 }
 
 .game-message .message-content::before,
@@ -3968,33 +3946,24 @@ body {
 }
 
 .game-join-btn {
-  padding: 12px 24px;
-  background: linear-gradient(135deg, #00ff88, #00cc66);
-  border: 2px solid #00ff88;
-  border-radius: 10px;
+  padding: 10px 20px;
+  background: #d4a59a;
+  border: 1px solid #c97a6f;
+  border-radius: 8px;
   color: #1a0f0f;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: bold;
   font-family: 'Orbitron', monospace;
   cursor: pointer;
   transition: all 0.3s;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
 }
 
 .game-join-btn:hover {
-  background: linear-gradient(135deg, #00cc66, #00ff88);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 255, 136, 0.5);
-}
-
-.game-join-btn:active {
-  transform: translateY(0);
+  background: #c97a6f;
 }
 
 .game-join-btn.expired {
-  background: linear-gradient(135deg, #666, #444);
+  background: #666;
   border-color: #666;
   color: #999;
   cursor: not-allowed;
@@ -4002,48 +3971,29 @@ body {
 }
 
 .game-join-btn.expired:hover {
-  transform: none;
-  box-shadow: none;
+  background: #666;
 }
 
 /* Mensajes de resultados de juegos */
 .game-result-message {
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 165, 0, 0.1)) !important;
-  border: 2px solid #ffd700 !important;
+  background: rgba(201, 122, 111, 0.1) !important;
+  border: 1px solid rgba(201, 122, 111, 0.3) !important;
   text-align: center;
   margin: 15px auto;
   max-width: 400px;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
-  animation: surpriseAppear 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-@keyframes surpriseAppear {
-  0% {
-    transform: scale(0) rotate(-180deg);
-    opacity: 0;
-  }
-  60% {
-    transform: scale(1.2) rotate(10deg);
-  }
-  100% {
-    transform: scale(1) rotate(0deg);
-    opacity: 1;
-  }
+  border-radius: 12px;
 }
 
 .game-result-message .message-content {
-  padding: 15px 20px;
+  padding: 12px 15px;
   background: transparent !important;
 }
 
 .game-result-message .message-text {
-  color: #ffd700;
-  font-size: 14px;
-  font-weight: 700;
+  color: #f5e6e3;
+  font-size: 13px;
+  font-weight: 600;
   font-family: 'Orbitron', monospace;
-  letter-spacing: 0.5px;
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
 .game-result-message .message-content::before,
@@ -4052,30 +4002,21 @@ body {
 }
 
 .game-view-btn {
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #ffd700, #ffaa00);
-  border: 2px solid #ffd700;
-  border-radius: 10px;
+  padding: 8px 16px;
+  background: #d4a59a;
+  border: 1px solid #c97a6f;
+  border-radius: 8px;
   color: #1a0f0f;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: bold;
   font-family: 'Orbitron', monospace;
   cursor: pointer;
   transition: all 0.3s;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .game-view-btn:hover {
-  background: linear-gradient(135deg, #ffaa00, #ffd700);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
-}
-
-.game-view-btn:active {
-  transform: translateY(0);
+  background: #c97a6f;
 }
 
 @media (max-width: 767px) {
@@ -4085,12 +4026,12 @@ body {
   }
   
   .game-message .message-content {
-    padding: 15px;
+    padding: 12px;
   }
   
   .game-join-btn {
-    padding: 10px 20px;
-    font-size: 13px;
+    padding: 8px 16px;
+    font-size: 12px;
   }
   
   .game-result-message {
@@ -4099,11 +4040,11 @@ body {
   }
   
   .game-result-message .message-content {
-    padding: 12px 15px;
+    padding: 10px 12px;
   }
   
   .game-result-message .message-text {
-    font-size: 13px;
+    font-size: 12px;
   }
 }
 
