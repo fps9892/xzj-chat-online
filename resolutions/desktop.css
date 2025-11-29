@@ -167,15 +167,45 @@
     border-radius: 3px;
   }
 
+  .chat-controls {
+    bottom: 82px;
+    left: 0;
+    right: 200px;
+  }
+
+  .controls-container {
+    padding: 8px 16px;
+    gap: 12px;
+    border-radius: 30px;
+  }
+
+  .controls-left,
+  .controls-right {
+    gap: 10px;
+  }
+
+  .controls-center {
+    padding: 0 12px;
+  }
+
+  .controls-logo {
+    width: 28px;
+    height: 28px;
+  }
+
+  .image-btn,
+  .emote-btn,
+  .polls-btn,
+  .mic-btn {
+    width: 36px;
+    height: 36px;
+    padding: 8px;
+  }
+
   .emote-panel {
     bottom: 150px;
     right: 20px;
     width: 280px;
     height: 200px;
-  }
-
-  .image-btn,
-  .emote-btn {
-    background-color: #00000000; /* Set black background */
   }
 }

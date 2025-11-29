@@ -244,21 +244,18 @@
   }
 
   .chat-controls {
-    bottom: 90px;
-    right: 10px;
-    gap: 8px;
+    bottom: 75px;
   }
 
-  /* Controls container adaptado para mobile */
   .controls-container {
-    padding: 8px 14px;
-    gap: 10px;
-    border-radius: 40px;
+    padding: 6px 12px;
+    gap: 8px;
+    border-radius: 25px;
   }
 
   .controls-left,
   .controls-right {
-    gap: 8px;
+    gap: 6px;
   }
 
   .controls-center {
@@ -266,39 +263,22 @@
   }
 
   .controls-logo {
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
   }
 
-  .controls-container .image-btn,
-  .controls-container .emote-btn,
-  .controls-container .polls-btn,
-  .controls-container .mic-btn {
-    width: 34px;
-    height: 34px;
-    padding: 7px;
+  .image-btn,
+  .emote-btn,
+  .polls-btn,
+  .mic-btn {
+    width: 32px;
+    height: 32px;
+    padding: 6px;
   }
 
   .standalone-emote {
     width: 48px;
     height: 48px;
-  }
-
-  .image-btn {
-    width: 35px;
-    height: 35px;
-    padding: 6px;
-  }
-
-  .emote-btn {
-    width: 35px;
-    height: 35px;
-    padding: 6px;
-  }
-
-  .image-btn,
-  .emote-btn {
-    background-color: #00000000;
   }
 
   .emote-panel {

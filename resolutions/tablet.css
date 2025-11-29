@@ -179,30 +179,41 @@
   }
 
   .chat-controls {
-    bottom: 95px;
-    right: 15px;
+    bottom: 78px;
+  }
+
+  .controls-container {
+    padding: 7px 14px;
+    gap: 10px;
+    border-radius: 28px;
+  }
+
+  .controls-left,
+  .controls-right {
+    gap: 8px;
+  }
+
+  .controls-center {
+    padding: 0 10px;
+  }
+
+  .controls-logo {
+    width: 26px;
+    height: 26px;
+  }
+
+  .image-btn,
+  .emote-btn,
+  .polls-btn,
+  .mic-btn {
+    width: 34px;
+    height: 34px;
+    padding: 7px;
   }
 
   .standalone-emote {
     width: 56px;
     height: 56px;
-  }
-
-  .image-btn {
-    width: 38px;
-    height: 38px;
-    padding: 7px;
-  }
-
-  .emote-btn {
-    width: 38px;
-    height: 38px;
-    padding: 7px;
-  }
-
-  .image-btn,
-  .emote-btn {
-    background-color: #00000000;
   }
 
   .emote-panel {
