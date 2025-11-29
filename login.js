@@ -349,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            let avatarUrl = 'images/profileuser.jpg';
+            let avatarUrl = 'images/profileuser.svg';
 
             if (avatarFile) {
                 try {
@@ -432,7 +432,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const guestUser = {
                     userId: userId,
                     username: nickname,
-                    avatar: 'images/profileuser.jpg',
+                    avatar: 'images/profileuser.svg',
                     description: 'Usuario invitado',
                     role: 'guest',
                     isGuest: true,
@@ -451,7 +451,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const guestUser = {
                 userId: userId,
                 username: nickname,
-                avatar: 'images/profileuser.jpg',
+                avatar: 'images/profileuser.svg',
                 description: 'Usuario invitado',
                 role: 'guest',
                 isGuest: true,
@@ -503,7 +503,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     userId: userId,
                     username: username,
                     email: user.email,
-                    avatar: user.photoURL || 'images/profileuser.jpg',
+                    avatar: user.photoURL || 'images/profileuser.svg',
                     description: 'Usuario de Google',
                     createdAt: now.toISOString(),
                     lastSeen: now.toISOString(),

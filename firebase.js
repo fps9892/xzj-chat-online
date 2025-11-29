@@ -177,7 +177,7 @@ export async function sendMessage(text, type = 'text', imageData = null, audioDu
         text: text || '',
         userId: currentUser.userId || 'unknown',
         userName: currentUser.username || 'Usuario',
-        userAvatar: currentUser.avatar || 'images/profileuser.jpg',
+        userAvatar: currentUser.avatar || 'images/profileuser.svg',
         textColor: currentUser.textColor || '#ffffff',
         timestamp: serverTimestamp(),
         type: type,
@@ -287,7 +287,7 @@ export function setUserOnline() {
     // Asegurar que todos los campos requeridos tengan valores válidos
     const userData = {
         name: currentUser.username || 'Usuario',
-        avatar: currentUser.avatar || 'images/profileuser.jpg',
+        avatar: currentUser.avatar || 'images/profileuser.svg',
         status: 'online',
         lastSeen: serverTimestamp(),
         role: currentUser.role || 'user',
@@ -304,7 +304,7 @@ export function setUserOnline() {
         if (userData[key] === undefined || userData[key] === null) {
             console.warn(`Campo ${key} es undefined, usando valor por defecto`);
             if (key === 'name') userData[key] = 'Usuario';
-            else if (key === 'avatar') userData[key] = 'images/profileuser.jpg';
+            else if (key === 'avatar') userData[key] = 'images/profileuser.svg';
             else if (key === 'textColor') userData[key] = '#ffffff';
             else if (key === 'description') userData[key] = 'Sin descripción';
             else if (key === 'role') userData[key] = 'user';
@@ -1823,6 +1823,19 @@ export function showAnnouncement(message) {
     }, 5000);
 }
 
+// Verificar si el usuario es desarrollador
+export async function checkDeveloperStatus(userId) {
+    if (!userId || currentUser.isGuest) return false;
+    
+    try {
+        const developerDoc = await getDoc(doc(db, 'developers', userId));
+        return developerDoc.exists();
+    } catch (error) {
+        console.error('Error checking developer status:', error);
+        return false;
+    }
+}
+
 // Actualizar rol del usuario y obtener datos de Firestore
 export async function updateUserRole() {
     if (currentUser.isGuest) {
@@ -1830,6 +1843,7 @@ export async function updateUserRole() {
         currentUser.role = 'guest';
         currentUser.isAdmin = false;
         currentUser.isModerator = false;
+        currentUser.isDeveloper = false;
         currentUser.isBanned = false;
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
         return;
@@ -1837,6 +1851,7 @@ export async function updateUserRole() {
     
     if (currentUser.firebaseUid) {
         try {
+            const isDeveloper = await checkDeveloperStatus(currentUser.firebaseUid);
             const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
             const isModerator = await checkModeratorStatus(currentUser.firebaseUid);
             const isBanned = await checkBannedStatus(currentUser.firebaseUid);
@@ -1844,6 +1859,11 @@ export async function updateUserRole() {
             if (isBanned) {
                 currentUser.role = 'banned';
                 currentUser.isBanned = true;
+            } else if (isDeveloper) {
+                currentUser.role = 'Desarrollador';
+                currentUser.isDeveloper = true;
+                currentUser.isAdmin = true;
+                currentUser.isModerator = true;
             } else if (isAdmin) {
                 currentUser.role = 'Administrador';
                 currentUser.isAdmin = true;

@@ -40,6 +40,7 @@ export async function getUserProfile(userId, isGuest = false) {
         let isAdmin = false;
         let isModerator = false;
         let isBanned = false;
+        let isDeveloper = false;
         
         if (isGuest) {
             const guestDoc = await getDoc(doc(db, 'guests', userId));
@@ -48,6 +49,8 @@ export async function getUserProfile(userId, isGuest = false) {
             const userDoc = await getDoc(doc(db, 'users', userId));
             if (userDoc.exists()) {
                 userData = userDoc.data();
+                const developerDoc = await getDoc(doc(db, 'developers', userId));
+                isDeveloper = developerDoc.exists();
                 const adminDoc = await getDoc(doc(db, 'admins', userId));
                 isAdmin = adminDoc.exists();
                 const moderatorDoc = await getDoc(doc(db, 'moderators', userId));
@@ -64,6 +67,7 @@ export async function getUserProfile(userId, isGuest = false) {
         
         if (isGuest) role = 'Invitado';
         else if (isBanned) { role = 'Usuario'; status = 'Baneado'; }
+        else if (isDeveloper) role = 'Desarrollador';
         else if (isAdmin) role = 'Administrador';
         else if (isModerator) role = 'Moderador';
         
@@ -76,14 +80,14 @@ export async function getUserProfile(userId, isGuest = false) {
             role, status,
             createdAt: userData.createdAt || 'No disponible',
             lastSeen: userData.lastSeen || userData.lastUpdated || 'No disponible',
-            avatar: userData.avatar || 'images/profileuser.jpg',
+            avatar: userData.avatar || 'images/profileuser.svg',
             textColor: userData.textColor || '#ffffff',
             messageCount: userData.messageCount || 0,
             level: userData.level || 1,
             wins: userData.wins || 0,
             losses: userData.losses || 0,
             draws: userData.draws || 0,
-            isGuest, isAdmin, isModerator, isBanned
+            isGuest, isAdmin, isModerator, isBanned, isDeveloper
         };
     } catch (error) {
         console.error('Error obteniendo perfil:', error);

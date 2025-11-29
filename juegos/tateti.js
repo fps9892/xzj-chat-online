@@ -294,17 +294,47 @@ async function sendResultNotification(winner) {
     
     let resultText;
     let winnerId = null;
+    let loserId = null;
+    
     if (winner === 'draw') {
         resultText = `🤝 Ta-Te-Ti: Empate entre ${player1Name} y ${player2Name}`;
+        // Incrementar empates para ambos jugadores
+        try {
+            const { getFirestore, doc, updateDoc, increment } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+            
+            const firebaseConfig = {
+                apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
+                authDomain: "fyzar-80936.firebaseapp.com",
+                databaseURL: "https://fyzar-80936-default-rtdb.firebaseio.com",
+                projectId: "fyzar-80936",
+                storageBucket: "fyzar-80936.firebasestorage.app",
+                messagingSenderId: "718553577005",
+                appId: "1:718553577005:web:74b5b9e790232edf6e2aa4"
+            };
+            
+            const app = initializeApp(firebaseConfig, 'tateti-draw-app');
+            const db = getFirestore(app);
+            
+            if (!gameData.player1.id.startsWith('guest-')) {
+                await updateDoc(doc(db, 'users', gameData.player1.id), { draws: increment(1) });
+            }
+            if (!gameData.player2.id.startsWith('guest-')) {
+                await updateDoc(doc(db, 'users', gameData.player2.id), { draws: increment(1) });
+            }
+        } catch (error) {
+            console.error('Error incrementando empates:', error);
+        }
     } else {
         const winnerName = winner === 'X' ? player1Name : player2Name;
         const loserName = winner === 'X' ? player2Name : player1Name;
         winnerId = winner === 'X' ? gameData.player1.id : gameData.player2.id;
+        loserId = winner === 'X' ? gameData.player2.id : gameData.player1.id;
         resultText = `🎉 Ta-Te-Ti: ${winnerName} ganó la ronda contra ${loserName}`;
         
-        // Incrementar nivel del ganador
+        // Incrementar stats del ganador y perdedor
         try {
-            const { getFirestore, doc, getDoc, updateDoc, increment } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            const { getFirestore, doc, updateDoc, increment } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
             const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
             
             const firebaseConfig = {
@@ -320,16 +350,20 @@ async function sendResultNotification(winner) {
             const app = initializeApp(firebaseConfig, 'tateti-app');
             const db = getFirestore(app);
             
-            const userRef = doc(db, 'users', winnerId);
-            const userDoc = await getDoc(userRef);
+            if (!winnerId.startsWith('guest-')) {
+                await updateDoc(doc(db, 'users', winnerId), {
+                    level: increment(0.25),
+                    wins: increment(1)
+                });
+            }
             
-            if (userDoc.exists()) {
-                await updateDoc(userRef, {
-                    level: increment(1)
+            if (!loserId.startsWith('guest-')) {
+                await updateDoc(doc(db, 'users', loserId), {
+                    losses: increment(1)
                 });
             }
         } catch (error) {
-            console.error('Error incrementando nivel:', error);
+            console.error('Error actualizando stats:', error);
         }
     }
     

@@ -36,7 +36,7 @@ export async function showBanPanel(database, currentRoom, currentUser, banUserFi
                             userId: userKey,
                             firebaseUid: userData.firebaseUid || userKey,
                             name: userData.name || 'Usuario',
-                            avatar: userData.avatar || 'images/profileuser.jpg',
+                            avatar: userData.avatar || 'images/profileuser.svg',
                             isGuest: userData.isGuest || false
                         });
                     }
@@ -212,7 +212,7 @@ export async function showMutePanel(database, currentRoom, currentUser, muteUser
                             userId: userKey,
                             firebaseUid: userFirebaseUid,
                             name: userData.name || 'Usuario',
-                            avatar: userData.avatar || 'images/profileuser.jpg',
+                            avatar: userData.avatar || 'images/profileuser.svg',
                             isGuest: userData.isGuest || false
                         });
                     }

@@ -188,7 +188,7 @@ service cloud.firestore {
 ## 📊 Sistema de Estadísticas
 
 Cada usuario tiene:
-- **Nivel**: Incrementa con victorias en juegos (+0.25 por victoria)
+- **Nivel**: Incrementa con victorias en juegos (+0.25 por victoria). El nivel se muestra con un loader circular que indica el progreso decimal (0.00-0.99) y el número entero en el centro
 - **Victorias**: Total de juegos ganados
 - **Derrotas**: Total de juegos perdidos
 - **Empates**: Total de juegos empatados

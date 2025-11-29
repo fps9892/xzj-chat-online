@@ -207,6 +207,18 @@
     flex-shrink: 0;
   }
 
+  .mobile-user-item .dev-tag {
+    background-color: #00d4ff;
+    color: #1a0f0f;
+    font-size: 7px;
+    font-weight: bold;
+    padding: 1px 4px;
+    border-radius: 8px;
+    font-family: "Orbitron", monospace;
+    box-shadow: 0 0 4px rgba(0, 212, 255, 0.5);
+    flex-shrink: 0;
+  }
+
   .mobile-user-item::after {
     content: "";
     position: absolute;

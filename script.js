@@ -991,6 +991,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (message.isGuest) {
             displayName += ' (invitado)';
+        } else if (message.role === 'Desarrollador') {
+            roleTag = '<span class="dev-tag">DEV</span>';
         } else if (message.role === 'Administrador') {
             roleTag = '<span class="admin-tag">ADMIN</span>';
         } else if (message.role === 'Moderador') {
@@ -1138,7 +1140,9 @@ document.addEventListener('DOMContentLoaded', function() {
         let userNumId = '';
         let roleTag = '';
         
-        if (user.role === 'Administrador') {
+        if (user.role === 'Desarrollador') {
+            roleTag = '<span class="dev-tag">DEV</span>';
+        } else if (user.role === 'Administrador') {
             roleTag = '<span class="admin-tag">ADMIN</span>';
         } else if (user.role === 'Moderador') {
             roleTag = '<span class="mod-tag">MOD</span>';
@@ -1240,7 +1244,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function createMobileUserElement(user) {
         let roleTag = '';
-        if (user.role === 'Administrador') {
+        if (user.role === 'Desarrollador') {
+            roleTag = '<span class="dev-tag">DEV</span>';
+        } else if (user.role === 'Administrador') {
             roleTag = '<span class="admin-tag">ADMIN</span>';
         } else if (user.role === 'Moderador') {
             roleTag = '<span class="mod-tag">MOD</span>';
@@ -1249,7 +1255,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const userEl = createElement(`
             <div class="mobile-user-item" data-user-id="${user.id}">
                 <div class="mobile-user-avatar">
-                    <img src="${user.avatar}" alt="${user.name}" onerror="this.src='/images/profileuser.jpg'">
+                    <img src="${user.avatar}" alt="${user.name}" onerror="this.src='/images/profileuser.svg'">
                     <span class="mobile-online-indicator"></span>
                 </div>
                 <span class="mobile-user-name">${user.name}${roleTag}</span>
@@ -1289,7 +1295,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                         <div class="profile-username" style="color: ${userColor};">${user.username || user.name}</div>
                         <div class="profile-role-tag">
-                            <span class="profile-role-badge ${user.role === 'Administrador' ? 'admin' : user.role === 'Moderador' ? 'mod' : 'user'}">${user.role || 'Usuario'}</span>
+                            <span class="profile-role-badge ${user.role === 'Desarrollador' ? 'developer' : user.role === 'Administrador' ? 'admin' : user.role === 'Moderador' ? 'mod' : 'user'}">${user.role || 'Usuario'}</span>
                         </div>
                         ${user.description ? `<div class="profile-user-description">${user.description}</div>` : ''}
                         
@@ -1319,32 +1325,31 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                             
                             <div class="profile-section" data-section="stats">
-                                <div class="level-display-container">
-                                    <div class="level-circle-wrapper">
-                                        <svg class="level-progress-ring" width="60" height="60">
-                                            <circle class="level-progress-ring-bg" cx="30" cy="30" r="26" />
-                                            <circle class="level-progress-ring-fill" cx="30" cy="30" r="26" 
-                                                style="stroke-dasharray: ${163.36}; stroke-dashoffset: ${163.36 - (((user.level || 1) % 1) * 163.36)};" />
-                                        </svg>
-                                        <div class="level-number">${Math.floor(user.level || 1)}</div>
-                                    </div>
-                                    <div class="level-info-text">
-                                        <span class="level-label">Nivel</span>
-                                        <span class="level-progress-text">${Math.floor(((user.level || 1) % 1) * 100)}% al siguiente nivel</span>
-                                    </div>
-                                </div>
                                 <div class="profile-stats-grid">
-                                    <div class="stat-item">
-                                        <span class="stat-value">${user.wins || 0}</span>
-                                        <span class="stat-label">Victorias</span>
+                                    <div class="level-circle-container">
+                                        <div class="level-circle">
+                                            <svg width="120" height="120">
+                                                <circle class="level-circle-bg" cx="60" cy="60" r="52"></circle>
+                                                <circle class="level-circle-progress" cx="60" cy="60" r="52" 
+                                                    stroke-dasharray="${2 * Math.PI * 52}" 
+                                                    stroke-dashoffset="${2 * Math.PI * 52 * (1 - ((user.level || 1) % 1))}"></circle>
+                                            </svg>
+                                            <div class="level-number">${Math.floor(user.level || 1)}</div>
+                                        </div>
                                     </div>
-                                    <div class="stat-item">
-                                        <span class="stat-value">${user.losses || 0}</span>
-                                        <span class="stat-label">Derrotas</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-value">${user.draws || 0}</span>
-                                        <span class="stat-label">Empates</span>
+                                    <div class="stats-row">
+                                        <div class="stat-item">
+                                            <span class="stat-value">${user.wins || 0}</span>
+                                            <span class="stat-label">Victorias</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-value">${user.losses || 0}</span>
+                                            <span class="stat-label">Derrotas</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-value">${user.draws || 0}</span>
+                                            <span class="stat-label">Empates</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1496,7 +1501,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function validateCurrentUser() {
         if (!currentUser.textColor) currentUser.textColor = '#ffffff';
         if (!currentUser.description) currentUser.description = 'Sin descripción';
-        if (!currentUser.avatar) currentUser.avatar = 'images/profileuser.jpg';
+        if (!currentUser.avatar) currentUser.avatar = 'images/profileuser.svg';
         if (!currentUser.role) currentUser.role = currentUser.isGuest ? 'guest' : 'Usuario';
         if (!currentUser.status) currentUser.status = 'online';
         if (!currentUser.createdAt) currentUser.createdAt = new Date().toISOString();
@@ -2859,19 +2864,21 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.appendChild(refreshPageBtn);
 
     let lastScrollTop = 0;
-    let scrollDownCount = 0;
+    let refreshTimeout = null;
     chatArea.addEventListener('scroll', function() {
         const scrollTop = chatArea.scrollTop;
         
-        // Detectar scroll hacia abajo
-        if (scrollTop > lastScrollTop) {
-            scrollDownCount++;
-            if (scrollDownCount >= 2 && scrollTop > 100) {
-                refreshPageBtn.classList.add('show');
-            }
-        } else {
-            scrollDownCount = 0;
-            refreshPageBtn.classList.remove('show');
+        // Detectar scroll hacia arriba
+        if (scrollTop < lastScrollTop && scrollTop > 100) {
+            refreshPageBtn.classList.add('show');
+            
+            // Limpiar timeout anterior
+            if (refreshTimeout) clearTimeout(refreshTimeout);
+            
+            // Ocultar después de 10 segundos
+            refreshTimeout = setTimeout(() => {
+                refreshPageBtn.classList.remove('show');
+            }, 10000);
         }
         lastScrollTop = scrollTop;
     });

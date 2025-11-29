@@ -159,13 +159,39 @@ async function finishGame(winner) {
     
     await update(gameRef, { status: 'finished', winner, stats });
     
-    if (winner !== 'draw') {
+    if (winner === 'draw') {
+        // Incrementar empates para ambos jugadores
+        if (!gameData.playerRed.id.startsWith('guest-')) {
+            try {
+                await updateDoc(doc(db, 'users', gameData.playerRed.id), { draws: increment(1) });
+            } catch (error) {
+                console.error('Error incrementando empates:', error);
+            }
+        }
+        if (!gameData.playerYellow.id.startsWith('guest-')) {
+            try {
+                await updateDoc(doc(db, 'users', gameData.playerYellow.id), { draws: increment(1) });
+            } catch (error) {
+                console.error('Error incrementando empates:', error);
+            }
+        }
+    } else {
         const winnerId = winner === 'red' ? gameData.playerRed.id : gameData.playerYellow.id;
+        const loserId = winner === 'red' ? gameData.playerYellow.id : gameData.playerRed.id;
+        
         if (!winnerId.startsWith('guest-')) {
             try {
-                await updateDoc(doc(db, 'users', winnerId), { level: increment(1) });
+                await updateDoc(doc(db, 'users', winnerId), { level: increment(0.25), wins: increment(1) });
             } catch (error) {
                 console.error('Error incrementando nivel:', error);
+            }
+        }
+        
+        if (!loserId.startsWith('guest-')) {
+            try {
+                await updateDoc(doc(db, 'users', loserId), { losses: increment(1) });
+            } catch (error) {
+                console.error('Error incrementando derrotas:', error);
             }
         }
     }
