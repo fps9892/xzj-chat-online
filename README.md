@@ -17,8 +17,7 @@ Chat en tiempo real con Firebase, sistema de moderación, juegos multijugador y 
         "messages": {
           "$messageId": {
             ".read": true,
-            ".write": "auth != null || data.exists()",
-            ".validate": "newData.hasChildren(['userId', 'username', 'text', 'timestamp'])"
+            ".write": true
           }
         },
         "users": {

@@ -14,8 +14,7 @@ Copia y pega estas reglas en Firebase Console > Realtime Database > Rules:
         "messages": {
           "$messageId": {
             ".read": true,
-            ".write": "auth != null || data.exists()",
-            ".validate": "newData.hasChildren(['userId', 'username', 'text', 'timestamp'])"
+            ".write": true
           }
         },
         "users": {
