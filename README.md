@@ -168,6 +168,12 @@ service cloud.firestore {
       allow read: if true;
       allow write: if request.auth != null && isDeveloper();
     }
+    
+    // Configuración de desarrollador
+    match /settings/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null && isDeveloper();
+    }
   }
 }
 ```
@@ -214,7 +220,7 @@ Cada usuario tiene:
 - `!borrarchat` - Limpiar historial
 
 ### Desarrolladores
-- `!developer` - Panel de desarrollador
+- `!developer` - Panel de configuración del sistema (habilitar/deshabilitar funciones)
 - Todos los comandos anteriores
 
 ## 🔐 Configuración de Desarrollador

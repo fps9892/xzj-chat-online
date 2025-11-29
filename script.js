@@ -1328,17 +1328,18 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div class="profile-stats-grid">
                                     <div class="stat-item level-stat">
                                         <div class="level-circle">
-                                            <svg width="60" height="60">
-                                                <circle class="level-circle-bg" cx="30" cy="30" r="26"></circle>
-                                                <circle class="level-circle-progress" cx="30" cy="30" r="26" 
-                                                    stroke-dasharray="${2 * Math.PI * 26}" 
-                                                    stroke-dashoffset="${2 * Math.PI * 26 * (1 - ((user.level || 1) % 1))}"></circle>
+                                            <svg width="50" height="50">
+                                                <circle class="level-circle-bg" cx="25" cy="25" r="22"></circle>
+                                                <circle class="level-circle-progress" cx="25" cy="25" r="22" 
+                                                    stroke-dasharray="${2 * Math.PI * 22}" 
+                                                    stroke-dashoffset="${2 * Math.PI * 22 * (1 - ((user.level || 1) % 1))}"></circle>
                                             </svg>
                                             <div class="level-number">
                                                 <span class="level-value">${Math.floor(user.level || 1)}</span>
                                                 <span class="level-text">Nivel</span>
                                             </div>
                                         </div>
+                                        <span class="stat-label">Nivel</span>
                                     </div>
                                     <div class="stat-item">
                                         <span class="stat-value">${user.wins || 0}</span>
@@ -2521,6 +2522,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 messageInput.value = '';
                 return;
             }
+            if (lowerMessage === '!developer' && currentUser.isDeveloper) {
+                showDeveloperPanel();
+                messageInput.value = '';
+                return;
+            }
             
             isSendingMessage = true;
             sendIcon.style.opacity = '0.5';
@@ -2880,3 +2886,78 @@ document.addEventListener('DOMContentLoaded', function() {
     // Llamar a la función periódicamente para mantener los datos actualizados
     setInterval(updateRoomUserCounts, 5000);
 });
+
+function showDeveloperPanel() {
+    const existingPanel = document.querySelector('.developer-panel-overlay');
+    if (existingPanel) existingPanel.remove();
+
+    const overlay = document.createElement('div');
+    overlay.className = 'developer-panel-overlay';
+    overlay.innerHTML = `
+        <div class="developer-panel">
+            <div class="developer-panel-header">
+                <h2>Panel de Desarrollador</h2>
+                <button class="close-developer-panel">×</button>
+            </div>
+            <div class="developer-panel-content">
+                <div class="dev-setting">
+                    <span>Inicio de sesión como invitado</span>
+                    <label class="dev-toggle">
+                        <input type="checkbox" id="guestLoginToggle" checked>
+                        <span class="dev-slider"></span>
+                    </label>
+                </div>
+                <div class="dev-setting">
+                    <span>Registro de nuevos usuarios</span>
+                    <label class="dev-toggle">
+                        <input type="checkbox" id="registerToggle" checked>
+                        <span class="dev-slider"></span>
+                    </label>
+                </div>
+                <div class="dev-setting">
+                    <span>Creación de salas privadas</span>
+                    <label class="dev-toggle">
+                        <input type="checkbox" id="privateRoomsToggle" checked>
+                        <span class="dev-slider"></span>
+                    </label>
+                </div>
+                <div class="dev-setting">
+                    <span>Sistema de juegos</span>
+                    <label class="dev-toggle">
+                        <input type="checkbox" id="gamesToggle" checked>
+                        <span class="dev-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    overlay.querySelector('.close-developer-panel').addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) overlay.remove();
+    });
+
+    import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js').then(({ getFirestore, doc, getDoc, setDoc }) => {
+        const db = getFirestore();
+        const settingsRef = doc(db, 'settings', 'global');
+
+        getDoc(settingsRef).then(docSnap => {
+            if (docSnap.exists()) {
+                const settings = docSnap.data();
+                document.getElementById('guestLoginToggle').checked = settings.guestLoginEnabled !== false;
+                document.getElementById('registerToggle').checked = settings.registerEnabled !== false;
+                document.getElementById('privateRoomsToggle').checked = settings.privateRoomsEnabled !== false;
+                document.getElementById('gamesToggle').checked = settings.gamesEnabled !== false;
+            }
+        });
+
+        ['guestLoginToggle', 'registerToggle', 'privateRoomsToggle', 'gamesToggle'].forEach(id => {
+            document.getElementById(id).addEventListener('change', async (e) => {
+                const field = id.replace('Toggle', 'Enabled');
+                await setDoc(settingsRef, { [field]: e.target.checked }, { merge: true });
+                showNotification(`Configuración actualizada`, 'success');
+            });
+        });
+    });
+}
