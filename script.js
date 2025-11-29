@@ -1300,13 +1300,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         <div class="profile-sections">
                             <div class="profile-section active" data-section="info">
-                                ${isOnline ? `<div class="profile-info-item">
-                                    <span class="profile-info-label">Estado</span>
-                                    <span class="profile-status online">
-                                        <span class="profile-status-dot"></span>
-                                        Activo
-                                    </span>
-                                </div>` : ''}
                                 <div class="profile-info-row">
                                     <div class="profile-info-half">
                                         <span class="profile-info-value">
@@ -1326,24 +1319,32 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                             
                             <div class="profile-section" data-section="stats">
-                                <div class="profile-info-row">
-                                    <div class="profile-info-half">
-                                        <span class="profile-info-label">Nivel</span>
-                                        <span class="profile-info-value" style="font-size: 24px; color: #00ff88; font-weight: bold;">${user.level || 1}</span>
+                                <div class="level-display-container">
+                                    <div class="level-circle-wrapper">
+                                        <svg class="level-progress-ring" width="60" height="60">
+                                            <circle class="level-progress-ring-bg" cx="30" cy="30" r="26" />
+                                            <circle class="level-progress-ring-fill" cx="30" cy="30" r="26" 
+                                                style="stroke-dasharray: ${163.36}; stroke-dashoffset: ${163.36 - (((user.level || 1) % 1) * 163.36)};" />
+                                        </svg>
+                                        <div class="level-number">${Math.floor(user.level || 1)}</div>
                                     </div>
-                                    <div class="profile-info-half">
-                                        <span class="profile-info-label">Mensajes</span>
-                                        <span class="profile-info-value" style="font-size: 20px;">${user.messageCount || 0}</span>
+                                    <div class="level-info-text">
+                                        <span class="level-label">Nivel</span>
+                                        <span class="level-progress-text">${Math.floor(((user.level || 1) % 1) * 100)}% al siguiente nivel</span>
                                     </div>
                                 </div>
-                                <div class="profile-info-row">
-                                    <div class="profile-info-half">
-                                        <span class="profile-info-label">Tiempo Online</span>
-                                        <span class="profile-info-value">${user.onlineTime || '0h'}</span>
+                                <div class="profile-stats-grid">
+                                    <div class="stat-item">
+                                        <span class="stat-value">${user.wins || 0}</span>
+                                        <span class="stat-label">Victorias</span>
                                     </div>
-                                    <div class="profile-info-half">
-                                        <span class="profile-info-label">Reputación</span>
-                                        <span class="profile-info-value" style="font-size: 20px;">${user.reputation || 0}</span>
+                                    <div class="stat-item">
+                                        <span class="stat-value">${user.losses || 0}</span>
+                                        <span class="stat-label">Derrotas</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-value">${user.draws || 0}</span>
+                                        <span class="stat-label">Empates</span>
                                     </div>
                                 </div>
                             </div>
@@ -2516,8 +2517,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             isSendingMessage = true;
-            messageInput.placeholder = '';
-            messageInput.disabled = true;
             sendIcon.style.opacity = '0.5';
             sendIcon.style.pointerEvents = 'none';
             
@@ -2530,12 +2529,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTypingStatus(false);
                 clearTimeout(typingTimeout);
                 
-                // Rehabilitar input y mantener foco
                 isSendingMessage = false;
-                messageInput.disabled = false;
                 sendIcon.style.opacity = '1';
                 sendIcon.style.pointerEvents = 'auto';
-                messageInput.focus();
                 
                 if (result && result.showDeleteNotification) {
                     showNotification(`⏳ La sala "${result.roomName}" será eliminada`, 'success');
@@ -2562,12 +2558,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error enviando mensaje:', error);
                 showNotification(error.message || 'Error al enviar mensaje', 'error');
                 
-                // Rehabilitar input y mantener foco
                 isSendingMessage = false;
-                messageInput.disabled = false;
                 sendIcon.style.opacity = '1';
                 sendIcon.style.pointerEvents = 'auto';
-                messageInput.focus();
             });
         }
     }
@@ -2854,8 +2847,37 @@ document.addEventListener('DOMContentLoaded', function() {
     
     messageInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
+            e.preventDefault();
             sendMessageHandler();
         }
+    });
+
+    // Botón de recargar página al hacer scroll hacia abajo
+    const refreshPageBtn = document.createElement('button');
+    refreshPageBtn.className = 'refresh-page-btn';
+    refreshPageBtn.innerHTML = '<img src="/images/refresh.svg" alt="Refresh" style="width: 20px; height: 20px;" />';
+    document.body.appendChild(refreshPageBtn);
+
+    let lastScrollTop = 0;
+    let scrollDownCount = 0;
+    chatArea.addEventListener('scroll', function() {
+        const scrollTop = chatArea.scrollTop;
+        
+        // Detectar scroll hacia abajo
+        if (scrollTop > lastScrollTop) {
+            scrollDownCount++;
+            if (scrollDownCount >= 2 && scrollTop > 100) {
+                refreshPageBtn.classList.add('show');
+            }
+        } else {
+            scrollDownCount = 0;
+            refreshPageBtn.classList.remove('show');
+        }
+        lastScrollTop = scrollTop;
+    });
+
+    refreshPageBtn.addEventListener('click', function() {
+        window.location.reload();
     });
 
     function updateRoomUserCounts() {

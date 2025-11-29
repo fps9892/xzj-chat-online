@@ -1776,6 +1776,113 @@ body {
   overflow-y: auto;
 }
 
+.profile-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 10px;
+  background: rgba(201, 122, 111, 0.08);
+  border: 2px solid rgba(201, 122, 111, 0.2);
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.stat-item:hover {
+  background: rgba(201, 122, 111, 0.15);
+  transform: translateY(-2px);
+}
+
+.stat-value {
+  font-family: "Orbitron", monospace;
+  font-size: 20px;
+  color: #f5e6e3;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-family: "Inter", sans-serif;
+  font-size: 11px;
+  color: #888;
+  font-weight: 600;
+  text-align: center;
+}
+
+.level-display-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: rgba(201, 122, 111, 0.08);
+  border: 2px solid rgba(201, 122, 111, 0.2);
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+.level-circle-wrapper {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+}
+
+.level-progress-ring {
+  transform: rotate(-90deg);
+}
+
+.level-progress-ring-bg {
+  fill: none;
+  stroke: rgba(201, 122, 111, 0.2);
+  stroke-width: 4;
+}
+
+.level-progress-ring-fill {
+  fill: none;
+  stroke: #d4a59a;
+  stroke-width: 4;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+.level-number {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: "Orbitron", monospace;
+  font-size: 18px;
+  font-weight: bold;
+  color: #f5e6e3;
+}
+
+.level-info-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.level-label {
+  font-family: "Orbitron", monospace;
+  font-size: 14px;
+  color: #f5e6e3;
+  font-weight: bold;
+}
+
+.level-progress-text {
+  font-family: "Inter", sans-serif;
+  font-size: 11px;
+  color: #888;
+}
+
 .profile-sections::-webkit-scrollbar {
   width: 6px;
 }
@@ -3995,5 +4102,55 @@ body {
   
   .game-result-message .message-text {
     font-size: 13px;
+  }
+}
+
+
+/* Botón de recargar página */
+.refresh-page-btn {
+  position: fixed;
+  top: 110px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100px);
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #c97a6f, #d4a59a);
+  border: 2px solid #c97a6f;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 9999;
+  opacity: 0;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(201, 122, 111, 0.4);
+}
+
+.refresh-page-btn.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.refresh-page-btn:hover {
+  transform: translateX(-50%) translateY(0) scale(1.1);
+  box-shadow: 0 6px 20px rgba(201, 122, 111, 0.6);
+}
+
+.refresh-page-btn:active {
+  transform: translateX(-50%) translateY(0) scale(0.95);
+}
+
+@media (min-width: 1024px) {
+  .refresh-page-btn {
+    display: none !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .refresh-page-btn {
+    top: 105px;
+    width: 45px;
+    height: 45px;
   }
 }
