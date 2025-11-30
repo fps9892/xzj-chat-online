@@ -128,7 +128,7 @@ export async function sendMessage(text, type = 'text', imageData = null, audioDu
         const commandResult = await processAdminCommand(text);
         if (commandResult) {
             // Comandos especiales que no envían mensaje
-            if (commandResult.showRoomsPanel || commandResult.showDeleteNotification) {
+            if (commandResult.showRoomsPanel || commandResult.showDeleteNotification || commandResult.showRefreshPanel || commandResult.showForcebanPanel) {
                 return commandResult;
             }
             
