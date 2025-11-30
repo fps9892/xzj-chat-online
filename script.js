@@ -755,6 +755,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentTypingListener = null;
     let roomEventsListener = null;
     let processedEvents = new Set();
+    let previousUsersList = new Set();
     
     function loadUsers() {
         if (currentUsersListener) {
@@ -762,10 +763,57 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         currentUsersListener = listenToUsers((users) => {
+            // Detectar usuarios que entraron o salieron
+            const currentUsersList = new Set(users.map(u => u.id));
+            
+            users.forEach(user => {
+                if (!previousUsersList.has(user.id) && previousUsersList.size > 0) {
+                    // Usuario entró
+                    showJoinNotification(user.name);
+                }
+            });
+            
+            previousUsersList.forEach(userId => {
+                if (!currentUsersList.has(userId)) {
+                    // Usuario salió
+                    const user = users.find(u => u.id === userId);
+                    if (user) showLeaveNotification(user.name);
+                }
+            });
+            
+            previousUsersList = currentUsersList;
             renderUsers(users);
         });
         
         listenToRoomEvents();
+    }
+    
+    function showJoinNotification(username) {
+        const notification = createElement(`
+            <div class="join-leave-notification join">
+                <span>👋 ${username} entró a la sala</span>
+            </div>
+        `);
+        document.body.appendChild(notification);
+        setTimeout(() => notification.classList.add('show'), 100);
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+    
+    function showLeaveNotification(username) {
+        const notification = createElement(`
+            <div class="join-leave-notification leave">
+                <span>👋 ${username} salió de la sala</span>
+            </div>
+        `);
+        document.body.appendChild(notification);
+        setTimeout(() => notification.classList.add('show'), 100);
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
     }
     
     async function listenToRoomEvents() {
@@ -1344,7 +1392,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </div>
                                 <div class="profile-field-label">Última conexión</div>
                                 <div class="profile-info-item" style="justify-content: center;">
-                                    <span class="profile-info-value">${user.lastSeen ? new Date(user.lastSeen).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Ahora'}</span>
+                                    <span class="profile-info-value">${user.lastSeen ? getTimeAgo(user.lastSeen) : 'Ahora'}</span>
                                 </div>
                                 ${isOwnProfile ? '<button class="profile-edit-btn" id="logoutBtn">Cerrar Sesión</button>' : ''}
                             </div>
@@ -1481,12 +1529,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const diffMonths = Math.floor(diffDays / 30);
         const diffYears = Math.floor(diffDays / 365);
         
-        if (diffYears > 0) return `${diffYears} año${diffYears > 1 ? 's' : ''}`;
-        if (diffMonths > 0) return `${diffMonths} mes${diffMonths > 1 ? 'es' : ''}`;
-        if (diffDays > 0) return `${diffDays} día${diffDays > 1 ? 's' : ''}`;
-        if (diffHours > 0) return `${diffHours} hora${diffHours > 1 ? 's' : ''}`;
-        if (diffMins > 0) return `${diffMins} minuto${diffMins > 1 ? 's' : ''}`;
-        return 'menos de un minuto';
+        if (diffYears > 0) return `Hace ${diffYears} año${diffYears > 1 ? 's' : ''}`;
+        if (diffMonths > 0) return `Hace ${diffMonths} mes${diffMonths > 1 ? 'es' : ''}`;
+        if (diffDays > 0) return `Hace ${diffDays} día${diffDays > 1 ? 's' : ''}`;
+        if (diffHours > 0) return `Hace ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
+        if (diffMins > 0) return `Hace ${diffMins} minuto${diffMins > 1 ? 's' : ''}`;
+        return 'Hace menos de un minuto';
     }
     
     function clearSkeletons() {

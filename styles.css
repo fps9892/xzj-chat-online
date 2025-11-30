@@ -98,13 +98,17 @@
 
 /* Loader del chat-area */
 .chat-loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100%;
     color: rgba(255, 255, 255, 0.7);
     animation: fadeIn 0.3s ease;
+    z-index: 10;
 }
 
 .chat-loader .loader-spinner {
@@ -122,6 +126,7 @@
     font-weight: 500;
     margin: 0;
     opacity: 0.8;
+    animation: none;
 }
 
 /* Panel de forceban con color rojo */
@@ -156,4 +161,43 @@
 
 .refresh-action-btn img {
     filter: brightness(0) invert(1);
+}
+
+/* Notificaciones de entrada/salida */
+.join-leave-notification {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.9);
+    padding: 12px 20px;
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    opacity: 0;
+    transform: translateX(400px);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.join-leave-notification.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.join-leave-notification.join {
+    border-left: 4px solid #4caf50;
+}
+
+.join-leave-notification.leave {
+    border-left: 4px solid #ff9800;
+}
+
+@media (max-width: 767px) {
+    .join-leave-notification {
+        bottom: 70px;
+        right: 10px;
+        left: 10px;
+        text-align: center;
+    }
 }
