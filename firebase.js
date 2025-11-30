@@ -1794,6 +1794,42 @@ export async function processAdminCommand(message) {
                 
                 await refreshUserPage(targetRefreshUser.firebaseUid);
                 return { success: true, message: `🔄 Refrescando página de ${targetRefreshUser.username}` };
+            
+            case '!forceban':
+                const isDevForce = await checkDeveloperStatus(currentUser.firebaseUid);
+                if (!isDevForce) {
+                    throw new Error('Solo desarrolladores pueden usar forceban');
+                }
+                
+                if (args.length === 0) {
+                    const users = await getConnectedUsersList();
+                    if (users.length === 0) {
+                        return { success: true, message: 'No hay usuarios disponibles', privateMessage: true };
+                    }
+                    let userList = '⚠️ FORCEBAN - Lista de usuarios:\n';
+                    users.forEach(u => {
+                        const guestLabel = u.isGuest ? ' (invitado)' : '';
+                        userList += `${u.numId}. ${u.username}${guestLabel}\n`;
+                    });
+                    userList += '\nUso: !forceban <número> [razón]';
+                    return { success: true, message: userList, privateMessage: true, command: 'forceban', users: users };
+                }
+                
+                const forcebanNumId = parseInt(args[0]);
+                if (isNaN(forcebanNumId)) {
+                    throw new Error('ID de usuario inválido');
+                }
+                
+                const forcebanUsers = await getConnectedUsersList();
+                const targetForcebanUser = forcebanUsers.find(u => u.numId === forcebanNumId);
+                
+                if (!targetForcebanUser) {
+                    throw new Error('Usuario no encontrado');
+                }
+                
+                const forcebanReason = args.slice(1).join(' ') || 'Expulsión forzada';
+                await forceBanUser(targetForcebanUser.firebaseUid, forcebanReason);
+                return { success: true, message: `⚠️ ${targetForcebanUser.username} expulsado forzosamente` };
                 
             default:
                 return false;
@@ -2376,6 +2412,92 @@ export function listenToRefreshCommand(callback) {
             remove(refreshRef);
         }
     });
+}
+
+// Forzar baneo y expulsión de usuario fantasma (solo desarrolladores)
+export async function forceBanUser(userId, reason = 'Expulsión forzada') {
+    if (!currentUser.firebaseUid || currentUser.isGuest) {
+        throw new Error('Solo desarrolladores pueden usar forceban');
+    }
+    
+    const isDev = await checkDeveloperStatus(currentUser.firebaseUid);
+    if (!isDev) {
+        throw new Error('Solo desarrolladores pueden usar forceban');
+    }
+    
+    try {
+        // 1. Obtener nombre del usuario
+        let bannedUsername = 'Usuario';
+        const bannedUserDoc = await getDoc(doc(db, 'users', userId));
+        if (bannedUserDoc.exists()) {
+            bannedUsername = bannedUserDoc.data().username || 'Usuario';
+        } else {
+            const bannedGuestDoc = await getDoc(doc(db, 'guests', userId));
+            if (bannedGuestDoc.exists()) {
+                bannedUsername = bannedGuestDoc.data().username || 'Invitado';
+            }
+        }
+        
+        // 2. Banear en Firestore
+        const banData = {
+            bannedBy: currentUser.firebaseUid,
+            bannedByName: currentUser.username,
+            username: bannedUsername,
+            name: bannedUsername,
+            reason: reason,
+            bannedAt: new Date().toISOString(),
+            forceBanned: true
+        };
+        await setDoc(doc(db, 'banned', userId), banData);
+        
+        // 3. Eliminar de TODAS las salas en Realtime Database
+        const roomsRef = ref(database, 'rooms');
+        const roomsSnapshot = await get(roomsRef);
+        
+        if (roomsSnapshot.exists()) {
+            const deletePromises = [];
+            roomsSnapshot.forEach((roomSnapshot) => {
+                const roomId = roomSnapshot.key;
+                roomSnapshot.child('users').forEach((userSnapshot) => {
+                    const userData = userSnapshot.val();
+                    if (userData.firebaseUid === userId || userSnapshot.key === userId) {
+                        const userRef = ref(database, `rooms/${roomId}/users/${userSnapshot.key}`);
+                        deletePromises.push(remove(userRef));
+                    }
+                });
+            });
+            await Promise.all(deletePromises);
+        }
+        
+        // 4. Forzar refresh de su página
+        const refreshRef = ref(database, `userRefresh/${userId}`);
+        await set(refreshRef, {
+            refreshBy: currentUser.firebaseUid,
+            refreshByName: currentUser.username,
+            forceBan: true,
+            timestamp: serverTimestamp()
+        });
+        
+        // 5. Enviar mensaje al chat actual
+        const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
+        await push(messagesRef, {
+            text: `⚠️ ${bannedUsername} fue expulsado forzosamente por ${currentUser.username}. Razón: ${reason}`,
+            userId: 'system',
+            userName: 'Sistema',
+            userAvatar: 'images/logo.svg',
+            textColor: '#ff0000',
+            timestamp: serverTimestamp(),
+            type: 'system',
+            isGuest: false,
+            role: 'system',
+            firebaseUid: null
+        });
+        
+        return true;
+    } catch (error) {
+        console.error('Error force banning user:', error);
+        throw error;
+    }
 }
 
 export { currentUser, currentRoom, database, db, ref, onValue, set, push, serverTimestamp };

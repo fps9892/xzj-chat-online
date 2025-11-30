@@ -231,6 +231,7 @@ Cada usuario tiene:
 ### Desarrolladores
 - `!developer` - Panel de configuración del sistema (habilitar/deshabilitar funciones)
 - `!refresh <número>` - Refrescar página de un usuario específico
+- `!forceban <número> [razón]` - Expulsar forzosamente usuario fantasma (elimina de todas las salas + baneo + refresh)
 - Todos los comandos anteriores
 
 ## 🔐 Configuración de Desarrollador
