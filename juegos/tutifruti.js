@@ -1,46 +1,40 @@
-// Configuración de Firebase (reemplaza con tu configuración)
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getDatabase, ref, onValue, update, set, push, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { getFirestore, doc, updateDoc, increment, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
 const firebaseConfig = {
-    apiKey: "TU_API_KEY",
+    apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
     authDomain: "fyzar-80936.firebaseapp.com",
     databaseURL: "https://fyzar-80936-default-rtdb.firebaseio.com",
     projectId: "fyzar-80936",
-    storageBucket: "fyzar-80936.appspot.com",
-    messagingSenderId: "TU_SENDER_ID",
-    appId: "TU_APP_ID"
+    storageBucket: "fyzar-80936.firebasestorage.app",
+    messagingSenderId: "718553577005",
+    appId: "1:718553577005:web:74b5b9e790232edf6e2aa4"
 };
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const firestore = firebase.firestore();
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+const db = getFirestore(app);
 
-// Variables globales
-let gameId = null;
-let currentUser = null;
+const urlParams = new URLSearchParams(window.location.search);
+const gameId = urlParams.get('id');
+const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
+if (!gameId || !currentUser) {
+    alert('Sesión inválida');
+    window.location.href = '../index.html#juegos';
+}
+
 let currentRound = 0;
 let timer = null;
 const LETTERS = 'ABCDEFGHIJLMNOPQRSTUVWXYZ'.split('');
 const MAX_PLAYERS = 8;
 const ROUND_TIME = 60;
 
-// Inicialización
 document.addEventListener('DOMContentLoaded', () => {
-    initGame();
     setupEventListeners();
-});
-
-function initGame() {
-    // Obtener o crear usuario
-    currentUser = {
-        id: localStorage.getItem('userId') || generateId(),
-        name: localStorage.getItem('username') || prompt('Ingresa tu nombre:') || 'Jugador'
-    };
-    localStorage.setItem('userId', currentUser.id);
-    localStorage.setItem('username', currentUser.name);
-    
-    // Buscar juego activo o crear uno nuevo
-    gameId = 'tutifruti_' + Date.now();
     listenToGame();
-}
+});
 
 function setupEventListeners() {
     document.getElementById('joinBtn').addEventListener('click', joinGame);
@@ -51,9 +45,9 @@ function setupEventListeners() {
 }
 
 function joinGame() {
-    const gameRef = db.ref(`games/tutifruti/${gameId}`);
+    const gameRef = ref(database, `games/tutifruti/${gameId}`);
     
-    gameRef.once('value', (snapshot) => {
+    onValue(gameRef, (snapshot) => {
         const game = snapshot.val();
         const players = game?.players || {};
         
@@ -67,31 +61,27 @@ function joinGame() {
             return;
         }
         
-        gameRef.child('players').child(currentUser.id).set({
-            name: currentUser.name,
+        const playerRef = ref(database, `games/tutifruti/${gameId}/players/${currentUser.userId}`);
+        set(playerRef, {
+            name: currentUser.username,
             score: 0,
             totalScore: 0,
             joined: Date.now()
         });
         
         document.getElementById('joinBtn').style.display = 'none';
-    });
+    }, { once: true });
 }
 
 function listenToGame() {
-    const gameRef = db.ref(`games/tutifruti/${gameId}`);
+    const gameRef = ref(database, `games/tutifruti/${gameId}`);
     
-    gameRef.on('value', (snapshot) => {
+    onValue(gameRef, (snapshot) => {
         const game = snapshot.val();
         
         if (!game) {
-            // Crear juego nuevo
-            gameRef.set({
-                status: 'waiting',
-                round: 0,
-                createdAt: Date.now(),
-                players: {}
-            });
+            alert('El juego no existe');
+            window.location.href = '../index.html#juegos';
             return;
         }
         
@@ -139,10 +129,10 @@ function updatePlayersDisplay(players) {
 }
 
 function startGame() {
-    const gameRef = db.ref(`games/tutifruti/${gameId}`);
+    const gameRef = ref(database, `games/tutifruti/${gameId}`);
     const letter = LETTERS[Math.floor(Math.random() * LETTERS.length)];
     
-    gameRef.update({
+    update(gameRef, {
         status: 'playing',
         round: 1,
         currentLetter: letter,
@@ -171,9 +161,9 @@ function startTimer(startTime) {
 function submitAnswers(e) {
     e.preventDefault();
     
-    const gameRef = db.ref(`games/tutifruti/${gameId}`);
+    const gameRef = ref(database, `games/tutifruti/${gameId}`);
     
-    gameRef.once('value', (snapshot) => {
+    onValue(gameRef, (snapshot) => {
         const game = snapshot.val();
         const letter = game.currentLetter.toLowerCase();
         
@@ -199,7 +189,8 @@ function submitAnswers(e) {
             }
         });
         
-        gameRef.child('answers').child(currentRound).child(currentUser.id).set({
+        const answerRef = ref(database, `games/tutifruti/${gameId}/answers/${currentRound}/${currentUser.userId}`);
+        set(answerRef, {
             answers: results,
             score: score,
             submittedAt: Date.now()
@@ -207,13 +198,13 @@ function submitAnswers(e) {
         
         document.getElementById('tutifrutiForm').style.display = 'none';
         alert('¡Respuestas enviadas! Esperando a los demás jugadores...');
-    });
+    }, { once: true });
 }
 
 function endRound() {
-    const gameRef = db.ref(`games/tutifruti/${gameId}`);
+    const gameRef = ref(database, `games/tutifruti/${gameId}`);
     
-    gameRef.update({
+    update(gameRef, {
         status: 'results'
     });
 }
@@ -270,20 +261,20 @@ function showResults(game) {
     
     // Actualizar puntuaciones totales
     scores.forEach(s => {
-        const playerRef = db.ref(`games/tutifruti/${gameId}/players/${s.userId}`);
-        playerRef.once('value', (snapshot) => {
+        const playerRef = ref(database, `games/tutifruti/${gameId}/players/${s.userId}`);
+        onValue(playerRef, (snapshot) => {
             const player = snapshot.val();
-            playerRef.update({
+            update(playerRef, {
                 totalScore: (player.totalScore || 0) + s.score
             });
-        });
+        }, { once: true });
     });
 }
 
 function nextRound() {
-    const gameRef = db.ref(`games/tutifruti/${gameId}`);
+    const gameRef = ref(database, `games/tutifruti/${gameId}`);
     
-    gameRef.once('value', (snapshot) => {
+    onValue(gameRef, (snapshot) => {
         const game = snapshot.val();
         const nextRoundNum = game.round + 1;
         
@@ -294,7 +285,7 @@ function nextRound() {
         
         const letter = LETTERS[Math.floor(Math.random() * LETTERS.length)];
         
-        gameRef.update({
+        update(gameRef, {
             status: 'playing',
             round: nextRoundNum,
             currentLetter: letter,
@@ -305,13 +296,13 @@ function nextRound() {
         document.getElementById('gameArea').style.display = 'block';
         document.getElementById('tutifrutiForm').style.display = 'grid';
         document.getElementById('tutifrutiForm').reset();
-    });
+    }, { once: true });
 }
 
 function finishGame() {
-    const gameRef = db.ref(`games/tutifruti/${gameId}`);
+    const gameRef = ref(database, `games/tutifruti/${gameId}`);
     
-    gameRef.update({
+    update(gameRef, {
         status: 'finished'
     });
 }
@@ -368,34 +359,34 @@ function showFinalResults(game) {
     document.getElementById('finalTable').appendChild(table);
 }
 
-function updateWinnerStats(userId) {
-    // Buscar en usuarios autenticados
-    firestore.collection('users').doc(userId).get().then(doc => {
-        if (doc.exists) {
-            const currentLevel = doc.data().level || 0;
-            firestore.collection('users').doc(userId).update({
+async function updateWinnerStats(userId) {
+    try {
+        const userDoc = await getDoc(doc(db, 'users', userId));
+        if (userDoc.exists()) {
+            const currentLevel = userDoc.data().level || 0;
+            await updateDoc(doc(db, 'users', userId), {
                 level: currentLevel + 3,
-                wins: firebase.firestore.FieldValue.increment(1)
+                wins: increment(1)
             });
-        }
-    }).catch(() => {
-        // Si no existe en users, buscar en guests
-        firestore.collection('guests').doc(userId).get().then(doc => {
-            if (doc.exists) {
-                const currentLevel = doc.data().level || 0;
-                firestore.collection('guests').doc(userId).update({
+        } else {
+            const guestDoc = await getDoc(doc(db, 'guests', userId));
+            if (guestDoc.exists()) {
+                const currentLevel = guestDoc.data().level || 0;
+                await updateDoc(doc(db, 'guests', userId), {
                     level: currentLevel + 3,
-                    wins: firebase.firestore.FieldValue.increment(1)
+                    wins: increment(1)
                 });
             }
-        });
-    });
+        }
+    } catch (error) {
+        console.error('Error updating stats:', error);
+    }
 }
 
 function restartGame() {
-    location.reload();
+    window.location.href = '../index.html#juegos';
 }
 
-function generateId() {
-    return 'user_' + Math.random().toString(36).substr(2, 9);
-}
+document.getElementById('exitBtn')?.addEventListener('click', () => {
+    window.location.href = '../index.html#juegos';
+});

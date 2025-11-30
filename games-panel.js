@@ -1,6 +1,6 @@
 // Panel de juegos
 export async function showGamesPanel() {
-    const { createTatetiGame, createConecta4Game, createAjedrezGame, database, ref, push, serverTimestamp, currentUser, currentRoom } = await import('./firebase.js');
+    const { createTatetiGame, createConecta4Game, createAjedrezGame, createTutifrutiGame, database, ref, push, serverTimestamp, currentUser, currentRoom } = await import('./firebase.js');
     
     const createElement = (html) => {
         const div = document.createElement('div');
@@ -34,6 +34,12 @@ export async function showGamesPanel() {
                         <p>Juego de estrategia clásico</p>
                         <button class="create-game-btn" data-game="ajedrez">Crear Sala</button>
                     </div>
+                    <div class="game-card" data-game="tutifruti">
+                        <div class="game-icon">🍎</div>
+                        <h3>Tutifruti</h3>
+                        <p>Hasta 8 jugadores - 3 rondas</p>
+                        <button class="create-game-btn" data-game="tutifruti">Crear Sala</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -50,9 +56,9 @@ export async function showGamesPanel() {
         btn.addEventListener('click', async () => {
             const gameType = btn.dataset.game;
             
-            const gameNames = { tateti: 'Ta-Te-Ti', conecta4: 'Conecta 4', ajedrez: 'Ajedrez' };
-            const gameEmojis = { tateti: '🎮', conecta4: '🔴', ajedrez: '♟️' };
-            const gameFunctions = { tateti: createTatetiGame, conecta4: createConecta4Game, ajedrez: createAjedrezGame };
+            const gameNames = { tateti: 'Ta-Te-Ti', conecta4: 'Conecta 4', ajedrez: 'Ajedrez', tutifruti: 'Tutifruti' };
+            const gameEmojis = { tateti: '🎮', conecta4: '🔴', ajedrez: '♟️', tutifruti: '🍎' };
+            const gameFunctions = { tateti: createTatetiGame, conecta4: createConecta4Game, ajedrez: createAjedrezGame, tutifruti: createTutifrutiGame };
             
             if (gameFunctions[gameType]) {
                 const gameName = gameNames[gameType];

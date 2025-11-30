@@ -2281,4 +2281,28 @@ export async function createDamasGame() {
     return gameId;
 }
 
+// Crear juego de Tutifruti
+export async function createTutifrutiGame() {
+    const gameId = Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+    const gameRef = ref(database, `games/tutifruti/${gameId}`);
+    
+    await set(gameRef, {
+        id: gameId,
+        createdBy: currentUser.firebaseUid || currentUser.userId,
+        createdByName: currentUser.username,
+        createdAt: Date.now(),
+        expiresAt: Date.now() + (30 * 60 * 1000),
+        status: 'waiting',
+        round: 0,
+        players: {},
+        currentLetter: null
+    });
+    
+    setTimeout(async () => {
+        await remove(gameRef);
+    }, 30 * 60 * 1000);
+    
+    return gameId;
+}
+
 export { currentUser, currentRoom, database, db, ref, onValue, set, push, serverTimestamp };
