@@ -991,11 +991,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (message.isGuest) {
             displayName += ' (invitado)';
-        } else if (message.role === 'Desarrollador') {
+        } else if (message.isDeveloper || message.role === 'Desarrollador') {
             roleTag = '<span class="dev-tag">DEV</span>';
-        } else if (message.role === 'Administrador') {
+        } else if (message.isAdmin || message.role === 'Administrador') {
             roleTag = '<span class="admin-tag">ADMIN</span>';
-        } else if (message.role === 'Moderador') {
+        } else if (message.isModerator || message.role === 'Moderador') {
             roleTag = '<span class="mod-tag">MOD</span>';
         }
         
@@ -1140,11 +1140,11 @@ document.addEventListener('DOMContentLoaded', function() {
         let userNumId = '';
         let roleTag = '';
         
-        if (user.role === 'Desarrollador') {
+        if (user.isDeveloper || user.role === 'Desarrollador') {
             roleTag = '<span class="dev-tag">DEV</span>';
-        } else if (user.role === 'Administrador') {
+        } else if (user.isAdmin || user.role === 'Administrador') {
             roleTag = '<span class="admin-tag">ADMIN</span>';
-        } else if (user.role === 'Moderador') {
+        } else if (user.isModerator || user.role === 'Moderador') {
             roleTag = '<span class="mod-tag">MOD</span>';
         }
         
@@ -1244,11 +1244,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function createMobileUserElement(user) {
         let roleTag = '';
-        if (user.role === 'Desarrollador') {
+        if (user.isDeveloper || user.role === 'Desarrollador') {
             roleTag = '<span class="dev-tag">DEV</span>';
-        } else if (user.role === 'Administrador') {
+        } else if (user.isAdmin || user.role === 'Administrador') {
             roleTag = '<span class="admin-tag">ADMIN</span>';
-        } else if (user.role === 'Moderador') {
+        } else if (user.isModerator || user.role === 'Moderador') {
             roleTag = '<span class="mod-tag">MOD</span>';
         }
         

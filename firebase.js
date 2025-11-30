@@ -183,6 +183,9 @@ export async function sendMessage(text, type = 'text', imageData = null, audioDu
         type: type,
         isGuest: currentUser.isGuest || false,
         role: currentUser.role || 'Usuario',
+        isDeveloper: currentUser.isDeveloper || false,
+        isAdmin: currentUser.isAdmin || false,
+        isModerator: currentUser.isModerator || false,
         firebaseUid: currentUser.firebaseUid || null,
         replyTo: replyTo || null
     };
