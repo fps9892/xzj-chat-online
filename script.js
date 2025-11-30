@@ -2103,21 +2103,25 @@ document.addEventListener('DOMContentLoaded', function() {
         imageInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (file) {
-                // Validar tipo de archivo
                 if (!file.type.startsWith('image/')) {
                     showNotification('Por favor selecciona una imagen válida', 'error');
                     e.target.value = '';
                     return;
                 }
                 
+                imageBtn.style.opacity = '0.5';
+                imageBtn.style.pointerEvents = 'none';
+                
                 try {
                     showNotification('Enviando imagen...', 'warning');
                     await sendImage(file);
                     showNotification('Imagen enviada correctamente', 'success');
-                    e.target.value = '';
                 } catch (error) {
                     showNotification(error.message, 'error');
+                } finally {
                     e.target.value = '';
+                    imageBtn.style.opacity = '1';
+                    imageBtn.style.pointerEvents = 'auto';
                 }
             }
         });
@@ -2491,90 +2495,99 @@ document.addEventListener('DOMContentLoaded', function() {
     // Enviar mensaje
     let isSendingMessage = false;
     
+    function unlockSendButton() {
+        isSendingMessage = false;
+        sendIcon.style.opacity = '1';
+        sendIcon.style.pointerEvents = 'auto';
+    }
+    
     function sendMessageHandler() {
         const message = messageInput.value.trim();
-        if (message && !isSendingMessage) {
-            const commandList = document.querySelector('.private-command-message');
-            if (commandList) commandList.remove();
-            
-            const roomsManagementPanel = document.querySelector('.rooms-management-panel');
-            if (roomsManagementPanel) roomsManagementPanel.remove();
-            
-            const moderationPanel = document.querySelector('.moderation-panel');
-            if (moderationPanel) moderationPanel.remove();
-            
-            // Detectar comandos de moderación (case insensitive)
-            const lowerMessage = message.toLowerCase();
-            if (lowerMessage === '!ban' && (currentUser.isAdmin || currentUser.isModerator)) {
-                showBanPanel(database, currentRoom, currentUser, banUserFirebase, showNotification, db);
-                messageInput.value = '';
-                return;
-            }
-            if (lowerMessage === '!unban' && (currentUser.isAdmin || currentUser.isModerator)) {
-                showUnbanPanel(database, currentRoom, showNotification, db);
-                messageInput.value = '';
-                return;
-            }
-            if (lowerMessage === '!mute' && (currentUser.isAdmin || currentUser.isModerator)) {
-                showMutePanel(database, currentRoom, currentUser, muteUser, showNotification, db);
-                messageInput.value = '';
-                return;
-            }
-            if (lowerMessage === '!unmute' && (currentUser.isAdmin || currentUser.isModerator)) {
-                showUnmutePanel(database, currentRoom, showNotification, db);
-                messageInput.value = '';
-                return;
-            }
-            if (lowerMessage === '!crearjuegos') {
-                showGamesPanel();
-                messageInput.value = '';
-                return;
-            }
-            if (lowerMessage === '!developer' && currentUser.isDeveloper) {
-                showDeveloperPanel();
-                messageInput.value = '';
-                return;
-            }
-            
-            isSendingMessage = true;
-            sendIcon.style.opacity = '0.5';
-            sendIcon.style.pointerEvents = 'none';
-            
-            sendMessage(message, 'text', null, null, replyingTo).then((result) => {
+        if (!message) return;
+        if (isSendingMessage) return;
+        
+        const commandList = document.querySelector('.private-command-message');
+        if (commandList) commandList.remove();
+        
+        const roomsManagementPanel = document.querySelector('.rooms-management-panel');
+        if (roomsManagementPanel) roomsManagementPanel.remove();
+        
+        const moderationPanel = document.querySelector('.moderation-panel');
+        if (moderationPanel) moderationPanel.remove();
+        
+        // Detectar comandos de moderación (case insensitive)
+        const lowerMessage = message.toLowerCase();
+        if (lowerMessage === '!ban' && (currentUser.isAdmin || currentUser.isModerator)) {
+            showBanPanel(database, currentRoom, currentUser, banUserFirebase, showNotification, db);
+            messageInput.value = '';
+            return;
+        }
+        if (lowerMessage === '!unban' && (currentUser.isAdmin || currentUser.isModerator)) {
+            showUnbanPanel(database, currentRoom, showNotification, db);
+            messageInput.value = '';
+            return;
+        }
+        if (lowerMessage === '!mute' && (currentUser.isAdmin || currentUser.isModerator)) {
+            showMutePanel(database, currentRoom, currentUser, muteUser, showNotification, db);
+            messageInput.value = '';
+            return;
+        }
+        if (lowerMessage === '!unmute' && (currentUser.isAdmin || currentUser.isModerator)) {
+            showUnmutePanel(database, currentRoom, showNotification, db);
+            messageInput.value = '';
+            return;
+        }
+        if (lowerMessage === '!crearjuegos') {
+            showGamesPanel();
+            messageInput.value = '';
+            return;
+        }
+        if (lowerMessage === '!developer' && currentUser.isDeveloper) {
+            showDeveloperPanel();
+            messageInput.value = '';
+            return;
+        }
+        
+        isSendingMessage = true;
+        sendIcon.style.opacity = '0.5';
+        sendIcon.style.pointerEvents = 'none';
+        
+        sendMessage(message, 'text', null, null, replyingTo)
+            .then((result) => {
                 clearReply();
-                
                 messageInput.value = '';
                 charCounter.textContent = '0/250';
                 charCounter.classList.remove('warning', 'danger');
                 setTypingStatus(false);
                 clearTimeout(typingTimeout);
                 
-                isSendingMessage = false;
-                sendIcon.style.opacity = '1';
-                sendIcon.style.pointerEvents = 'auto';
-                
                 if (result && result.showDeleteNotification) {
                     showNotification(`⏳ La sala "${result.roomName}" será eliminada`, 'success');
+                    unlockSendButton();
                     return;
                 }
                 
                 if (result && result.showRoomsPanel) {
                     showRoomsManagementPanel(result.rooms);
+                    unlockSendButton();
                     return;
                 }
                 
                 if (result && result.showGamesPanel) {
                     showGamesPanel();
+                    unlockSendButton();
                     return;
                 }
                 
                 if (result && result.showRefreshPanel) {
                     showRefreshPanel(result.users);
+                    unlockSendButton();
                     return;
                 }
                 
                 if (result && result.showForcebanPanel) {
                     showForcebanPanel(result.users);
+                    unlockSendButton();
                     return;
                 }
                 
@@ -2584,15 +2597,17 @@ document.addEventListener('DOMContentLoaded', function() {
                         loadUsers();
                     }, 500);
                 }
-            }).catch(error => {
+                
+                unlockSendButton();
+            })
+            .catch(error => {
                 console.error('Error enviando mensaje:', error);
                 showNotification(error.message || 'Error al enviar mensaje', 'error');
-                
-                isSendingMessage = false;
-                sendIcon.style.opacity = '1';
-                sendIcon.style.pointerEvents = 'auto';
+                unlockSendButton();
+            })
+            .finally(() => {
+                setTimeout(unlockSendButton, 100);
             });
-        }
     }
     
     function showRoomsManagementPanel(rooms) {
@@ -2834,8 +2849,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const audioBase64 = await blobToBase64(recordedAudioBlob);
             await sendAudio(audioBase64, duration);
             showNotification('Audio enviado', 'success');
-            
-            // Limpiar y cerrar panel
             closeAudioPanelFunc();
         } catch (error) {
             showNotification('Error al enviar audio', 'error');
@@ -2843,6 +2856,11 @@ document.addEventListener('DOMContentLoaded', function() {
             isSendingAudio = false;
             sendAudioBtn.disabled = false;
             sendAudioBtn.style.opacity = '1';
+            setTimeout(() => {
+                isSendingAudio = false;
+                sendAudioBtn.disabled = false;
+                sendAudioBtn.style.opacity = '1';
+            }, 100);
         }
     });
     
@@ -2856,8 +2874,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (file.size > 10 * 1024 * 1024) {
             showNotification('El audio debe ser menor a 10MB', 'error');
+            e.target.value = '';
             return;
         }
+        
+        uploadAudioBtn.disabled = true;
+        uploadAudioBtn.style.opacity = '0.5';
         
         try {
             const audioBase64 = await blobToBase64(file);
@@ -2866,10 +2888,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 const duration = Math.floor(audio.duration);
                 await sendAudio(audioBase64, duration);
                 showNotification('Audio enviado', 'success');
-                audioInput.value = '';
             };
         } catch (error) {
             showNotification('Error al enviar audio', 'error');
+        } finally {
+            e.target.value = '';
+            uploadAudioBtn.disabled = false;
+            uploadAudioBtn.style.opacity = '1';
         }
     });
 
