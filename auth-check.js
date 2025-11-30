@@ -9,6 +9,6 @@
     }
     
     if (!hash || hash === '#') {
-        window.location.replace('/index.html#general');
+        window.location.hash = 'general';
     }
 })();
