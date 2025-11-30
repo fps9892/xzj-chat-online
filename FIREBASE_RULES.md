@@ -70,6 +70,12 @@ Copia y pega estas reglas en Firebase Console > Realtime Database > Rules:
           ".write": true
         }
       }
+    },
+    "userRefresh": {
+      "$userId": {
+        ".read": true,
+        ".write": true
+      }
     }
   }
 }

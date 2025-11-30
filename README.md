@@ -73,6 +73,12 @@ Chat en tiempo real con Firebase, sistema de moderación, juegos multijugador y 
           ".write": true
         }
       }
+    },
+    "userRefresh": {
+      "$userId": {
+        ".read": true,
+        ".write": true
+      }
     }
   }
 }
@@ -224,6 +230,7 @@ Cada usuario tiene:
 
 ### Desarrolladores
 - `!developer` - Panel de configuración del sistema (habilitar/deshabilitar funciones)
+- `!refresh <número>` - Refrescar página de un usuario específico
 - Todos los comandos anteriores
 
 ## 🔐 Configuración de Desarrollador

@@ -1,4 +1,4 @@
-import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, currentRoom, updateUserData, changePassword, sendImage, sendAudio, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, muteUser, getRooms, listenToRooms, listenToAnnouncements, showAnnouncement, listenToUserStatus, processEmotes, extractYouTubeId, checkPrivateRoomAccess, requestPrivateRoomAccess, listenToRoomAccessNotifications, database, ref, onValue, set, push, serverTimestamp, db } from './firebase.js';
+import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, currentRoom, updateUserData, changePassword, sendImage, sendAudio, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, muteUser, getRooms, listenToRooms, listenToAnnouncements, showAnnouncement, listenToUserStatus, processEmotes, extractYouTubeId, checkPrivateRoomAccess, requestPrivateRoomAccess, listenToRoomAccessNotifications, listenToRefreshCommand, database, ref, onValue, set, push, serverTimestamp, db } from './firebase.js';
 import { AudioRecorder, formatTime, blobToBase64 } from './audio-recorder.js';
 import { getUserProfile, findUserByUsername, animateMessageDeletion, initAdminListener } from './core.js';
 import { setupMessageOptions, replyingTo, clearReply } from './message-options.js';
@@ -1819,6 +1819,14 @@ document.addEventListener('DOMContentLoaded', function() {
             loadMessages();
             showNotification('Has sido aceptado en la sala privada', 'success');
         }
+    });
+    
+    // Escuchar comando de refresco de página (solo desarrolladores)
+    listenToRefreshCommand((data) => {
+        showNotification(`🔄 ${data.refreshByName} está refrescando tu página...`, 'warning');
+        setTimeout(() => {
+            window.location.reload();
+        }, 1500);
     });
     
     // Escuchar cuando una sala es borrada

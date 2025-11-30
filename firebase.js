@@ -1759,6 +1759,41 @@ export async function processAdminCommand(message) {
                 
             case '!crearjuegos':
                 return { success: false, showGamesPanel: true };
+            
+            case '!refresh':
+                const isDev = await checkDeveloperStatus(currentUser.firebaseUid);
+                if (!isDev) {
+                    throw new Error('Solo desarrolladores pueden refrescar páginas');
+                }
+                
+                if (args.length === 0) {
+                    const users = await getConnectedUsersList();
+                    if (users.length === 0) {
+                        return { success: true, message: 'No hay usuarios disponibles', privateMessage: true };
+                    }
+                    let userList = '🔄 Lista de usuarios:\n';
+                    users.forEach(u => {
+                        const guestLabel = u.isGuest ? ' (invitado)' : '';
+                        userList += `${u.numId}. ${u.username}${guestLabel}\n`;
+                    });
+                    userList += '\nUso: !refresh <número>';
+                    return { success: true, message: userList, privateMessage: true, command: 'refresh', users: users };
+                }
+                
+                const refreshNumId = parseInt(args[0]);
+                if (isNaN(refreshNumId)) {
+                    throw new Error('ID de usuario inválido');
+                }
+                
+                const refreshUsers = await getConnectedUsersList();
+                const targetRefreshUser = refreshUsers.find(u => u.numId === refreshNumId);
+                
+                if (!targetRefreshUser) {
+                    throw new Error('Usuario no encontrado');
+                }
+                
+                await refreshUserPage(targetRefreshUser.firebaseUid);
+                return { success: true, message: `🔄 Refrescando página de ${targetRefreshUser.username}` };
                 
             default:
                 return false;
@@ -2303,6 +2338,44 @@ export async function createTutifrutiGame() {
     }, 30 * 60 * 1000);
     
     return gameId;
+}
+
+// Refrescar página de usuario (solo desarrolladores)
+export async function refreshUserPage(userId) {
+    if (!currentUser.firebaseUid || currentUser.isGuest) {
+        throw new Error('Solo desarrolladores pueden refrescar páginas');
+    }
+    
+    const isDev = await checkDeveloperStatus(currentUser.firebaseUid);
+    if (!isDev) {
+        throw new Error('Solo desarrolladores pueden refrescar páginas');
+    }
+    
+    try {
+        const refreshRef = ref(database, `userRefresh/${userId}`);
+        await set(refreshRef, {
+            refreshBy: currentUser.firebaseUid,
+            refreshByName: currentUser.username,
+            timestamp: serverTimestamp()
+        });
+        return true;
+    } catch (error) {
+        console.error('Error refreshing user:', error);
+        throw error;
+    }
+}
+
+// Escuchar comando de refresco
+export function listenToRefreshCommand(callback) {
+    const userId = currentUser.firebaseUid || currentUser.userId;
+    const refreshRef = ref(database, `userRefresh/${userId}`);
+    
+    return onValue(refreshRef, (snapshot) => {
+        if (snapshot.exists()) {
+            callback(snapshot.val());
+            remove(refreshRef);
+        }
+    });
 }
 
 export { currentUser, currentRoom, database, db, ref, onValue, set, push, serverTimestamp };
