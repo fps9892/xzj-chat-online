@@ -657,17 +657,26 @@ document.addEventListener('DOMContentLoaded', function() {
     // Variable global para controlar acceso a sala privada
     let hasPrivateRoomAccess = false;
     let isLoadingMessages = false;
+    let messagesCache = {};
+    let firstLoad = true;
     
     // Funciones de Firebase
     async function loadMessages() {
         if (isLoadingMessages) return;
         isLoadingMessages = true;
         
-        // Mostrar loader en chat-area
         const chatArea = document.querySelector('.chat-area');
-        chatArea.innerHTML = '<div class="chat-loader"><div class="loader-spinner"></div><p>Cargando mensajes...</p></div>';
         
-        // Verificar acceso a sala privada
+        // Mostrar caché inmediatamente si existe
+        if (messagesCache[currentRoom] && messagesCache[currentRoom].length > 0) {
+            renderMessages(messagesCache[currentRoom]);
+            initializeMessages();
+        } else {
+            // Solo mostrar loader si no hay caché
+            chatArea.innerHTML = '<div class="chat-loader"><div class="loader-spinner"></div><p>Cargando mensajes...</p></div>';
+        }
+        
+        // Verificar acceso a sala privada (en paralelo)
         const accessCheck = await checkPrivateRoomAccess(currentRoom);
         
         // Si no es sala privada, cargar normalmente
@@ -676,30 +685,35 @@ document.addEventListener('DOMContentLoaded', function() {
             enableChatControls();
             listenToMessages((messages) => {
                 isLoadingMessages = false;
+                messagesCache[currentRoom] = messages;
                 renderMessages(messages);
-                initializeMessages();
+                if (firstLoad) {
+                    initializeMessages();
+                    firstLoad = false;
+                }
             });
             return;
         }
         
         // Es sala privada - verificar permisos
         if (accessCheck.isOwner || accessCheck.hasAccess) {
-            // Usuario es dueño o tiene acceso
             hasPrivateRoomAccess = true;
             enableChatControls();
             listenToMessages((messages) => {
                 isLoadingMessages = false;
+                messagesCache[currentRoom] = messages;
                 renderMessages(messages);
-                initializeMessages();
+                if (firstLoad) {
+                    initializeMessages();
+                    firstLoad = false;
+                }
             });
         } else if (accessCheck.isPending) {
-            // Usuario está pendiente de aprobación
             hasPrivateRoomAccess = false;
             isLoadingMessages = false;
             chatArea.innerHTML = '<div class="room-loader"><div class="loader-spinner"></div><p>Solicitud pendiente de ingreso</p><small>Esperando aprobación del dueño</small></div>';
             disableChatControls();
         } else {
-            // Usuario no tiene acceso - solicitar
             hasPrivateRoomAccess = false;
             await requestPrivateRoomAccess(currentRoom);
             isLoadingMessages = false;
@@ -854,8 +868,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const chatArea = document.querySelector('.chat-area');
         const wasAtBottom = chatArea.scrollHeight - chatArea.scrollTop <= chatArea.clientHeight + 50;
         
-        chatArea.innerHTML = '';
-        
         // Ordenar mensajes por timestamp
         const sortedMessages = messages.sort((a, b) => {
             const timeA = a.timestamp || 0;
@@ -863,9 +875,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return timeA - timeB;
         });
         
+        // Usar DocumentFragment para renderizado más rápido
+        const fragment = document.createDocumentFragment();
+        
         sortedMessages.forEach((message, index) => {
             const messageEl = createMessageElement(message);
-            chatArea.appendChild(messageEl);
+            fragment.appendChild(messageEl);
             
             // Inicializar velocidad de audio
             if (message.type === 'audio') {
@@ -875,19 +890,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Si el mensaje indica que la sala fue borrada, redirigir
-            if (message.roomDeleted && message.type === 'system') {
-                setTimeout(() => {
-                    if (currentRoom !== 'general') {
-                        showNotification('Has sido movido a la Sala General', 'warning');
-                        changeRoom('general', false);
-                        currentRoomName.textContent = 'Sala General';
-                        loadMessages();
-                        loadUsers();
-                    }
-                }, 2000);
-            }
         });
+        
+        // Limpiar y agregar todos los mensajes de una vez
+        chatArea.innerHTML = '';
+        chatArea.appendChild(fragment);
         
         // Scroll automático solo si estaba cerca del final
         if (wasAtBottom) {
@@ -2570,21 +2577,23 @@ document.addEventListener('DOMContentLoaded', function() {
         sendIcon.style.opacity = '0.5';
         sendIcon.style.pointerEvents = 'none';
         
-        // Timeout de seguridad para desbloquear después de 3 segundos
-        const safetyTimeout = setTimeout(() => {
-            console.warn('Timeout de seguridad: desbloqueando botón');
-            unlockSendButton();
-        }, 3000);
+        // Limpiar input INMEDIATAMENTE para mejor UX
+        const messageCopy = message;
+        messageInput.value = '';
+        charCounter.textContent = '0/250';
+        charCounter.classList.remove('warning', 'danger');
+        setTypingStatus(false);
+        clearTimeout(typingTimeout);
         
-        sendMessage(message, 'text', null, null, replyingTo)
+        // Timeout de seguridad para desbloquear después de 2 segundos
+        const safetyTimeout = setTimeout(() => {
+            unlockSendButton();
+        }, 2000);
+        
+        sendMessage(messageCopy, 'text', null, null, replyingTo)
             .then((result) => {
                 clearTimeout(safetyTimeout);
                 clearReply();
-                messageInput.value = '';
-                charCounter.textContent = '0/250';
-                charCounter.classList.remove('warning', 'danger');
-                setTypingStatus(false);
-                clearTimeout(typingTimeout);
                 
                 if (result && result.showDeleteNotification) {
                     showNotification(`⏳ La sala "${result.roomName}" será eliminada`, 'success');
@@ -2633,7 +2642,8 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .finally(() => {
                 clearTimeout(safetyTimeout);
-                setTimeout(unlockSendButton, 100);
+                // Desbloquear inmediatamente
+                unlockSendButton();
             });
     }
     
