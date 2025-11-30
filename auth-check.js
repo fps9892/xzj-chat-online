@@ -1,14 +1,8 @@
-// auth-check.js - Verificación de autenticación y routing
+// auth-check.js - DISABLED TEMPORARILY
 (function() {
-    const currentUser = localStorage.getItem('currentUser');
+    console.log('Auth check disabled');
     const hash = window.location.hash;
-    
-    if (!currentUser) {
-        window.location.replace('/login.html');
-        return;
-    }
-    
     if (!hash || hash === '#') {
-        window.location.hash = 'general';
+        history.replaceState(null, null, '#general');
     }
 })();

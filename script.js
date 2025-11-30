@@ -1895,17 +1895,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Escuchar comando de refresco de página (solo desarrolladores)
-    let refreshProcessed = false;
-    listenToRefreshCommand((data) => {
-        if (refreshProcessed) return;
-        refreshProcessed = true;
-        
-        showNotification(`🔄 ${data.refreshByName} está refrescando tu página...`, 'warning');
-        setTimeout(() => {
-            window.location.reload();
-        }, 1500);
-    });
+    // Refresh command disabled
     
     // Escuchar cuando una sala es borrada
     let roomDeletedListener = null;
@@ -1938,7 +1928,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }, 1000);
                 }
                 
-                if (data.deleted && data.forceReload) {
+                if (data.deleted) {
                     if (countdownInterval) clearInterval(countdownInterval);
                     if (roomDeletedListener) roomDeletedListener();
                     showNotification('La sala ha sido eliminada. Redirigiendo...', 'error');
@@ -3138,39 +3128,12 @@ function showRefreshPanel(users) {
     panel.querySelector('.close-moderation-panel').addEventListener('click', () => panel.remove());
     
     panel.querySelector('.global-refresh-btn').addEventListener('click', async () => {
-        const loadingOverlay = document.createElement('div');
-        loadingOverlay.className = 'loading-overlay';
-        loadingOverlay.innerHTML = `
-            <div class="loading-message">
-                <div class="loader-spinner"></div>
-                <p>Cargando nueva actualización...</p>
-            </div>
-        `;
-        document.body.appendChild(loadingOverlay);
-        
-        try {
-            const { refreshAllUsers } = await import('./firebase.js');
-            await refreshAllUsers();
-            setTimeout(() => {
-                loadingOverlay.remove();
-                panel.remove();
-            }, 2000);
-        } catch (error) {
-            loadingOverlay.remove();
-            showNotification(error.message, 'error');
-        }
+        showNotification('Función de refresh deshabilitada temporalmente', 'warning');
     });
     
     panel.querySelectorAll('.refresh-action-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
-            const userId = btn.dataset.userId;
-            try {
-                const { refreshUserPage } = await import('./firebase.js');
-                await refreshUserPage(userId);
-                showNotification('Usuario refrescado', 'success');
-            } catch (error) {
-                showNotification(error.message, 'error');
-            }
+            showNotification('Función de refresh deshabilitada temporalmente', 'warning');
         });
     });
 }
@@ -3229,26 +3192,4 @@ function showForcebanPanel(users) {
     });
 }
 
-// Escuchar refresh global
-let globalRefreshProcessed = false;
-import('./firebase.js').then(({ listenToGlobalRefresh }) => {
-    listenToGlobalRefresh((data) => {
-        if (globalRefreshProcessed) return;
-        globalRefreshProcessed = true;
-        
-        const loadingOverlay = document.createElement('div');
-        loadingOverlay.className = 'loading-overlay';
-        loadingOverlay.innerHTML = `
-            <div class="loading-message">
-                <div class="loader-spinner"></div>
-                <p>Cargando nueva actualización...</p>
-                <small>Actualización iniciada por ${data.refreshByName}</small>
-            </div>
-        `;
-        document.body.appendChild(loadingOverlay);
-        
-        setTimeout(() => {
-            window.location.reload();
-        }, 2000);
-    });
-});
+// Global refresh disabled
