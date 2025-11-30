@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Verificar Developer</title>
+    <style>
+        body {
+            background: #2a1a1a;
+            color: #f5e6e3;
+            font-family: monospace;
+            padding: 40px;
+        }
+        .status {
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 2px solid #c97a6f;
+        }
+        button {
+            background: #d4a59a;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: #1a0f0f;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #c97a6f;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Verificar y Agregar Developer</h1>
+    <div>
+        <label>UID del usuario:</label><br>
+        <input type="text" id="userId" value="h7RgUx3nJMUXZdGh9X1gdHxGalD3" style="width: 400px; padding: 8px; margin: 10px 0;">
+    </div>
+    <button onclick="verificar()">Verificar</button>
+    <button onclick="agregar()">Agregar Developer</button>
+    <div id="status" class="status"></div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
+            authDomain: "fyzar-80936.firebaseapp.com",
+            databaseURL: "https://fyzar-80936-default-rtdb.firebaseio.com",
+            projectId: "fyzar-80936",
+            storageBucket: "fyzar-80936.firebasestorage.app",
+            messagingSenderId: "718553577005",
+            appId: "1:718553577005:web:74b5b9e790232edf6e2aa4"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.verificar = async function() {
+            const userId = document.getElementById('userId').value;
+            const status = document.getElementById('status');
+            
+            try {
+                const devDoc = await getDoc(doc(db, 'developers', userId));
+                if (devDoc.exists()) {
+                    status.innerHTML = `✅ El usuario <strong>${userId}</strong> YA es developer<br><br>Datos: ${JSON.stringify(devDoc.data(), null, 2)}`;
+                    status.style.borderColor = '#00ff88';
+                } else {
+                    status.innerHTML = `❌ El usuario <strong>${userId}</strong> NO es developer`;
+                    status.style.borderColor = '#ff4444';
+                }
+            } catch (error) {
+                status.innerHTML = `❌ Error: ${error.message}`;
+                status.style.borderColor = '#ff4444';
+            }
+        };
+
+        window.agregar = async function() {
+            const userId = document.getElementById('userId').value;
+            const status = document.getElementById('status');
+            
+            try {
+                await setDoc(doc(db, 'developers', userId), {
+                    isDeveloper: true,
+                    grantedAt: new Date().toISOString(),
+                    grantedBy: 'manual'
+                });
+                status.innerHTML = `✅ Developer agregado exitosamente<br><br>UID: ${userId}<br><br>Ahora cierra sesión y vuelve a iniciar para que se apliquen los cambios.`;
+                status.style.borderColor = '#00ff88';
+            } catch (error) {
+                status.innerHTML = `❌ Error: ${error.message}`;
+                status.style.borderColor = '#ff4444';
+            }
+        };
+    </script>
+</body>
+</html>
