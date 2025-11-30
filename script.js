@@ -671,6 +671,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (messagesCache[currentRoom] && messagesCache[currentRoom].length > 0) {
             renderMessages(messagesCache[currentRoom]);
             initializeMessages();
+            isLoadingMessages = false;
         } else {
             // Solo mostrar loader si no hay caché
             chatArea.innerHTML = '<div class="chat-loader"><div class="loader-spinner"></div><p>Cargando mensajes...</p></div>';
@@ -684,7 +685,7 @@ document.addEventListener('DOMContentLoaded', function() {
             hasPrivateRoomAccess = true;
             enableChatControls();
             listenToMessages((messages) => {
-                isLoadingMessages = false;
+                if (isLoadingMessages) isLoadingMessages = false;
                 messagesCache[currentRoom] = messages;
                 renderMessages(messages);
                 if (firstLoad) {
@@ -700,7 +701,7 @@ document.addEventListener('DOMContentLoaded', function() {
             hasPrivateRoomAccess = true;
             enableChatControls();
             listenToMessages((messages) => {
-                isLoadingMessages = false;
+                if (isLoadingMessages) isLoadingMessages = false;
                 messagesCache[currentRoom] = messages;
                 renderMessages(messages);
                 if (firstLoad) {

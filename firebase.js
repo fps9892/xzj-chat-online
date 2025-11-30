@@ -226,16 +226,16 @@ export async function sendMessage(text, type = 'text', imageData = null, audioDu
     });
 }
 
-// Limit messages to 50 per room
+// Limit messages to 30 per room para mejor rendimiento
 async function limitMessages() {
     const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
     const snapshot = await get(messagesRef);
     
     if (snapshot.exists()) {
         const messages = Object.keys(snapshot.val());
-        if (messages.length > 50) {
+        if (messages.length > 30) {
             // Remove oldest messages
-            const messagesToRemove = messages.slice(0, messages.length - 50);
+            const messagesToRemove = messages.slice(0, messages.length - 30);
             messagesToRemove.forEach(messageId => {
                 remove(ref(database, `rooms/${currentRoom}/messages/${messageId}`));
             });
@@ -254,17 +254,22 @@ export function listenToMessages(callback) {
     }
     
     activeRoom = currentRoom;
-    const messagesRef = dbQuery(ref(database, `rooms/${currentRoom}/messages`), limitToLast(50));
+    // Reducir a 30 mensajes para carga más rápida
+    const messagesRef = dbQuery(ref(database, `rooms/${currentRoom}/messages`), limitToLast(30));
     currentMessagesListener = onValue(messagesRef, (snapshot) => {
         // Solo procesar si seguimos en la misma sala
         if (activeRoom !== currentRoom) return;
         
         const messages = [];
         snapshot.forEach((childSnapshot) => {
-            messages.push({
-                id: childSnapshot.key,
-                ...childSnapshot.val()
-            });
+            const data = childSnapshot.val();
+            // Solo agregar mensajes válidos
+            if (data && data.timestamp) {
+                messages.push({
+                    id: childSnapshot.key,
+                    ...data
+                });
+            }
         });
         callback(messages);
     });
