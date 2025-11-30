@@ -6,6 +6,38 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    match /{document=**} {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}
+```
+
+## Realtime Database Rules
+
+```json
+{
+  "rules": {
+    ".read": true,
+    ".write": true
+  }
+}
+```
+
+---
+
+## 📋 Reglas Restrictivas (Opcional - Para Producción)
+
+<details>
+<summary>Clic para ver reglas restrictivas</summary>
+
+### Firestore Rules (Producción)
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
     
     function isDeveloper() {
       return request.auth != null && exists(/databases/$(database)/documents/developers/$(request.auth.uid));
@@ -90,13 +122,4 @@ service cloud.firestore {
 }
 ```
 
-## Realtime Database Rules
-
-```json
-{
-  "rules": {
-    ".read": true,
-    ".write": true
-  }
-}
-```
+</details>

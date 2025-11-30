@@ -32,7 +32,7 @@ service cloud.firestore {
 }
 ```
 
-**Nota**: Las reglas están configuradas en modo abierto para desarrollo. Para producción, considera implementar las reglas restrictivas comentadas abajo.
+**Nota**: Las reglas están configuradas en modo abierto para desarrollo. Para producción, consulta `FIREBASE_RULES.md` para reglas restrictivas.
 
 <details>
 <summary>📋 Reglas de Producción (Clic para expandir)</summary>

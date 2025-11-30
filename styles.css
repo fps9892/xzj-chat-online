@@ -114,10 +114,18 @@
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
+.refresh-panel .moderation-panel-icon {
+    filter: brightness(0) invert(1);
+}
+
 .refresh-action-btn {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .refresh-action-btn:hover {
     box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.refresh-action-btn img {
+    filter: brightness(0) invert(1);
 }

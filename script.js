@@ -846,7 +846,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         chatArea.innerHTML = '';
         
-        messages.forEach((message, index) => {
+        // Ordenar mensajes por timestamp
+        const sortedMessages = messages.sort((a, b) => {
+            const timeA = a.timestamp || 0;
+            const timeB = b.timestamp || 0;
+            return timeA - timeB;
+        });
+        
+        sortedMessages.forEach((message, index) => {
             const messageEl = createMessageElement(message);
             chatArea.appendChild(messageEl);
             
@@ -2552,8 +2559,15 @@ document.addEventListener('DOMContentLoaded', function() {
         sendIcon.style.opacity = '0.5';
         sendIcon.style.pointerEvents = 'none';
         
+        // Timeout de seguridad para desbloquear después de 3 segundos
+        const safetyTimeout = setTimeout(() => {
+            console.warn('Timeout de seguridad: desbloqueando botón');
+            unlockSendButton();
+        }, 3000);
+        
         sendMessage(message, 'text', null, null, replyingTo)
             .then((result) => {
+                clearTimeout(safetyTimeout);
                 clearReply();
                 messageInput.value = '';
                 charCounter.textContent = '0/250';
@@ -2601,11 +2615,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 unlockSendButton();
             })
             .catch(error => {
+                clearTimeout(safetyTimeout);
                 console.error('Error enviando mensaje:', error);
                 showNotification(error.message || 'Error al enviar mensaje', 'error');
                 unlockSendButton();
             })
             .finally(() => {
+                clearTimeout(safetyTimeout);
                 setTimeout(unlockSendButton, 100);
             });
     }
