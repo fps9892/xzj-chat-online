@@ -10,81 +10,32 @@ Chat en tiempo real con Firebase, sistema de moderación, juegos multijugador y 
 ```json
 {
   "rules": {
-    "rooms": {
-      "$roomId": {
-        ".read": true,
-        ".write": true,
-        "messages": {
-          "$messageId": {
-            ".read": true,
-            ".write": true
-          }
-        },
-        "users": {
-          "$userId": {
-            ".read": true,
-            ".write": true
-          }
-        }
-      }
-    },
-    "announcements": {
-      ".read": true,
-      ".write": true
-    },
-    "globalAnnouncements": {
-      ".read": true,
-      ".write": true
-    },
-    "roomEvents": {
-      ".read": true,
-      ".write": true
-    },
-    "roomDeleted": {
-      ".read": true,
-      ".write": true
-    },
-    "typing": {
-      "$roomId": {
-        ".read": true,
-        ".write": true
-      }
-    },
-    "deviceCounts": {
-      ".read": true,
-      ".write": true
-    },
-    "privateRoomAccess": {
-      "$roomId": {
-        ".read": true,
-        ".write": true
-      }
-    },
-    "roomAccessNotifications": {
-      "$userId": {
-        ".read": true,
-        ".write": true
-      }
-    },
-    "games": {
-      "$gameType": {
-        "$gameId": {
-          ".read": true,
-          ".write": true
-        }
-      }
-    },
-    "userRefresh": {
-      "$userId": {
-        ".read": true,
-        ".write": true
-      }
+    ".read": true,
+    ".write": true
+  }
+}
+```
+
+**Nota**: Las reglas están configuradas en modo abierto para desarrollo. Para producción, considera restringir el acceso.
+
+### Firestore Rules
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read: if true;
+      allow write: if true;
     }
   }
 }
 ```
 
-### Firestore Rules
+**Nota**: Las reglas están configuradas en modo abierto para desarrollo. Para producción, considera implementar las reglas restrictivas comentadas abajo.
+
+<details>
+<summary>📋 Reglas de Producción (Clic para expandir)</summary>
 
 ```javascript
 rules_version = '2';
@@ -103,7 +54,6 @@ service cloud.firestore {
       return request.auth != null && exists(/databases/$(database)/documents/moderators/$(request.auth.uid));
     }
     
-    // Usuarios
     match /users/{userId} {
       allow read: if true;
       allow write: if request.auth != null && request.auth.uid == userId;
@@ -111,51 +61,43 @@ service cloud.firestore {
       allow update: if true;
     }
     
-    // Invitados
     match /guests/{guestId} {
       allow read: if true;
       allow write: if true;
       allow create: if true;
     }
     
-    // Usuarios baneados
     match /banned/{userId} {
       allow read: if true;
       allow write: if request.auth != null && (isDeveloper() || isAdmin() || isModerator());
     }
     
-    // IPs baneadas
     match /bannedIPs/{ipHash} {
       allow read: if true;
       allow write: if request.auth != null && (isDeveloper() || isAdmin());
     }
     
-    // Usuarios muteados
     match /muted/{userId} {
       allow read: if true;
       allow write: if request.auth != null && (isDeveloper() || isAdmin() || isModerator());
     }
     
-    // Moderadores
     match /moderators/{userId} {
       allow read: if true;
       allow write: if request.auth != null && (isDeveloper() || isAdmin());
     }
     
-    // Administradores
     match /admins/{userId} {
       allow read: if true;
       allow write: if request.auth != null && isDeveloper();
     }
     
-    // Desarrolladores
     match /developers/{userId} {
       allow read: if true;
       allow write: if request.auth != null && isDeveloper();
       allow create: if request.auth != null && isDeveloper();
     }
     
-    // Salas
     match /rooms/{roomId} {
       allow read: if true;
       allow write: if request.auth != null;
@@ -163,7 +105,6 @@ service cloud.firestore {
       allow delete: if request.auth != null && (isDeveloper() || isAdmin());
     }
     
-    // Encuestas
     match /polls/{pollId} {
       allow read: if true;
       allow create: if request.auth != null;
@@ -171,13 +112,11 @@ service cloud.firestore {
       allow delete: if request.auth != null && (resource.data.createdBy == request.auth.uid || isDeveloper() || isAdmin());
     }
     
-    // Configuración global
     match /settings/global {
       allow read: if true;
       allow write: if request.auth != null && isDeveloper();
     }
     
-    // Configuración de desarrollador
     match /settings/{document=**} {
       allow read: if true;
       allow write: if request.auth != null && isDeveloper();
@@ -185,6 +124,7 @@ service cloud.firestore {
   }
 }
 ```
+</details>
 
 ## 🎮 Juegos Disponibles
 
