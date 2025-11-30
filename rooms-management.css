@@ -142,7 +142,6 @@
 .room-user-icon {
     width: 14px;
     height: 14px;
-    filter: brightness(0) saturate(100%) invert(79%) sepia(53%) saturate(1000%) hue-rotate(100deg) brightness(100%) contrast(101%);
 }
 
 .room-user-count-badge {
@@ -173,7 +172,6 @@
 .delete-room-btn img {
     width: 16px;
     height: 16px;
-    filter: brightness(0) invert(1);
 }
 
 .delete-countdown {

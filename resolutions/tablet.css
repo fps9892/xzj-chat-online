@@ -39,7 +39,6 @@
   .users-connected-icon {
     width: 18px;
     height: 18px;
-    filter: invert(1);
   }
 
   .mobile-user-count {

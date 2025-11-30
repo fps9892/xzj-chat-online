@@ -639,7 +639,6 @@ body {
 .refresh-icon {
   width: 18px;
   height: 18px;
-  filter: invert(1);
 }
 
 .captcha-refresh:hover {
@@ -648,7 +647,6 @@ body {
 }
 
 .captcha-refresh:hover .refresh-icon {
-  filter: invert(0);
   transform: rotate(180deg);
 }
 

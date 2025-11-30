@@ -88,7 +88,6 @@
   .users-connected-icon {
     width: 16px;
     height: 16px;
-    filter: invert(1);
   }
 
   .mobile-user-count {
@@ -267,14 +266,14 @@
   }
 
   .image-btn {
-    width: 35px;
-    height: 35px;
+    width: 40px;
+    height: 40px;
     padding: 6px;
   }
 
   .emote-btn {
-    width: 35px;
-    height: 35px;
+    width: 40px;
+    height: 40px;
     padding: 6px;
   }
 

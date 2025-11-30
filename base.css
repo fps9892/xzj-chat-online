@@ -229,13 +229,11 @@ body {
 .arrows-icon {
   width: 16px;
   height: 16px;
-  filter: invert(1);
 }
 
 .rooms-icon {
   width: 16px;
   height: 16px;
-  filter: invert(1);
 }
 
 .rooms-dropdown {
@@ -618,7 +616,6 @@ body {
   width: 28px;
   height: 28px;
   cursor: pointer;
-  filter: invert(1);
 }
 
 .chat-controls {
@@ -636,10 +633,9 @@ body {
   width: 44px;
   height: 44px;
   cursor: pointer;
-  filter: invert(1);
   background: rgba(42, 26, 26, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
+  border: 2px solid #c97a6f;
+  border-radius: 33%;
   padding: 10px;
   z-index: 100000;
   position: relative;
@@ -652,10 +648,9 @@ body {
   width: 44px;
   height: 44px;
   cursor: pointer;
-  filter: invert(1);
   background: rgba(0, 0, 0, 0);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
+  border: 2px solid #c97a6f;
+  border-radius: 33%;
   padding: 10px;
   z-index: 100000;
   position: relative;
@@ -739,7 +734,6 @@ body {
 .close-panel {
   width: 20px;
   height: 20px;
-  filter: invert(1);
   cursor: pointer;
 }
 
@@ -1299,7 +1293,6 @@ body {
 .user-notification .notif-icon {
   width: 20px;
   height: 20px;
-  filter: invert(1);
   animation: pulse 1.5s ease-in-out infinite;
 }
 
@@ -1672,7 +1665,6 @@ body {
 }
 
 .close-profile img {
-  filter: invert(0);
 }
 
 .user-profile-content {
@@ -1732,7 +1724,6 @@ body {
 .profile-country-badge img {
   width: 40px;
   height: 40px;
-  filter: invert(1);
   object-fit: contain;
 }
 
@@ -2004,7 +1995,6 @@ body {
 .profile-info-icon {
   width: 34px;
   height: 34px;
-  filter: invert(1);
   margin-bottom: 5px;
 }
 
@@ -2079,7 +2069,6 @@ body {
 .profile-country-icon {
   width: 40px;
   height: 40px;
-  filter: invert(1);
 }
 
 .profile-edit-btn {
@@ -2290,7 +2279,6 @@ body {
 .config-panel-btn img {
   width: 100%;
   height: 100%;
-  filter: invert(0);
 }
 
 @media (max-width: 767px) {
@@ -2792,7 +2780,6 @@ body {
 .close-icon {
   width: 20px;
   height: 20px;
-  filter: invert(1);
 }
 
 .audio-visualizer {
@@ -2853,20 +2840,20 @@ body {
 }
 
 .audio-btn.play {
-  border-color: #d4a59a;
+  border-color: #c97a6f;
 }
 
 .audio-btn.stop {
-  border-color: #ff4444;
+  border-color: #c97a6f;
 }
 
 .audio-btn.send {
-  border-color: #d4a59a;
+  border-color: #c97a6f;
   background: rgba(201, 122, 111, 0.2);
 }
 
 .audio-btn.upload {
-  border-color: #00ffff;
+  border-color: #c97a6f;
 }
 
 .audio-btn.delete {
@@ -2877,10 +2864,9 @@ body {
   width: 44px;
   height: 44px;
   cursor: pointer;
-  filter: invert(1);
   background: rgba(0, 0, 0, 0);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
+  border: 2px solid #c97a6f;
+  border-radius: 33%;
   padding: 10px;
   z-index: 100000;
   position: relative;
@@ -2892,7 +2878,6 @@ body {
 .audio-icon {
   width: 24px;
   height: 24px;
-  filter: invert(1);
 }
 
 .audio-message {
@@ -3067,7 +3052,6 @@ body {
 .close-rooms-panel {
   width: 24px;
   height: 24px;
-  filter: invert(1);
   cursor: pointer;
   transition: transform 0.3s;
 }
@@ -3327,10 +3311,9 @@ body {
   width: 44px;
   height: 44px;
   cursor: pointer;
-  filter: invert(1);
   background: rgba(0, 0, 0, 0);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
+  border: 2px solid #c97a6f;
+  border-radius: 33%;
   padding: 10px;
   z-index: 100000;
   position: relative;
@@ -3395,7 +3378,6 @@ body {
 .close-polls-panel {
   width: 24px;
   height: 24px;
-  filter: invert(1);
   cursor: pointer;
   transition: transform 0.3s;
 }
@@ -3499,7 +3481,6 @@ body {
   width: 20px;
   height: 20px;
   cursor: pointer;
-  filter: invert(1);
   opacity: 0.6;
   transition: all 0.3s;
 }
@@ -3701,7 +3682,6 @@ body {
 .moderation-panel-icon {
   width: 24px;
   height: 24px;
-  filter: invert(1);
 }
 
 .moderation-panel-title {
@@ -3776,7 +3756,6 @@ body {
 .moderation-action-btn img {
   width: 16px;
   height: 16px;
-  filter: invert(1);
 }
 
 .ban-action-btn {
@@ -3876,7 +3855,6 @@ body {
 .mute-timer-icon {
   width: 24px;
   height: 24px;
-  filter: brightness(0) invert(1);
 }
 
 .mute-timer-text {
