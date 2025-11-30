@@ -11,3 +11,113 @@
     font-size: 14px; /* Texto más pequeño para móviles */
   }
 }
+
+/* Panel de refresh global */
+.moderation-global-action {
+    padding: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.global-refresh-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.global-refresh-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.global-refresh-btn img {
+    width: 18px;
+    height: 18px;
+    filter: brightness(0) invert(1);
+}
+
+/* Overlay de carga */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease;
+}
+
+.loading-message {
+    text-align: center;
+    color: white;
+}
+
+.loading-message .loader-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+.loading-message p {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 10px 0;
+}
+
+.loading-message small {
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Panel de forceban con color rojo */
+.forceban-panel .moderation-panel-header {
+    background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+}
+
+.forceban-action-btn {
+    background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+}
+
+.forceban-action-btn:hover {
+    box-shadow: 0 5px 15px rgba(255, 68, 68, 0.4);
+}
+
+/* Panel de refresh con color morado */
+.refresh-panel .moderation-panel-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.refresh-action-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.refresh-action-btn:hover {
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}

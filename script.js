@@ -2568,6 +2568,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 
+                if (result && result.showRefreshPanel) {
+                    showRefreshPanel(result.users);
+                    return;
+                }
+                
+                if (result && result.showForcebanPanel) {
+                    showForcebanPanel(result.users);
+                    return;
+                }
+                
                 if (result && result.roomChanged) {
                     setTimeout(() => {
                         loadMessages();
@@ -2969,3 +2979,157 @@ function showDeveloperPanel() {
         });
     });
 }
+
+
+// Panel de Refresh
+function showRefreshPanel(users) {
+    const existingPanel = document.querySelector('.moderation-panel');
+    if (existingPanel) existingPanel.remove();
+    
+    const panel = document.createElement('div');
+    panel.className = 'moderation-panel refresh-panel';
+    panel.innerHTML = `
+        <div class="moderation-panel-header">
+            <img src="/images/refresh.svg" class="moderation-panel-icon" alt="Refresh" />
+            <span class="moderation-panel-title">Refrescar Usuarios</span>
+            <button class="close-moderation-panel">×</button>
+        </div>
+        <div class="moderation-global-action">
+            <button class="global-refresh-btn">
+                <img src="/images/refresh.svg" alt="Refresh All" />
+                Refrescar Todos los Usuarios
+            </button>
+        </div>
+        <div class="moderation-list">
+            ${users.map((user, index) => {
+                const guestLabel = user.isGuest ? ' (invitado)' : '';
+                return `
+                    <div class="moderation-user-item">
+                        <div class="moderation-user-info">
+                            <span class="moderation-user-name">#${index + 1} ${user.username}${guestLabel}</span>
+                        </div>
+                        <button class="moderation-action-btn refresh-action-btn" data-user-id="${user.firebaseUid}">
+                            <img src="/images/refresh.svg" alt="Refresh" />
+                            Refrescar
+                        </button>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+    
+    document.body.appendChild(panel);
+    
+    panel.querySelector('.close-moderation-panel').addEventListener('click', () => panel.remove());
+    
+    panel.querySelector('.global-refresh-btn').addEventListener('click', async () => {
+        const loadingOverlay = document.createElement('div');
+        loadingOverlay.className = 'loading-overlay';
+        loadingOverlay.innerHTML = `
+            <div class="loading-message">
+                <div class="loader-spinner"></div>
+                <p>Cargando nueva actualización...</p>
+            </div>
+        `;
+        document.body.appendChild(loadingOverlay);
+        
+        try {
+            const { refreshAllUsers } = await import('./firebase.js');
+            await refreshAllUsers();
+            setTimeout(() => {
+                loadingOverlay.remove();
+                panel.remove();
+            }, 2000);
+        } catch (error) {
+            loadingOverlay.remove();
+            showNotification(error.message, 'error');
+        }
+    });
+    
+    panel.querySelectorAll('.refresh-action-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const userId = btn.dataset.userId;
+            try {
+                const { refreshUserPage } = await import('./firebase.js');
+                await refreshUserPage(userId);
+                showNotification('Usuario refrescado', 'success');
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        });
+    });
+}
+
+// Panel de Forceban
+function showForcebanPanel(users) {
+    const existingPanel = document.querySelector('.moderation-panel');
+    if (existingPanel) existingPanel.remove();
+    
+    const panel = document.createElement('div');
+    panel.className = 'moderation-panel forceban-panel';
+    panel.innerHTML = `
+        <div class="moderation-panel-header">
+            <img src="/images/ban.svg" class="moderation-panel-icon" alt="Forceban" />
+            <span class="moderation-panel-title">⚠️ Expulsión Forzada</span>
+            <button class="close-moderation-panel">×</button>
+        </div>
+        <div class="moderation-list">
+            ${users.map((user, index) => {
+                const guestLabel = user.isGuest ? ' (invitado)' : '';
+                return `
+                    <div class="moderation-user-item">
+                        <div class="moderation-user-info">
+                            <span class="moderation-user-name">#${index + 1} ${user.username}${guestLabel}</span>
+                        </div>
+                        <button class="moderation-action-btn forceban-action-btn" data-user-id="${user.firebaseUid}" data-username="${user.username}">
+                            <img src="/images/ban.svg" alt="Forceban" />
+                            Expulsar
+                        </button>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+    
+    document.body.appendChild(panel);
+    
+    panel.querySelector('.close-moderation-panel').addEventListener('click', () => panel.remove());
+    
+    panel.querySelectorAll('.forceban-action-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const userId = btn.dataset.userId;
+            const username = btn.dataset.username;
+            const reason = prompt(`Razón de expulsión forzada para ${username}:`, 'Expulsión forzada');
+            if (reason !== null) {
+                try {
+                    const { forceBanUser } = await import('./firebase.js');
+                    await forceBanUser(userId, reason);
+                    showNotification(`${username} expulsado forzosamente`, 'success');
+                    panel.remove();
+                } catch (error) {
+                    showNotification(error.message, 'error');
+                }
+            }
+        });
+    });
+}
+
+// Escuchar refresh global
+import('./firebase.js').then(({ listenToGlobalRefresh }) => {
+    listenToGlobalRefresh((data) => {
+        const loadingOverlay = document.createElement('div');
+        loadingOverlay.className = 'loading-overlay';
+        loadingOverlay.innerHTML = `
+            <div class="loading-message">
+                <div class="loader-spinner"></div>
+                <p>Cargando nueva actualización...</p>
+                <small>Actualización iniciada por ${data.refreshByName}</small>
+            </div>
+        `;
+        document.body.appendChild(loadingOverlay);
+        
+        setTimeout(() => {
+            window.location.reload();
+        }, 2000);
+    });
+});

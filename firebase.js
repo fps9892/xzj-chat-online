@@ -1768,16 +1768,12 @@ export async function processAdminCommand(message) {
                 
                 if (args.length === 0) {
                     const users = await getConnectedUsersList();
-                    if (users.length === 0) {
-                        return { success: true, message: 'No hay usuarios disponibles', privateMessage: true };
-                    }
-                    let userList = '🔄 Lista de usuarios:\n';
-                    users.forEach(u => {
-                        const guestLabel = u.isGuest ? ' (invitado)' : '';
-                        userList += `${u.numId}. ${u.username}${guestLabel}\n`;
-                    });
-                    userList += '\nUso: !refresh <número>';
-                    return { success: true, message: userList, privateMessage: true, command: 'refresh', users: users };
+                    return { success: false, showRefreshPanel: true, users: users };
+                }
+                
+                if (args[0] === 'all') {
+                    await refreshAllUsers();
+                    return { success: true, message: '🔄 Refrescando todos los usuarios...' };
                 }
                 
                 const refreshNumId = parseInt(args[0]);
@@ -1803,16 +1799,7 @@ export async function processAdminCommand(message) {
                 
                 if (args.length === 0) {
                     const users = await getConnectedUsersList();
-                    if (users.length === 0) {
-                        return { success: true, message: 'No hay usuarios disponibles', privateMessage: true };
-                    }
-                    let userList = '⚠️ FORCEBAN - Lista de usuarios:\n';
-                    users.forEach(u => {
-                        const guestLabel = u.isGuest ? ' (invitado)' : '';
-                        userList += `${u.numId}. ${u.username}${guestLabel}\n`;
-                    });
-                    userList += '\nUso: !forceban <número> [razón]';
-                    return { success: true, message: userList, privateMessage: true, command: 'forceban', users: users };
+                    return { success: false, showForcebanPanel: true, users: users };
                 }
                 
                 const forcebanNumId = parseInt(args[0]);
@@ -2115,6 +2102,46 @@ export async function getUserCountForRoom(roomId) {
         console.error(`Error getting user count for room ${roomId}:`, error);
         return 0;
     }
+}
+
+// Refrescar todos los usuarios
+export async function refreshAllUsers() {
+    if (!currentUser.firebaseUid || currentUser.isGuest) {
+        throw new Error('Solo desarrolladores pueden refrescar usuarios');
+    }
+    
+    const isDev = await checkDeveloperStatus(currentUser.firebaseUid);
+    if (!isDev) {
+        throw new Error('Solo desarrolladores pueden refrescar usuarios');
+    }
+    
+    try {
+        const refreshRef = ref(database, 'globalRefresh');
+        await set(refreshRef, {
+            refreshBy: currentUser.firebaseUid,
+            refreshByName: currentUser.username,
+            timestamp: serverTimestamp()
+        });
+        
+        setTimeout(async () => {
+            await remove(refreshRef);
+        }, 2000);
+        
+        return true;
+    } catch (error) {
+        console.error('Error refreshing all users:', error);
+        throw error;
+    }
+}
+
+// Escuchar refresh global
+export function listenToGlobalRefresh(callback) {
+    const refreshRef = ref(database, 'globalRefresh');
+    return onValue(refreshRef, (snapshot) => {
+        if (snapshot.exists()) {
+            callback(snapshot.val());
+        }
+    });
 }
 
 // Mostrar panel de lista de usuarios con estilo similar al panel de salas
