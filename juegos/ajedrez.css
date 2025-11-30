@@ -1,0 +1,273 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #2a1a1a;
+    color: #f5e6e3;
+    font-family: 'Orbitron', monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.game-container {
+    max-width: 600px;
+    width: 100%;
+}
+
+.game-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.game-header h1 {
+    font-size: 28px;
+    color: #d4a59a;
+    margin-bottom: 10px;
+}
+
+.room-id, .timer {
+    font-size: 14px;
+    color: #888;
+    margin: 0 10px;
+}
+
+.players-info {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.player-card {
+    flex: 1;
+    background: rgba(201, 122, 111, 0.1);
+    border: 2px solid rgba(201, 122, 111, 0.3);
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+}
+
+.player-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    margin: 0 auto 10px;
+    border: 2px solid #c97a6f;
+}
+
+.player-name {
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.player-color {
+    font-size: 12px;
+    color: #888;
+}
+
+.game-status {
+    text-align: center;
+    padding: 15px;
+    background: rgba(201, 122, 111, 0.1);
+    border: 2px solid #c97a6f;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+.board-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.chess-board {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 0;
+    width: 100%;
+    max-width: 480px;
+    aspect-ratio: 1;
+    border: 3px solid #c97a6f;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.chess-square {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.chess-square.light {
+    background: #f0d9b5;
+}
+
+.chess-square.dark {
+    background: #b58863;
+}
+
+.chess-square.selected {
+    background: #7fc97f !important;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+}
+
+.chess-square.valid-move {
+    background: rgba(127, 201, 127, 0.5) !important;
+}
+
+.chess-square.valid-move::after {
+    content: '';
+    width: 20px;
+    height: 20px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 50%;
+}
+
+.chess-square:hover {
+    filter: brightness(1.1);
+}
+
+.game-stats {
+    display: flex;
+    justify-content: space-around;
+    padding: 15px;
+    background: rgba(201, 122, 111, 0.1);
+    border: 2px solid rgba(201, 122, 111, 0.3);
+    border-radius: 10px;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.join-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.join-btn {
+    flex: 1;
+    padding: 15px;
+    border: 2px solid #c97a6f;
+    border-radius: 10px;
+    font-family: 'Orbitron', monospace;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.white-btn {
+    background: #f0f0f0;
+    color: #1a0f0f;
+}
+
+.white-btn:hover {
+    background: #fff;
+}
+
+.black-btn {
+    background: #333;
+    color: #f5e6e3;
+}
+
+.black-btn:hover {
+    background: #444;
+}
+
+.exit-btn {
+    width: 100%;
+    padding: 15px;
+    background: transparent;
+    border: 2px solid #ff4444;
+    border-radius: 10px;
+    color: #ff4444;
+    font-family: 'Orbitron', monospace;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.exit-btn:hover {
+    background: #ff4444;
+    color: #fff;
+}
+
+.checkmate-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.checkmate-overlay.show {
+    display: flex;
+}
+
+.checkmate-message {
+    background: linear-gradient(135deg, #d4a59a, #c97a6f);
+    padding: 40px 60px;
+    border-radius: 20px;
+    font-size: 36px;
+    font-weight: bold;
+    text-align: center;
+    color: #1a0f0f;
+    box-shadow: 0 0 50px rgba(201, 122, 111, 0.8);
+    animation: checkmateAppear 0.5s ease;
+}
+
+@keyframes checkmateAppear {
+    from {
+        transform: scale(0) rotate(-180deg);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1) rotate(0);
+        opacity: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .chess-square {
+        font-size: 24px;
+    }
+    
+    .checkmate-message {
+        font-size: 24px;
+        padding: 30px 40px;
+    }
+    
+    .players-info {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .chess-square {
+        font-size: 20px;
+    }
+    
+    body {
+        padding: 10px;
+    }
+}

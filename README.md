@@ -182,8 +182,9 @@ service cloud.firestore {
 
 ## 🎮 Juegos Disponibles
 
-- **Ta-Te-Ti** (2 jugadores)
+- **Ta-Te-Ti** (2 jugadores) - El ganador juega primero en la siguiente ronda
 - **Conecta 4** (2 jugadores)
+- **Ajedrez** (2 jugadores) - Juego de estrategia clásico
 
 ## 👥 Sistema de Roles
 

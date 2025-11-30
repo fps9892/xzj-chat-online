@@ -2204,6 +2204,44 @@ export async function createConecta4Game() {
     return gameId;
 }
 
+// Crear juego de Ajedrez
+export async function createAjedrezGame() {
+    const gameId = Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+    const gameRef = ref(database, `games/ajedrez/${gameId}`);
+    
+    const initBoard = () => [
+        ['♜','♞','♝','♛','♚','♝','♞','♜'],
+        ['♟','♟','♟','♟','♟','♟','♟','♟'],
+        ['','','','','','','',''],
+        ['','','','','','','',''],
+        ['','','','','','','',''],
+        ['','','','','','','',''],
+        ['♙','♙','♙','♙','♙','♙','♙','♙'],
+        ['♖','♘','♗','♕','♔','♗','♘','♖']
+    ];
+    
+    await set(gameRef, {
+        id: gameId,
+        createdBy: currentUser.firebaseUid || currentUser.userId,
+        createdByName: currentUser.username,
+        createdAt: Date.now(),
+        expiresAt: Date.now() + (30 * 60 * 1000),
+        status: 'waiting',
+        playerWhite: null,
+        playerBlack: null,
+        board: initBoard(),
+        currentTurn: 'white',
+        winner: null,
+        stats: { rounds: 0, winsWhite: 0, winsBlack: 0, draws: 0 }
+    });
+    
+    setTimeout(async () => {
+        await remove(gameRef);
+    }, 30 * 60 * 1000);
+    
+    return gameId;
+}
+
 // Crear juego de Damas
 export async function createDamasGame() {
     const gameId = Math.random().toString(36).substring(2, 15) + Date.now().toString(36);

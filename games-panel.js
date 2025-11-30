@@ -1,6 +1,6 @@
 // Panel de juegos
 export async function showGamesPanel() {
-    const { createTatetiGame, createConecta4Game, database, ref, push, serverTimestamp, currentUser, currentRoom } = await import('./firebase.js');
+    const { createTatetiGame, createConecta4Game, createAjedrezGame, database, ref, push, serverTimestamp, currentUser, currentRoom } = await import('./firebase.js');
     
     const createElement = (html) => {
         const div = document.createElement('div');
@@ -28,6 +28,12 @@ export async function showGamesPanel() {
                         <p>Conecta 4 fichas en línea</p>
                         <button class="create-game-btn" data-game="conecta4">Crear Sala</button>
                     </div>
+                    <div class="game-card" data-game="ajedrez">
+                        <div class="game-icon">♟️</div>
+                        <h3>Ajedrez</h3>
+                        <p>Juego de estrategia clásico</p>
+                        <button class="create-game-btn" data-game="ajedrez">Crear Sala</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -44,9 +50,9 @@ export async function showGamesPanel() {
         btn.addEventListener('click', async () => {
             const gameType = btn.dataset.game;
             
-            const gameNames = { tateti: 'Ta-Te-Ti', conecta4: 'Conecta 4' };
-            const gameEmojis = { tateti: '🎮', conecta4: '🔴' };
-            const gameFunctions = { tateti: createTatetiGame, conecta4: createConecta4Game };
+            const gameNames = { tateti: 'Ta-Te-Ti', conecta4: 'Conecta 4', ajedrez: 'Ajedrez' };
+            const gameEmojis = { tateti: '🎮', conecta4: '🔴', ajedrez: '♟️' };
+            const gameFunctions = { tateti: createTatetiGame, conecta4: createConecta4Game, ajedrez: createAjedrezGame };
             
             if (gameFunctions[gameType]) {
                 const gameName = gameNames[gameType];

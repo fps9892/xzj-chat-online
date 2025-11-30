@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajedrez - FYZAR CHAT</title>
+    <link rel="stylesheet" href="ajedrez.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>♟️ Ajedrez</h1>
+            <span class="room-id" id="roomId"></span>
+            <span class="timer" id="timer">30:00</span>
+        </div>
+        
+        <div class="players-info">
+            <div class="player-card" id="player2Card">
+                <div class="player-avatar" id="player2Avatar"></div>
+                <div class="player-name" id="player2Name">Esperando...</div>
+                <div class="player-color">⚫ Negras</div>
+            </div>
+            <div class="player-card" id="player1Card">
+                <div class="player-avatar" id="player1Avatar"></div>
+                <div class="player-name" id="player1Name">Esperando...</div>
+                <div class="player-color">⚪ Blancas</div>
+            </div>
+        </div>
+
+        <div class="game-status" id="gameStatus">Esperando jugadores...</div>
+
+        <div class="board-container">
+            <div class="chess-board" id="chessBoard"></div>
+        </div>
+
+        <div class="game-stats">
+            <span>Rondas: <strong id="rounds">0</strong></span>
+            <span>⚪: <strong id="winsWhite">0</strong></span>
+            <span>Empates: <strong id="draws">0</strong></span>
+            <span>⚫: <strong id="winsBlack">0</strong></span>
+        </div>
+
+        <div class="join-buttons">
+            <button id="joinWhite" class="join-btn white-btn">Jugar con Blancas</button>
+            <button id="joinBlack" class="join-btn black-btn">Jugar con Negras</button>
+        </div>
+
+        <button id="exitBtn" class="exit-btn">Salir</button>
+    </div>
+
+    <div class="checkmate-overlay" id="checkmateOverlay">
+        <div class="checkmate-message" id="checkmateMessage"></div>
+    </div>
+
+    <script type="module" src="ajedrez.js"></script>
+</body>
+</html>

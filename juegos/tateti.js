@@ -169,7 +169,7 @@ function updateUI() {
         } else {
             document.getElementById('gameStatus').textContent = `¡Ganó ${gameData.winner}!`;
         }
-        document.getElementById('newRoundBtn').style.display = 'inline-block';
+        setTimeout(() => startNewRound(), 3000);
     }
     
     // Actualizar stats
@@ -230,11 +230,8 @@ document.getElementById('gameBoard').addEventListener('click', async (e) => {
         // Enviar notificación a sala #juegos
         sendResultNotification(winner);
         
-        // Mostrar notificación temporal y reiniciar
+        // Mostrar notificación temporal
         showRoundResult(winner);
-        setTimeout(() => {
-            startNewRound();
-        }, 3000);
     } else {
         await update(gameRef, {
             board: newBoard,
@@ -265,14 +262,15 @@ async function startNewRound() {
     
     document.getElementById('gameStatus').textContent = '⏳ Reiniciando ronda...';
     
+    const nextTurn = gameData.winner === 'draw' ? 'X' : gameData.winner;
+    
     await update(gameRef, {
         board: ['', '', '', '', '', '', '', '', ''],
         status: 'playing',
-        currentTurn: 'X',
+        currentTurn: nextTurn,
         winner: null,
         'stats/rounds': (gameData.stats.rounds || 0) + 1
     });
-    document.getElementById('newRoundBtn').style.display = 'none';
 }
 
 function showRoundResult(winner) {
@@ -379,14 +377,7 @@ async function sendResultNotification(winner) {
     });
 }
 
-// Nueva ronda
-document.getElementById('newRoundBtn').addEventListener('click', async () => {
-    if (!gameData.player1 || !gameData.player2) {
-        alert('Se necesitan 2 jugadores para iniciar una nueva ronda');
-        return;
-    }
-    await startNewRound();
-});
+
 
 // Salir del juego (no de la página)
 document.getElementById('exitBtn').addEventListener('click', async () => {
