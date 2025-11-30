@@ -656,9 +656,17 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Variable global para controlar acceso a sala privada
     let hasPrivateRoomAccess = false;
+    let isLoadingMessages = false;
     
     // Funciones de Firebase
     async function loadMessages() {
+        if (isLoadingMessages) return;
+        isLoadingMessages = true;
+        
+        // Mostrar loader en chat-area
+        const chatArea = document.querySelector('.chat-area');
+        chatArea.innerHTML = '<div class="chat-loader"><div class="loader-spinner"></div><p>Cargando mensajes...</p></div>';
+        
         // Verificar acceso a sala privada
         const accessCheck = await checkPrivateRoomAccess(currentRoom);
         
@@ -667,6 +675,7 @@ document.addEventListener('DOMContentLoaded', function() {
             hasPrivateRoomAccess = true;
             enableChatControls();
             listenToMessages((messages) => {
+                isLoadingMessages = false;
                 renderMessages(messages);
                 initializeMessages();
             });
@@ -679,20 +688,21 @@ document.addEventListener('DOMContentLoaded', function() {
             hasPrivateRoomAccess = true;
             enableChatControls();
             listenToMessages((messages) => {
+                isLoadingMessages = false;
                 renderMessages(messages);
                 initializeMessages();
             });
         } else if (accessCheck.isPending) {
             // Usuario está pendiente de aprobación
             hasPrivateRoomAccess = false;
-            const chatArea = document.querySelector('.chat-area');
+            isLoadingMessages = false;
             chatArea.innerHTML = '<div class="room-loader"><div class="loader-spinner"></div><p>Solicitud pendiente de ingreso</p><small>Esperando aprobación del dueño</small></div>';
             disableChatControls();
         } else {
             // Usuario no tiene acceso - solicitar
             hasPrivateRoomAccess = false;
             await requestPrivateRoomAccess(currentRoom);
-            const chatArea = document.querySelector('.chat-area');
+            isLoadingMessages = false;
             chatArea.innerHTML = '<div class="room-loader"><div class="loader-spinner"></div><p>Solicitud enviada</p><small>Esperando aprobación del dueño</small></div>';
             disableChatControls();
         }
@@ -1667,11 +1677,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             const chatArea = document.querySelector('.chat-area');
-            chatArea.innerHTML = '<div class="room-loader"><div class="loader-spinner"></div><p>Cargando sala...</p></div>';
+            chatArea.innerHTML = '<div class="chat-loader"><div class="loader-spinner"></div><p>Cargando sala...</p></div>';
             
             cleanupListeners();
             processedEvents.clear();
             lastMessageCount = 0;
+            isLoadingMessages = false;
             
             changeRoom(roomId, false).then(() => {
                 loadMessages();

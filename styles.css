@@ -96,6 +96,34 @@
     to { transform: rotate(360deg); }
 }
 
+/* Loader del chat-area */
+.chat-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: rgba(255, 255, 255, 0.7);
+    animation: fadeIn 0.3s ease;
+}
+
+.chat-loader .loader-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 15px;
+}
+
+.chat-loader p {
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0;
+    opacity: 0.8;
+}
+
 /* Panel de forceban con color rojo */
 .forceban-panel .moderation-panel-header {
     background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
