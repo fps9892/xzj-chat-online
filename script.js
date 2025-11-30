@@ -1896,7 +1896,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Escuchar comando de refresco de página (solo desarrolladores)
+    let refreshProcessed = false;
     listenToRefreshCommand((data) => {
+        if (refreshProcessed) return;
+        refreshProcessed = true;
+        
         showNotification(`🔄 ${data.refreshByName} está refrescando tu página...`, 'warning');
         setTimeout(() => {
             window.location.reload();
@@ -3226,8 +3230,12 @@ function showForcebanPanel(users) {
 }
 
 // Escuchar refresh global
+let globalRefreshProcessed = false;
 import('./firebase.js').then(({ listenToGlobalRefresh }) => {
     listenToGlobalRefresh((data) => {
+        if (globalRefreshProcessed) return;
+        globalRefreshProcessed = true;
+        
         const loadingOverlay = document.createElement('div');
         loadingOverlay.className = 'loading-overlay';
         loadingOverlay.innerHTML = `

@@ -2122,15 +2122,17 @@ export async function refreshAllUsers() {
     
     try {
         const refreshRef = ref(database, 'globalRefresh');
+        const timestamp = Date.now();
         await set(refreshRef, {
             refreshBy: currentUser.firebaseUid,
             refreshByName: currentUser.username,
-            timestamp: serverTimestamp()
+            timestamp: timestamp
         });
         
+        // Eliminar después de 5 segundos
         setTimeout(async () => {
             await remove(refreshRef);
-        }, 2000);
+        }, 5000);
         
         return true;
     } catch (error) {
@@ -2421,11 +2423,18 @@ export async function refreshUserPage(userId) {
     
     try {
         const refreshRef = ref(database, `userRefresh/${userId}`);
+        const timestamp = Date.now();
         await set(refreshRef, {
             refreshBy: currentUser.firebaseUid,
             refreshByName: currentUser.username,
-            timestamp: serverTimestamp()
+            timestamp: timestamp
         });
+        
+        // Auto-eliminar después de 3 segundos
+        setTimeout(async () => {
+            await remove(refreshRef);
+        }, 3000);
+        
         return true;
     } catch (error) {
         console.error('Error refreshing user:', error);
