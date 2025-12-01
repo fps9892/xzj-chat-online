@@ -9,28 +9,29 @@ export class NotificationManager {
     this.currentRoom = roomId;
   }
 
-  async sendSystemMessage(text) {
+  async sendSystemMessage(text, userId = null) {
     if (!this.currentRoom) return;
     
     const messageRef = push(ref(database, `rooms/${this.currentRoom}/messages`));
     await set(messageRef, {
       text,
-      type: 'system',
+      type: 'system-notification',
       timestamp: Date.now(),
-      id: messageRef.key
+      id: messageRef.key,
+      notificationUserId: userId
     });
   }
 
-  async userJoined(username) {
-    await this.sendSystemMessage(`👋 ${username} entró a la sala`);
+  async userJoined(username, userId) {
+    await this.sendSystemMessage(`👋 ${username} entró a la sala`, userId);
   }
 
-  async userLeft(username, toRoom) {
+  async userLeft(username, toRoom, userId) {
     if (toRoom) {
       const roomHash = toRoom === 'general' ? '#general' : `#${toRoom}`;
-      await this.sendSystemMessage(`👋 ${username} se fue a ${roomHash}`);
+      await this.sendSystemMessage(`👋 ${username} se fue a ${roomHash}`, userId);
     } else {
-      await this.sendSystemMessage(`👋 ${username} salió de la sala`);
+      await this.sendSystemMessage(`👋 ${username} salió de la sala`, userId);
     }
   }
 }

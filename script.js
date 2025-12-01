@@ -769,10 +769,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const currentUsersList = new Map();
             
             users.forEach(user => {
-                currentUsersList.set(user.id, user.name);
+                currentUsersList.set(user.id, { name: user.name, firebaseUid: user.firebaseUid, isGuest: user.isGuest });
                 
                 if (!previousUsersList.has(user.id) && previousUsersList.size > 0) {
-                    notificationManager.userJoined(user.name);
+                    notificationManager.userJoined(user.name, user.firebaseUid || user.id);
                 }
             });
             
@@ -804,8 +804,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (now - eventTime > 5000) return;
                     
                     if (event.type === 'room-change' && event.fromRoom === currentRoom && event.userId !== currentUser.userId) {
-                        const toRoomHash = event.toRoom === 'general' ? '#general' : `#${event.toRoom}`;
-                        notificationManager.userLeft(event.username, event.toRoom);
+                        notificationManager.userLeft(event.username, event.toRoom, event.userId);
                     }
                 });
             });
@@ -949,6 +948,30 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
             `);
+        }
+        
+        // Manejar notificaciones de sistema (entrada/salida)
+        if (message.type === 'system-notification') {
+            const notifEl = createElement(`
+                <div class="message-container system-notification" data-message-id="${message.id}">
+                    <div class="message system-notif">
+                        <div class="message-text">${message.text}</div>
+                    </div>
+                </div>
+            `);
+            
+            if (message.notificationUserId) {
+                const textEl = notifEl.querySelector('.message-text');
+                textEl.style.cursor = 'pointer';
+                textEl.addEventListener('click', async () => {
+                    const userProfile = await getUserProfile(message.notificationUserId, false);
+                    if (userProfile) {
+                        showUserProfile(userProfile);
+                    }
+                });
+            }
+            
+            return notifEl;
         }
         
         // Manejar mensajes de juegos
