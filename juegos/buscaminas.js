@@ -22,7 +22,9 @@ let gameId = null;
 let currentUser = null;
 let gameState = null;
 let autoStartTimer = null;
-let prevState = null; // para detectar cambios entre snapshots
+let prevState = null;
+let emptyGameTimer = null; // para limpiar juego sin players
+let betweenRoundsTimer = null; // para countdown entre rondas
 
 const gameBoard = document.getElementById('gameBoard');
 const welcomeScreen = document.getElementById('welcomeScreen');
@@ -38,6 +40,43 @@ gameId = urlParams.get('id');
 if (!gameId) {
     alert('ID de juego no válido');
     window.close();
+}
+
+// Función para salir del juego y redirigir a index
+function exitGame() {
+    // limpiar timers
+    if (autoStartTimer) clearInterval(autoStartTimer);
+    if (emptyGameTimer) clearInterval(emptyGameTimer);
+    if (betweenRoundsTimer) clearInterval(betweenRoundsTimer);
+    // limpiar localStorage (opcional: mantener username si prefieres)
+    localStorage.removeItem('currentUser');
+    // redirigir
+    window.location.href = 'index.html';
+}
+
+// Detectar cuando players vacío y eliminar sala después de 15min
+function checkEmptyGame() {
+    if (!gameState || Object.keys(gameState.players || {}).length === 0) {
+        if (!emptyGameTimer) {
+            console.log('Juego vacío detectado. Eliminando en 15 minutos...');
+            emptyGameTimer = setTimeout(async () => {
+                // Eliminar la sala completa
+                try {
+                    await remove(ref(database, `games/buscaminas/${gameId}`));
+                    console.log('Sala eliminada por inactividad');
+                } catch (e) {
+                    console.error('Error eliminando sala:', e);
+                }
+            }, 15 * 60 * 1000); // 15 minutos
+        }
+    } else {
+        // hay players, cancelar timer
+        if (emptyGameTimer) {
+            clearInterval(emptyGameTimer);
+            emptyGameTimer = null;
+            console.log('Juego no está vacío. Timer de limpieza cancelado.');
+        }
+    }
 }
 
 // Auto-unirse con datos del usuario cuando el DOM esté listo
@@ -335,6 +374,7 @@ async function endGame(won) {
         }
     }
     
+    // En lugar de setTimeout directo a startNewRound, mostrar pantalla entre-rondas
     setTimeout(async () => {
         // Resetear puntos
         const updates = {};
@@ -342,8 +382,28 @@ async function endGame(won) {
             updates[`players/${playerId}/score`] = 0;
         });
         await update(ref(database, `games/buscaminas/${gameId}`), updates);
-        
-        await startNewRound();
+
+        // Mostrar pantalla de espera (10 segundos)
+        finishScreen.style.display = 'none';
+        const betweenRoundsScreen = document.getElementById('betweenRoundsScreen');
+        const roundCountdown = document.getElementById('roundCountdown');
+        if (betweenRoundsScreen && roundCountdown) {
+            betweenRoundsScreen.style.display = 'block';
+            let countdown = 10;
+            roundCountdown.textContent = countdown;
+            if (betweenRoundsTimer) clearInterval(betweenRoundsTimer);
+            betweenRoundsTimer = setInterval(() => {
+                countdown--;
+                if (countdown >= 0) {
+                    roundCountdown.textContent = countdown;
+                } else {
+                    clearInterval(betweenRoundsTimer);
+                    betweenRoundsTimer = null;
+                    betweenRoundsScreen.style.display = 'none';
+                    startNewRound();
+                }
+            }, 1000);
+        }
     }, 5000);
 }
 
@@ -425,8 +485,13 @@ function showTurnPopup() {
 	}, 1200);
 }
 
-// Escuchar cambios en Firebase cuando el DOM esté listo
+// Conectar botón de salir
 window.addEventListener('DOMContentLoaded', () => {
+    const exitBtn = document.getElementById('exitBtn');
+    if (exitBtn) {
+        exitBtn.addEventListener('click', exitGame);
+    }
+
     const gameRef = ref(database, `games/buscaminas/${gameId}`);
     onValue(gameRef, (snapshot) => {
     if (snapshot.exists()) {
@@ -463,6 +528,9 @@ window.addEventListener('DOMContentLoaded', () => {
         // Actualizar gameState local
         gameState = newState;
 
+        // Detectar y manejar juego vacío
+        checkEmptyGame();
+
         // detectar cambio de turno para mostrar popup local "TU TURNO"
         const currentTurnId = gameState.playerOrder?.[gameState.currentTurnIndex];
         const prevTurnId = prevState?.playerOrder?.[prevState.currentTurnIndex];
@@ -478,6 +546,7 @@ window.addEventListener('DOMContentLoaded', () => {
             welcomeScreen.style.display = 'block';
             gameBoard.style.display = 'none';
             finishScreen.style.display = 'none';
+            document.getElementById('betweenRoundsScreen').style.display = 'none';
             
             const playerCountLocal = Object.keys(gameState.players || {}).length;
             
@@ -506,6 +575,7 @@ window.addEventListener('DOMContentLoaded', () => {
         } else if (gameState.status === 'playing') {
             welcomeScreen.style.display = 'none';
             finishScreen.style.display = 'none';
+            document.getElementById('betweenRoundsScreen').style.display = 'none';
             
             renderBoard();
             updateStats();
