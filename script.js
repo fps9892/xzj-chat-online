@@ -674,7 +674,7 @@ document.addEventListener('DOMContentLoaded', function() {
             isLoadingMessages = false;
         } else {
             // Solo mostrar loader si no hay caché
-            chatArea.innerHTML = '<div class="chat-loader"><div class="loader-spinner"></div><p>Cargando mensajes...</p></div>';
+            chatArea.innerHTML = '<div class="chat-loader"></div>';
         }
         
         // Verificar acceso a sala privada (en paralelo)
@@ -712,13 +712,13 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (accessCheck.isPending) {
             hasPrivateRoomAccess = false;
             isLoadingMessages = false;
-            chatArea.innerHTML = '<div class="room-loader"><div class="loader-spinner"></div><p>Solicitud pendiente de ingreso</p><small>Esperando aprobación del dueño</small></div>';
+            chatArea.innerHTML = '<div class="room-loader"><p>Solicitud pendiente de ingreso</p><small>Esperando aprobación del dueño</small></div>';
             disableChatControls();
         } else {
             hasPrivateRoomAccess = false;
             await requestPrivateRoomAccess(currentRoom);
             isLoadingMessages = false;
-            chatArea.innerHTML = '<div class="room-loader"><div class="loader-spinner"></div><p>Solicitud enviada</p><small>Esperando aprobación del dueño</small></div>';
+            chatArea.innerHTML = '<div class="room-loader"><p>Solicitud enviada</p><small>Esperando aprobación del dueño</small></div>';
             disableChatControls();
         }
     }
@@ -1733,7 +1733,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             const chatArea = document.querySelector('.chat-area');
-            chatArea.innerHTML = '<div class="chat-loader"><div class="loader-spinner"></div><p>Cargando sala...</p></div>';
+            chatArea.innerHTML = '<div class="chat-loader"></div>';
             
             cleanupListeners();
             processedEvents.clear();

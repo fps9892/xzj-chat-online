@@ -78,29 +78,7 @@ body {
   }
 }
 
-.loading-logo-container::before {
-  content: '';
-  position: absolute;
-  width: 120px;
-  height: 120px;
-  border: 3px solid transparent;
-  border-top-color: #c97a6f;
-  border-right-color: #c97a6f;
-  border-radius: 50%;
-  animation: spin 2s linear infinite;
-}
 
-.loading-logo-container::after {
-  content: '';
-  position: absolute;
-  width: 100px;
-  height: 100px;
-  border: 3px solid transparent;
-  border-bottom-color: #a85a52;
-  border-left-color: #a85a52;
-  border-radius: 50%;
-  animation: spin 3s linear infinite reverse;
-}
 
 .neon-loader {
   display: none;
@@ -402,13 +380,13 @@ body {
 }
 
 .chat-loader {
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   border: 3px solid rgba(201, 122, 111, 0.2);
   border-top: 3px solid #c97a6f;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  box-shadow: 0 0 20px rgba(201, 122, 111, 0.3);
+  margin: auto;
 }
 
 @keyframes spin {
@@ -1214,16 +1192,7 @@ body {
   align-items: center;
   justify-content: center;
   height: 100%;
-  gap: 15px;
-}
-
-.loader-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(201, 122, 111, 0.2);
-  border-top: 3px solid #c97a6f;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+  gap: 10px;
 }
 
 .room-loader p {
@@ -1236,7 +1205,6 @@ body {
   color: #888;
   font-family: "Inter", sans-serif;
   font-size: 12px;
-  margin-top: -5px;
 }
 
 @keyframes spin {
@@ -4045,3 +4013,31 @@ body {
 
 
 
+
+@keyframes spin {
+  0%,
+  100% {
+    box-shadow: .2em 0px 0 0px currentcolor;
+  }
+  12% {
+    box-shadow: .2em .2em 0 0 currentcolor;
+  }
+  25% {
+    box-shadow: 0 .2em 0 0px currentcolor;
+  }
+  37% {
+    box-shadow: -.2em .2em 0 0 currentcolor;
+  }
+  50% {
+    box-shadow: -.2em 0 0 0 currentcolor;
+  }
+  62% {
+    box-shadow: -.2em -.2em 0 0 currentcolor;
+  }
+  75% {
+    box-shadow: 0px -.2em 0 0 currentcolor;
+  }
+  87% {
+    box-shadow: .2em -.2em 0 0 currentcolor;
+  }
+}
