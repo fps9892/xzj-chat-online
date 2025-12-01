@@ -50,8 +50,8 @@ function exitGame() {
     if (betweenRoundsTimer) clearInterval(betweenRoundsTimer);
     // limpiar localStorage (opcional: mantener username si prefieres)
     localStorage.removeItem('currentUser');
-    // redirigir
-    window.location.href = 'index.html';
+    // redirigir a index (ruta absoluta)
+    window.location.href = '/index.html';
 }
 
 // Detectar cuando players vacío y eliminar sala después de 15min
@@ -485,11 +485,83 @@ function showTurnPopup() {
 	}, 1200);
 }
 
-// Conectar botón de salir
+// Conectar botón de salir y modal de unirse
 window.addEventListener('DOMContentLoaded', () => {
     const exitBtn = document.getElementById('exitBtn');
     if (exitBtn) {
         exitBtn.addEventListener('click', exitGame);
+    }
+
+    // Modal de unirse
+    const joinBtn = document.getElementById('joinBtn');
+    const joinModal = document.getElementById('joinModal');
+    const closeModal = document.getElementById('closeModal');
+    const confirmJoin = document.getElementById('confirmJoin');
+    const usernameInput = document.getElementById('usernameInput');
+
+    if (joinBtn) {
+        joinBtn.addEventListener('click', () => {
+            // Si ya hay usuario unido, mostrar notificación
+            if (currentUser) {
+                showToast('Ya estás unido al juego', 'info', 2000);
+                return;
+            }
+            // Abrir modal
+            if (joinModal) {
+                joinModal.style.display = 'flex';
+                if (usernameInput) usernameInput.focus();
+            }
+        });
+    }
+
+    if (closeModal) {
+        closeModal.addEventListener('click', () => {
+            if (joinModal) joinModal.style.display = 'none';
+        });
+    }
+
+    // Cerrar modal si hace click fuera del contenido
+    if (joinModal) {
+        joinModal.addEventListener('click', (e) => {
+            if (e.target === joinModal) {
+                joinModal.style.display = 'none';
+            }
+        });
+    }
+
+    if (confirmJoin) {
+        confirmJoin.addEventListener('click', async () => {
+            const name = usernameInput.value?.trim();
+            if (!name) {
+                showToast('Ingresa un nombre válido', 'warn', 2000);
+                return;
+            }
+            if (joinModal) joinModal.style.display = 'none';
+            await joinGame(name);
+            showToast(`Bienvenido, ${name} 🎮`, 'success', 2500);
+        });
+    }
+
+    // Enter en input para confirmar
+    if (usernameInput) {
+        usernameInput.addEventListener('keypress', async (e) => {
+            if (e.key === 'Enter') {
+                const name = usernameInput.value?.trim();
+                if (!name) {
+                    showToast('Ingresa un nombre válido', 'warn', 2000);
+                    return;
+                }
+                if (joinModal) joinModal.style.display = 'none';
+                await joinGame(name);
+                showToast(`Bienvenido, ${name} 🎮`, 'success', 2500);
+            }
+        });
+    }
+
+    // Auto-unirse si hay datos en localStorage
+    const userData = JSON.parse(localStorage.getItem('currentUser'));
+    if (userData && userData.username) {
+        joinGame(userData.username);
     }
 
     const gameRef = ref(database, `games/buscaminas/${gameId}`);

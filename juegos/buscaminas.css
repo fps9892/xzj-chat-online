@@ -489,6 +489,8 @@ h1 {
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  /* permitir cerrar al hacer click fuera */
+  cursor: pointer;
 }
 
 .modal-content {
@@ -498,6 +500,8 @@ h1 {
   padding: 30px;
   width: 400px;
   max-width: 90%;
+  /* evitar que clicks dentro cierren el modal */
+  cursor: default;
 }
 
 .modal-header {
