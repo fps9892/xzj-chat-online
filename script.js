@@ -1895,7 +1895,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Refresh command disabled
+    // Escuchar comando de refresh
+    listenToRefreshCommand((data) => {
+        console.log('Refresh command received:', data);
+        showNotification('🔄 Un desarrollador está refrescando tu página...', 'warning');
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+    });
     
     // Escuchar cuando una sala es borrada
     let roomDeletedListener = null;
@@ -3096,22 +3103,23 @@ function showRefreshPanel(users) {
     panel.innerHTML = `
         <div class="moderation-panel-header">
             <img src="/images/refresh.svg" class="moderation-panel-icon" alt="Refresh" />
-            <span class="moderation-panel-title">Refrescar Usuarios</span>
+            <span class="moderation-panel-title">🔄 Refrescar Usuarios</span>
             <button class="close-moderation-panel">×</button>
         </div>
         <div class="moderation-global-action">
             <button class="global-refresh-btn">
                 <img src="/images/refresh.svg" alt="Refresh All" />
-                Refrescar Todos los Usuarios
+                Refrescar Todos
             </button>
         </div>
         <div class="moderation-list">
             ${users.map((user, index) => {
-                const guestLabel = user.isGuest ? ' (invitado)' : '';
+                const guestLabel = user.isGuest ? ' <span class="guest-badge">INVITADO</span>' : '';
                 return `
                     <div class="moderation-user-item">
                         <div class="moderation-user-info">
-                            <span class="moderation-user-name">#${index + 1} ${user.username}${guestLabel}</span>
+                            <span class="user-number">#${index + 1}</span>
+                            <span class="moderation-user-name">${user.username}${guestLabel}</span>
                         </div>
                         <button class="moderation-action-btn refresh-action-btn" data-user-id="${user.firebaseUid}" data-username="${user.username}">
                             <img src="/images/refresh.svg" alt="Refresh" />
@@ -3137,17 +3145,18 @@ function showRefreshPanel(users) {
             const username = btn.dataset.username;
             
             btn.disabled = true;
-            btn.style.opacity = '0.5';
+            btn.innerHTML = '<span class="refresh-loading">⏳</span>';
             
             try {
                 const { refreshUserPage } = await import('./firebase.js');
                 await refreshUserPage(userId);
+                btn.innerHTML = '<span class="refresh-success">✓</span>';
                 showNotification(`🔄 Refrescando página de ${username}...`, 'success');
-                panel.remove();
+                setTimeout(() => panel.remove(), 1500);
             } catch (error) {
                 showNotification(error.message, 'error');
+                btn.innerHTML = '<img src="/images/refresh.svg" alt="Refresh" />Refrescar';
                 btn.disabled = false;
-                btn.style.opacity = '1';
             }
         });
     });
