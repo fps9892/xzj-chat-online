@@ -49,10 +49,11 @@ function exitGame() {
     if (autoStartTimer) clearInterval(autoStartTimer);
     if (emptyGameTimer) clearInterval(emptyGameTimer);
     if (betweenRoundsTimer) clearInterval(betweenRoundsTimer);
+    if (turnTimer) clearInterval(turnTimer);
     // limpiar localStorage (opcional: mantener username si prefieres)
     localStorage.removeItem('currentUser');
-    // redirigir a index (ruta absoluta)
-    window.location.href = '/index.html';
+    // redirigir a index con hash general
+    window.location.href = '/index.html#general';
 }
 
 // Detectar cuando players vacío y eliminar sala después de 15min
