@@ -29,10 +29,7 @@ const finishScreen = document.getElementById('finishScreen');
 const playersList = document.getElementById('playersList');
 const playerCount = document.getElementById('playerCount');
 const statsList = document.getElementById('statsList');
-const startBtn = document.getElementById('startBtn');
-
-// Ocultar botón de inicio
-startBtn.style.display = 'none';
+const joinBtn = document.getElementById('joinBtn');
 
 const urlParams = new URLSearchParams(window.location.search);
 gameId = urlParams.get('id');
@@ -42,11 +39,13 @@ if (!gameId) {
     window.close();
 }
 
-// Auto-unirse con datos del usuario
-const userData = JSON.parse(localStorage.getItem('currentUser'));
-if (userData && userData.username) {
-    joinGame(userData.username);
-}
+// Auto-unirse con datos del usuario cuando el DOM esté listo
+window.addEventListener('DOMContentLoaded', () => {
+    const userData = JSON.parse(localStorage.getItem('currentUser'));
+    if (userData && userData.username) {
+        joinGame(userData.username);
+    }
+});
 
 async function joinGame(username) {
     const playerId = Date.now().toString() + Math.random().toString(36).substring(2, 9);
@@ -61,8 +60,10 @@ async function joinGame(username) {
     
     onDisconnect(playerRef).remove();
     
-    document.getElementById('joinBtn').textContent = 'Jugando';
-    document.getElementById('joinBtn').disabled = true;
+    if (joinBtn) {
+        joinBtn.textContent = 'Jugando';
+        joinBtn.disabled = true;
+    }
 }
 
 function generateBoard() {
@@ -360,9 +361,10 @@ function updateStats() {
     `;
 }
 
-// Escuchar cambios en Firebase
-const gameRef = ref(database, `games/buscaminas/${gameId}`);
-onValue(gameRef, (snapshot) => {
+// Escuchar cambios en Firebase cuando el DOM esté listo
+window.addEventListener('DOMContentLoaded', () => {
+    const gameRef = ref(database, `games/buscaminas/${gameId}`);
+    onValue(gameRef, (snapshot) => {
     if (snapshot.exists()) {
         gameState = snapshot.val();
         
@@ -405,6 +407,7 @@ onValue(gameRef, (snapshot) => {
             updateStats();
         }
     }
+    });
+    
+    updateStats();
 });
-
-updateStats();
