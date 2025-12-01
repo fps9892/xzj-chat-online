@@ -1592,7 +1592,7 @@ export async function processAdminCommand(message) {
                 if (typeof document !== 'undefined') {
                     const roomNameEl = document.querySelector('.current-room-name');
                     if (roomNameEl) roomNameEl.textContent = privateRoomName;
-                    document.title = `${privateRoomName} - FYZAR CHAT`;
+                    document.title = `${privateRoomName} - ChatUp`;
                 }
                 
                 await changeRoom(privateRoomId, false);

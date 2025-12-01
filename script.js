@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const userInfo = document.querySelector('.user-info');
     let unreadMessages = 0;
     let isPageVisible = true;
-    let originalTitle = 'Sala General - FYZAR CHAT';
+    let originalTitle = 'Sala General - ChatUp';
     const userPanelOverlay = document.querySelector('.user-panel-overlay');
     const closePanel = document.querySelector('.close-panel');
     const panelTabs = document.querySelectorAll('.user-panel-tab');
@@ -1634,7 +1634,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const roomDisplayName = hash === 'general' ? 'Sala General' : hash;
         currentRoomName.textContent = roomDisplayName;
-        originalTitle = `${roomDisplayName} - FYZAR CHAT`;
+        originalTitle = `${roomDisplayName} - ChatUp`;
         document.title = originalTitle;
         
         // Cargar fondo guardado
@@ -1720,7 +1720,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const roomDisplayName = roomId === 'general' ? 'Sala General' : roomId;
             
             currentRoomName.textContent = roomDisplayName;
-            originalTitle = `${roomDisplayName} - FYZAR CHAT`;
+            originalTitle = `${roomDisplayName} - ChatUp`;
             document.title = originalTitle;
             unreadMessages = 0;
             
@@ -3113,7 +3113,7 @@ function showRefreshPanel(users) {
                         <div class="moderation-user-info">
                             <span class="moderation-user-name">#${index + 1} ${user.username}${guestLabel}</span>
                         </div>
-                        <button class="moderation-action-btn refresh-action-btn" data-user-id="${user.firebaseUid}">
+                        <button class="moderation-action-btn refresh-action-btn" data-user-id="${user.firebaseUid}" data-username="${user.username}">
                             <img src="/images/refresh.svg" alt="Refresh" />
                             Refrescar
                         </button>
@@ -3133,7 +3133,22 @@ function showRefreshPanel(users) {
     
     panel.querySelectorAll('.refresh-action-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
-            showNotification('Función de refresh deshabilitada temporalmente', 'warning');
+            const userId = btn.dataset.userId;
+            const username = btn.dataset.username;
+            
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            
+            try {
+                const { refreshUserPage } = await import('./firebase.js');
+                await refreshUserPage(userId);
+                showNotification(`🔄 Refrescando página de ${username}...`, 'success');
+                panel.remove();
+            } catch (error) {
+                showNotification(error.message, 'error');
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            }
         });
     });
 }

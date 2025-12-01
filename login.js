@@ -27,10 +27,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Efecto de escritura en el título
     const titleElement = document.querySelector('.login-title');
     const phrases = [
-        'FYZAR CHAT',
-        'Conecta ya.',
-        'Salas online.',
-        'Chatea libre.',
+        'ChatUp',
+        'Juegos Online.',
+        'Niveles y Stats.',
+        'Salas Privadas.',
         'Tu espacio.'
     ];
     
@@ -219,10 +219,11 @@ document.addEventListener('DOMContentLoaded', function() {
         overlay.className = 'welcome-overlay';
         overlay.innerHTML = `
             <div class="welcome-content">
-                <h1>¡Bienvenido a FYZAR CHAT!</h1>
+                <h1>¡Bienvenido a ChatUp!</h1>
                 <p>Disfruta de múltiples salas</p>
                 <p>Personaliza tu perfil</p>
                 <p>Conecta con otros usuarios</p>
+                <p>Subi de nivel Jugando</p>
             </div>
         `;
         document.body.appendChild(overlay);

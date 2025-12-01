@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
-    <title>Sala General - FYZAR CHAT</title>
+    <title>Sala General - ChatUp</title>
     <link rel="icon" type="image/svg+xml" href="/images/logo.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -50,7 +50,7 @@
         <div class="loading-logo-container">
           <img src="/images/logo.svg" alt="Logo" class="loading-logo-svg" />
         </div>
-        <div class="loading-text">FYZAR CHAT</div>
+        <div class="loading-text">ChatUp</div>
         <div class="loading-progress">
           <div class="progress-bar"></div>
         </div>
@@ -333,9 +333,7 @@
       <div class="user-panel">
         <div class="user-panel-header">
           <div class="user-panel-tabs">
-            <div class="user-panel-tab active" data-tab="config">
-              Perfil
-            </div>
+            <div class="user-panel-tab active" data-tab="config">Perfil</div>
             <div class="user-panel-tab" data-tab="commands">Comandos</div>
             <div class="user-panel-tab" data-tab="rules">Reglas</div>
           </div>
@@ -486,20 +484,26 @@
           <div class="commands-section">
             <div class="commands-content">
               <h3>📋 Comandos Disponibles</h3>
-              
+
               <div class="command-category">
                 <h4>👥 Todos los Usuarios</h4>
                 <div class="command-item">
                   <span class="command-name">!crearprivada</span>
-                  <span class="command-desc">Crear sala privada con acceso controlado</span>
+                  <span class="command-desc"
+                    >Crear sala privada con acceso controlado</span
+                  >
                 </div>
                 <div class="command-item">
                   <span class="command-name">!aceptar</span>
-                  <span class="command-desc">Ver usuarios pendientes en tu sala privada</span>
+                  <span class="command-desc"
+                    >Ver usuarios pendientes en tu sala privada</span
+                  >
                 </div>
                 <div class="command-item">
                   <span class="command-name">!aceptar &lt;número&gt;</span>
-                  <span class="command-desc">Aceptar usuario en tu sala privada (solo dueño)</span>
+                  <span class="command-desc"
+                    >Aceptar usuario en tu sala privada (solo dueño)</span
+                  >
                 </div>
               </div>
 
@@ -507,35 +511,53 @@
                 <h4>⭐ Moderadores</h4>
                 <div class="command-item">
                   <span class="command-name">!crearsala &lt;nombre&gt;</span>
-                  <span class="command-desc">Crear sala pública (máx 10 caracteres)</span>
+                  <span class="command-desc"
+                    >Crear sala pública (máx 10 caracteres)</span
+                  >
                 </div>
                 <div class="command-item">
                   <span class="command-name">!ban</span>
-                  <span class="command-desc">Ver lista de usuarios conectados</span>
+                  <span class="command-desc"
+                    >Ver lista de usuarios conectados</span
+                  >
                 </div>
                 <div class="command-item">
                   <span class="command-name">!ban &lt;número&gt; [razón]</span>
-                  <span class="command-desc">Banear usuario por ID numérico</span>
+                  <span class="command-desc"
+                    >Banear usuario por ID numérico</span
+                  >
                 </div>
                 <div class="command-item">
                   <span class="command-name">!mute</span>
-                  <span class="command-desc">Ver lista de usuarios conectados</span>
+                  <span class="command-desc"
+                    >Ver lista de usuarios conectados</span
+                  >
                 </div>
                 <div class="command-item">
-                  <span class="command-name">!mute &lt;número&gt; [minutos]</span>
-                  <span class="command-desc">Mutear usuario (por defecto 5 min)</span>
+                  <span class="command-name"
+                    >!mute &lt;número&gt; [minutos]</span
+                  >
+                  <span class="command-desc"
+                    >Mutear usuario (por defecto 5 min)</span
+                  >
                 </div>
                 <div class="command-item">
                   <span class="command-name">!unmute</span>
-                  <span class="command-desc">Ver lista de usuarios muteados</span>
+                  <span class="command-desc"
+                    >Ver lista de usuarios muteados</span
+                  >
                 </div>
                 <div class="command-item">
                   <span class="command-name">!unmute &lt;número&gt;</span>
-                  <span class="command-desc">Desmutear usuario por ID numérico</span>
+                  <span class="command-desc"
+                    >Desmutear usuario por ID numérico</span
+                  >
                 </div>
                 <div class="command-item">
                   <span class="command-name">!anuncio &lt;mensaje&gt;</span>
-                  <span class="command-desc">Enviar anuncio a todas las salas</span>
+                  <span class="command-desc"
+                    >Enviar anuncio a todas las salas</span
+                  >
                 </div>
               </div>
 
@@ -543,32 +565,50 @@
                 <h4>🔴 Administradores</h4>
                 <div class="command-item">
                   <span class="command-name">!versalas</span>
-                  <span class="command-desc">Ver panel de gestión de salas</span>
+                  <span class="command-desc"
+                    >Ver panel de gestión de salas</span
+                  >
                 </div>
                 <div class="command-item">
                   <span class="command-name">!borrar &lt;nombre&gt;</span>
-                  <span class="command-desc">Eliminar sala (temporizador 15s)</span>
+                  <span class="command-desc"
+                    >Eliminar sala (temporizador 15s)</span
+                  >
                 </div>
                 <div class="command-item">
                   <span class="command-name">!unban</span>
-                  <span class="command-desc">Ver lista de usuarios baneados</span>
+                  <span class="command-desc"
+                    >Ver lista de usuarios baneados</span
+                  >
                 </div>
                 <div class="command-item">
                   <span class="command-name">!unban &lt;número&gt;</span>
-                  <span class="command-desc">Desbanear usuario por ID numérico</span>
+                  <span class="command-desc"
+                    >Desbanear usuario por ID numérico</span
+                  >
                 </div>
                 <div class="command-item">
                   <span class="command-name">!borrarchat</span>
-                  <span class="command-desc">Eliminar historial de la sala actual</span>
+                  <span class="command-desc"
+                    >Eliminar historial de la sala actual</span
+                  >
                 </div>
               </div>
 
               <div class="command-category">
                 <h4>🔒 Salas Privadas</h4>
-                <p class="command-info">• Cualquier usuario puede crear salas privadas</p>
-                <p class="command-info">• Solo el dueño puede aceptar usuarios</p>
-                <p class="command-info">• Los usuarios deben solicitar acceso</p>
-                <p class="command-info">• El dueño puede eliminar su sala privada</p>
+                <p class="command-info">
+                  • Cualquier usuario puede crear salas privadas
+                </p>
+                <p class="command-info">
+                  • Solo el dueño puede aceptar usuarios
+                </p>
+                <p class="command-info">
+                  • Los usuarios deben solicitar acceso
+                </p>
+                <p class="command-info">
+                  • El dueño puede eliminar su sala privada
+                </p>
               </div>
             </div>
           </div>

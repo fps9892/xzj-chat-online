@@ -1,92 +1,100 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tutifruti - FYZAR CHAT</title>
-    <link rel="stylesheet" href="tutifruti.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tutifruti - ChatUp GAMES</title>
+    <link rel="stylesheet" href="tutifruti.css" />
+  </head>
+  <body>
     <div class="game-container">
-        <!-- Header con jugadores -->
-        <div class="game-header">
-            <div class="game-title">
-                <h1>🎮 TUTIFRUTI</h1>
-                <div class="round-info">
-                    <span class="current-letter">Letra: <strong id="currentLetter">-</strong></span>
-                    <span class="round-counter">Ronda: <strong id="roundNumber">0/3</strong></span>
-                </div>
-            </div>
-            
-            <div class="players-section">
-                <div class="players-list" id="playersList"></div>
-                <button class="btn-join" id="joinBtn">Unirse al Juego</button>
-            </div>
+      <!-- Header con jugadores -->
+      <div class="game-header">
+        <div class="game-title">
+          <h1>🎮 TUTIFRUTI</h1>
+          <div class="round-info">
+            <span class="current-letter"
+              >Letra: <strong id="currentLetter">-</strong></span
+            >
+            <span class="round-counter"
+              >Ronda: <strong id="roundNumber">0/3</strong></span
+            >
+          </div>
         </div>
 
-        <!-- Área de juego -->
-        <div class="game-area" id="gameArea" style="display: none;">
-            <div class="timer" id="timer">60</div>
-            
-            <form class="tutifruti-form" id="tutifrutiForm">
-                <div class="form-field">
-                    <label>Nombre:</label>
-                    <input type="text" id="nombre" maxlength="30" autocomplete="off">
-                </div>
-                <div class="form-field">
-                    <label>Cosa:</label>
-                    <input type="text" id="cosa" maxlength="30" autocomplete="off">
-                </div>
-                <div class="form-field">
-                    <label>País:</label>
-                    <input type="text" id="pais" maxlength="30" autocomplete="off">
-                </div>
-                <div class="form-field">
-                    <label>Color:</label>
-                    <input type="text" id="color" maxlength="30" autocomplete="off">
-                </div>
-                <div class="form-field">
-                    <label>Animal:</label>
-                    <input type="text" id="animal" maxlength="30" autocomplete="off">
-                </div>
-                <div class="form-field">
-                    <label>Fruta:</label>
-                    <input type="text" id="fruta" maxlength="30" autocomplete="off">
-                </div>
-                <div class="form-field">
-                    <label>Verdura:</label>
-                    <input type="text" id="verdura" maxlength="30" autocomplete="off">
-                </div>
-                
-                <button type="submit" class="btn-submit">¡ENVIAR RESPUESTAS!</button>
-            </form>
+        <div class="players-section">
+          <div class="players-list" id="playersList"></div>
+          <button class="btn-join" id="joinBtn">Unirse al Juego</button>
         </div>
+      </div>
 
-        <!-- Resultados -->
-        <div class="results-area" id="resultsArea" style="display: none;">
-            <h2>📊 Resultados de la Ronda</h2>
-            <div class="winner-announcement" id="winnerAnnouncement"></div>
-            <div class="results-table" id="resultsTable"></div>
-            <button class="btn-next" id="nextRoundBtn">Siguiente Ronda</button>
-        </div>
+      <!-- Área de juego -->
+      <div class="game-area" id="gameArea" style="display: none">
+        <div class="timer" id="timer">60</div>
 
-        <!-- Resultados finales -->
-        <div class="final-results" id="finalResults" style="display: none;">
-            <h2>🏆 RESULTADOS FINALES</h2>
-            <div class="champion" id="champion"></div>
-            <div class="final-table" id="finalTable"></div>
-            <button class="btn-restart" id="restartBtn">Volver al Chat</button>
-        </div>
+        <form class="tutifruti-form" id="tutifrutiForm">
+          <div class="form-field">
+            <label>Nombre:</label>
+            <input type="text" id="nombre" maxlength="30" autocomplete="off" />
+          </div>
+          <div class="form-field">
+            <label>Cosa:</label>
+            <input type="text" id="cosa" maxlength="30" autocomplete="off" />
+          </div>
+          <div class="form-field">
+            <label>País:</label>
+            <input type="text" id="pais" maxlength="30" autocomplete="off" />
+          </div>
+          <div class="form-field">
+            <label>Color:</label>
+            <input type="text" id="color" maxlength="30" autocomplete="off" />
+          </div>
+          <div class="form-field">
+            <label>Animal:</label>
+            <input type="text" id="animal" maxlength="30" autocomplete="off" />
+          </div>
+          <div class="form-field">
+            <label>Fruta:</label>
+            <input type="text" id="fruta" maxlength="30" autocomplete="off" />
+          </div>
+          <div class="form-field">
+            <label>Verdura:</label>
+            <input type="text" id="verdura" maxlength="30" autocomplete="off" />
+          </div>
 
-        <!-- Sala de espera -->
-        <div class="waiting-room" id="waitingRoom">
-            <h2>⏳ Esperando jugadores...</h2>
-            <p>Mínimo 2 jugadores para comenzar</p>
-            <button class="btn-start" id="startBtn" style="display: none;">Iniciar Juego</button>
-            <button class="btn-restart" id="exitBtn" style="margin-top: 10px;">Salir</button>
-        </div>
+          <button type="submit" class="btn-submit">¡ENVIAR RESPUESTAS!</button>
+        </form>
+      </div>
+
+      <!-- Resultados -->
+      <div class="results-area" id="resultsArea" style="display: none">
+        <h2>📊 Resultados de la Ronda</h2>
+        <div class="winner-announcement" id="winnerAnnouncement"></div>
+        <div class="results-table" id="resultsTable"></div>
+        <button class="btn-next" id="nextRoundBtn">Siguiente Ronda</button>
+      </div>
+
+      <!-- Resultados finales -->
+      <div class="final-results" id="finalResults" style="display: none">
+        <h2>🏆 RESULTADOS FINALES</h2>
+        <div class="champion" id="champion"></div>
+        <div class="final-table" id="finalTable"></div>
+        <button class="btn-restart" id="restartBtn">Volver al Chat</button>
+      </div>
+
+      <!-- Sala de espera -->
+      <div class="waiting-room" id="waitingRoom">
+        <h2>⏳ Esperando jugadores...</h2>
+        <p>Mínimo 2 jugadores para comenzar</p>
+        <button class="btn-start" id="startBtn" style="display: none">
+          Iniciar Juego
+        </button>
+        <button class="btn-restart" id="exitBtn" style="margin-top: 10px">
+          Salir
+        </button>
+      </div>
     </div>
 
     <script type="module" src="tutifruti.js"></script>
-</body>
+  </body>
 </html>

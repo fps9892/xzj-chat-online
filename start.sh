@@ -2,7 +2,7 @@
 
 # Script de inicio rápido para el servidor
 
-echo "🚀 Iniciando servidor de FYZAR CHAT..."
+echo "🚀 Iniciando servidor de ChatUp..."
 echo ""
 
 # Verificar si Node.js está instalado
