@@ -2541,4 +2541,25 @@ export async function forceBanUser(userId, reason = 'Expulsión forzada') {
     }
 }
 
+export async function createBuscaminasGame() {
+    const gameId = Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+    const gameRef = ref(database, `games/buscaminas/${gameId}`);
+    
+    await set(gameRef, {
+        id: gameId,
+        createdBy: currentUser.firebaseUid || currentUser.userId,
+        createdByName: currentUser.username,
+        createdAt: Date.now(),
+        expiresAt: Date.now() + (30 * 60 * 1000),
+        status: 'waiting',
+        players: {}
+    });
+    
+    setTimeout(async () => {
+        await remove(gameRef);
+    }, 30 * 60 * 1000);
+    
+    return gameId;
+}
+
 export { currentUser, currentRoom, database, db, ref, onValue, set, push, serverTimestamp };

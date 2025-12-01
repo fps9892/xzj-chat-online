@@ -63,8 +63,8 @@ body {
 }
 
 .loading-logo-svg {
-  width: 80px;
-  height: 80px;
+  width: 300px;
+  height: 300px;
   filter: drop-shadow(0 0 20px #c97a6f);
   animation: logoFloat 3s ease-in-out infinite;
 }
