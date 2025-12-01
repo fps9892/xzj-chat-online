@@ -56,6 +56,7 @@ async function joinGame(username) {
     await set(playerRef, {
         name: username,
         score: 0,
+        level: 0, // inicializar nivel si no existía
         joinedAt: Date.now()
     });
     
@@ -158,6 +159,24 @@ function renderBoard() {
     }
 }
 
+// Mostrar efecto de explosión en la celda (cliente)
+function showExplosionAt(row, col) {
+    const selector = `.cell[data-row="${row}"][data-col="${col}"]`;
+    const cell = document.querySelector(selector);
+    if (!cell) return;
+    // evitar duplicados
+    if (cell.querySelector('.explosion-effect')) return;
+    const e = document.createElement('div');
+    e.className = 'explosion-effect';
+    cell.appendChild(e);
+    // marcar celda como "exploded" visualmente
+    cell.classList.add('exploded');
+    setTimeout(() => {
+        if (cell.contains(e)) cell.removeChild(e);
+        cell.classList.remove('exploded');
+    }, 900);
+}
+
 async function handleCellClick(row, col) {
     if (!gameState || gameState.gameOver) return;
     if (gameState.revealed[row][col] || gameState.flagged[row][col]) return;
@@ -175,11 +194,13 @@ async function handleCellClick(row, col) {
                 newRevealed[r][c] = true;
             }
         }
-        
+
+        // registrar evento de explosión en la BD para que todos lo vean
         await update(ref(database, `games/buscaminas/${gameId}`), {
             revealed: newRevealed,
             gameOver: true,
-            loser: currentUser.id
+            loser: currentUser.id,
+            lastEvent: { type: 'explosion', row, col, playerId: currentUser.id, ts: Date.now() }
         });
         
         setTimeout(() => endGame(false), 1000);
@@ -214,13 +235,19 @@ async function handleCellClick(row, col) {
         
         // Siguiente turno
         const nextTurnIndex = (gameState.currentTurnIndex + 1) % gameState.playerOrder.length;
+
+        // si gana, calcular nuevo level localmente (mejorar con reglas de concurrencia si necesario)
+        const currentLevel = gameState.players?.[currentUser.id]?.level || 0;
+        const newLevel = won ? currentLevel + 1 : currentLevel;
         
         await update(ref(database, `games/buscaminas/${gameId}`), {
             revealed: newRevealed,
             currentTurnIndex: nextTurnIndex,
             [`players/${currentUser.id}/score`]: newScore,
+            [`players/${currentUser.id}/level`]: newLevel,
             gameOver: won,
-            winner: won ? currentUser.id : null
+            winner: won ? currentUser.id : null,
+            lastEvent: won ? { type: 'victory', playerId: currentUser.id, ts: Date.now() } : (gameState.lastEvent || null)
         });
         
         if (won) {
@@ -418,13 +445,16 @@ window.addEventListener('DOMContentLoaded', () => {
             }
             // Actualizar gameState antes de llamar endGame
             gameState = newState;
+            // reproducir animación de event si existe
+            if (newState.lastEvent?.type === 'explosion') {
+                // renderBoard se llamará más abajo en flujo normal, pero asegurar animación breve:
+                setTimeout(() => showExplosionAt(newState.lastEvent.row, newState.lastEvent.col), 200);
+            }
             // Llamar endGame para que cada cliente muestre la pantalla final
             setTimeout(() => {
-                // endGame espera que gameState esté actualizado
                 try { endGame(!!newState.winner); } catch (e) { /* ignore */ }
             }, 300);
             prevState = newState;
-            // todavía actualizar lista y stats para consistencia
             updatePlayersList();
             updateStats();
             return;
@@ -479,6 +509,19 @@ window.addEventListener('DOMContentLoaded', () => {
             
             renderBoard();
             updateStats();
+
+            // si hay un evento nuevo (explosion/victory) y cambia respecto a prevState, manejarlo
+            if (newState.lastEvent && JSON.stringify(newState.lastEvent) !== JSON.stringify(prevState?.lastEvent)) {
+                if (newState.lastEvent.type === 'explosion') {
+                    setTimeout(() => showExplosionAt(newState.lastEvent.row, newState.lastEvent.col), 120);
+                    // toast que alguien explotó (global)
+                    const pl = newState.players?.[newState.lastEvent.playerId]?.name || 'Alguien';
+                    showToast(`${pl} tocó una mina`, 'warn', 3200);
+                } else if (newState.lastEvent.type === 'victory') {
+                    const pl = newState.players?.[newState.lastEvent.playerId]?.name || 'Alguien';
+                    showToast(`${pl} ganó y subió de nivel 🎉`, 'success', 3500);
+                }
+            }
         }
 
         // guardar estado previo para la próxima actualización
