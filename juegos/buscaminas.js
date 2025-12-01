@@ -50,9 +50,8 @@ function exitGame() {
     if (emptyGameTimer) clearInterval(emptyGameTimer);
     if (betweenRoundsTimer) clearInterval(betweenRoundsTimer);
     if (turnTimer) clearInterval(turnTimer);
-    // limpiar localStorage (opcional: mantener username si prefieres)
-    localStorage.removeItem('currentUser');
-    // redirigir a index con hash general
+    // NO limpiar localStorage - mantener datos del usuario
+    // redirigir a index
     window.location.href = '/index.html#general';
 }
 
