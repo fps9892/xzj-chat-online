@@ -5,7 +5,7 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background-color: #2a1a1a;
   min-height: 100vh;
   padding: 20px;
@@ -127,7 +127,8 @@ h1 {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 0 rgba(201, 122, 111, 0.7);
   }
   50% {
@@ -242,11 +243,11 @@ h1 {
   padding: 2px;
   border-radius: 8px;
   margin: 0 auto;
+  /* grid-template-columns set dinámicamente desde JS */
 }
-
 .cell {
-  width: 40px;
-  height: 40px;
+  width: var(--cell-size);
+  height: var(--cell-size);
   background: #e0e0e0;
   border: 2px solid #bbb;
   display: flex;
@@ -279,14 +280,30 @@ h1 {
   background: #ffd700;
 }
 
-.cell.number-1 { color: #0000ff; }
-.cell.number-2 { color: #008000; }
-.cell.number-3 { color: #ff0000; }
-.cell.number-4 { color: #000080; }
-.cell.number-5 { color: #800000; }
-.cell.number-6 { color: #008080; }
-.cell.number-7 { color: #000000; }
-.cell.number-8 { color: #808080; }
+.cell.number-1 {
+  color: #0000ff;
+}
+.cell.number-2 {
+  color: #008000;
+}
+.cell.number-3 {
+  color: #ff0000;
+}
+.cell.number-4 {
+  color: #000080;
+}
+.cell.number-5 {
+  color: #800000;
+}
+.cell.number-6 {
+  color: #008080;
+}
+.cell.number-7 {
+  color: #000000;
+}
+.cell.number-8 {
+  color: #808080;
+}
 
 .final-scores {
   margin: 20px 0;
@@ -405,17 +422,72 @@ h1 {
   background: #d4a59a;
 }
 
+/* Última jugada resaltada brevemente */
+.cell.last-move {
+  box-shadow: 0 0 0 3px rgba(201, 122, 111, 0.25) inset;
+  animation: lastMovePulse 1s ease-out;
+}
+@keyframes lastMovePulse {
+  0% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Temporizador de turno en header */
+.turn-timer {
+  background: rgba(61, 38, 38, 0.4);
+  border: 1px solid #c97a6f;
+  padding: 6px 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Toaster / notificaciones */
+.toast {
+  min-width: 220px;
+  margin-bottom: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  transform: translateY(-6px);
+  animation: toastIn 0.25s forwards;
+}
+.toast.info {
+  background: linear-gradient(90deg, #3d6fb6, #3d9fb6);
+}
+.toast.success {
+  background: linear-gradient(90deg, #6fbf97, #4caf50);
+}
+.toast.warn {
+  background: linear-gradient(90deg, #c97a6f, #d47a5a);
+}
+
+@keyframes toastIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 768px) {
   .main-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .cell {
     width: 30px;
     height: 30px;
     font-size: 14px;
   }
-  
+
   h1 {
     font-size: 20px;
   }
