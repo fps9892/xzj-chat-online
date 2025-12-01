@@ -77,6 +77,15 @@ h1 {
   display: grid;
   grid-template-columns: 300px 1fr;
   gap: 20px;
+  grid-template-areas: "left center";
+}
+
+/* asignar áreas para reordenar fácilmente */
+.left-panel {
+  grid-area: left;
+}
+.center-panel {
+  grid-area: center;
 }
 
 .card {
@@ -208,6 +217,61 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Responsive: tablet - poner tablero arriba y lista de jugadores abajo */
+@media (max-width: 1024px) {
+  .main-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "center"
+      "left";
+  }
+
+  /* celdas un poco más pequeñas en tablet */
+  :root {
+    --cell-size: 36px;
+  }
+
+  /* ajustar padding / centrar mejor en pantallas intermedias */
+  .board-container {
+    min-height: 480px;
+    padding: 14px;
+  }
+
+  .left-panel .card,
+  .center-panel .card {
+    margin-bottom: 14px;
+  }
+}
+
+/* Mobile: tablero arriba, jugadores debajo y celdas más pequeñas */
+@media (max-width: 768px) {
+  .main-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "center"
+      "left";
+    gap: 12px;
+  }
+
+  :root {
+    --cell-size: 30px;
+  }
+
+  .board-container {
+    min-height: 380px;
+    padding: 10px;
+  }
+
+  /* ajustar estilo de cards para mejor lectura en móvil */
+  .card {
+    padding: 14px;
+  }
+
+  h1 {
+    font-size: 18px;
+  }
 }
 
 .welcome-screen,
@@ -474,21 +538,5 @@ h1 {
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@media (max-width: 768px) {
-  .main-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .cell {
-    width: 30px;
-    height: 30px;
-    font-size: 14px;
-  }
-
-  h1 {
-    font-size: 20px;
   }
 }

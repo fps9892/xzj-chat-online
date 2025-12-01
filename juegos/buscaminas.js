@@ -116,7 +116,8 @@ function renderBoard() {
     
     gameBoard.innerHTML = '';
     gameBoard.style.display = 'grid';
-    gameBoard.style.gridTemplateColumns = `repeat(${BOARD_SIZE}, 40px)`;
+    // usar la variable CSS para que las celdas sean responsivas
+    gameBoard.style.gridTemplateColumns = `repeat(${BOARD_SIZE}, var(--cell-size))`;
     
     const isMyTurn = gameState.playerOrder && 
                      gameState.playerOrder[gameState.currentTurnIndex] === currentUser?.id;
@@ -284,7 +285,8 @@ async function endGame(won) {
     `).join('');
     
     const revealedBoard = document.getElementById('revealedBoard');
-    revealedBoard.style.gridTemplateColumns = `repeat(${BOARD_SIZE}, 40px)`;
+    // usar la variable CSS también aquí
+    revealedBoard.style.gridTemplateColumns = `repeat(${BOARD_SIZE}, var(--cell-size))`;
     revealedBoard.innerHTML = '';
     
     for (let row = 0; row < BOARD_SIZE; row++) {
