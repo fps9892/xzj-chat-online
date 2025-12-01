@@ -1,28 +1,36 @@
+import { database, ref, push, set } from './firebase.js';
+
 export class NotificationManager {
-  constructor() {
-    this.container = document.getElementById('joinLeaveNotifications');
+  constructor(currentRoom) {
+    this.currentRoom = currentRoom;
   }
 
-  addNotification(username, type) {
-    if (!this.container) return;
+  updateRoom(roomId) {
+    this.currentRoom = roomId;
+  }
 
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.textContent = `${type === 'join' ? '✅' : '❌'} ${username} ${type === 'join' ? 'entró' : 'salió'} del chat`;
+  async sendSystemMessage(text) {
+    if (!this.currentRoom) return;
     
-    this.container.appendChild(notification);
-
-    setTimeout(() => {
-      notification.classList.add('fade-out');
-      setTimeout(() => notification.remove(), 500);
-    }, 5000);
+    const messageRef = push(ref(database, `rooms/${this.currentRoom}/messages`));
+    await set(messageRef, {
+      text,
+      type: 'system',
+      timestamp: Date.now(),
+      id: messageRef.key
+    });
   }
 
-  userJoined(username) {
-    this.addNotification(username, 'join');
+  async userJoined(username) {
+    await this.sendSystemMessage(`👋 ${username} entró a la sala`);
   }
 
-  userLeft(username) {
-    this.addNotification(username, 'leave');
+  async userLeft(username, toRoom) {
+    if (toRoom) {
+      const roomHash = toRoom === 'general' ? '#general' : `#${toRoom}`;
+      await this.sendSystemMessage(`👋 ${username} se fue a ${roomHash}`);
+    } else {
+      await this.sendSystemMessage(`👋 ${username} salió de la sala`);
+    }
   }
 }

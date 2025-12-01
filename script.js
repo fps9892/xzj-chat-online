@@ -6,7 +6,7 @@ import { showBanPanel, showUnbanPanel, showMutePanel, showUnmutePanel } from './
 import { showGamesPanel } from './games-panel.js';
 import { NotificationManager } from '/notifications.js';
 
-const notificationManager = new NotificationManager();
+let notificationManager = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     // Elementos de la pantalla de carga
@@ -776,12 +776,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
-            previousUsersList.forEach((username, userId) => {
-                if (!currentUsersList.has(userId)) {
-                    notificationManager.userLeft(username);
-                }
-            });
-            
             previousUsersList = currentUsersList;
             renderUsers(users);
         });
@@ -792,10 +786,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     async function listenToRoomEvents() {
         try {
-            const { database, getRoomName, currentUser } = await import('./firebase.js');
+            const { database, currentUser } = await import('./firebase.js');
             const { ref, onValue, query: dbQuery, limitToLast } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
             
-            const eventsRef = dbQuery(ref(database, 'roomEvents'), limitToLast(5));
+            const eventsRef = dbQuery(ref(database, 'roomEvents'), limitToLast(10));
             
             roomEventsListener = onValue(eventsRef, (snapshot) => {
                 snapshot.forEach(async (childSnapshot) => {
@@ -810,12 +804,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (now - eventTime > 5000) return;
                     
                     if (event.type === 'room-change' && event.fromRoom === currentRoom && event.userId !== currentUser.userId) {
-                        const toRoomName = await getRoomName(event.toRoom);
-                        showUserNotification(`${event.username} se fue a ${toRoomName}`, 'room-change');
-                    }
-                    
-                    if (event.type === 'join' && event.toRoom === currentRoom && event.userId !== currentUser.userId) {
-                        showUserNotification(`${event.username} entró a la sala`, 'join');
+                        const toRoomHash = event.toRoom === 'general' ? '#general' : `#${event.toRoom}`;
+                        notificationManager.userLeft(event.username, event.toRoom);
                     }
                 });
             });
@@ -823,20 +813,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error setting up room events listener:', error);
         }
     }
-    
-    function showUserNotification(message, type) {
-        const notification = document.createElement('div');
-        notification.className = `user-notification ${type}`;
-        
-        notification.innerHTML = `<img src="/images/notification.svg" class="notif-icon" alt="Notification"><span>${message}</span>`;
-        
-        document.body.appendChild(notification);
-        setTimeout(() => notification.classList.add('show'), 100);
-        setTimeout(() => {
-            notification.classList.remove('show');
-            setTimeout(() => notification.remove(), 300);
-        }, 3000);
-    }
+
     
     let lastMessageCount = 0;
     
@@ -1606,6 +1583,8 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.hash = 'general';
         }
         
+        notificationManager = new NotificationManager(hash);
+        
         const roomDisplayName = hash === 'general' ? 'Sala General' : hash;
         currentRoomName.textContent = roomDisplayName;
         originalTitle = `${roomDisplayName} - ChatUp`;
@@ -1713,6 +1692,10 @@ document.addEventListener('DOMContentLoaded', function() {
             processedEvents.clear();
             lastMessageCount = 0;
             isLoadingMessages = false;
+            
+            if (notificationManager) {
+                notificationManager.updateRoom(roomId);
+            }
             
             changeRoom(roomId, false).then(() => {
                 loadMessages();
