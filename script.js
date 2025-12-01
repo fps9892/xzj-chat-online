@@ -317,7 +317,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Abrir panel de usuario (ahora abre el perfil)
     userInfo.addEventListener('click', async function(e) {
         e.stopPropagation();
+        
+        // Mostrar loader
+        const loader = createElement(`
+            <div class="profile-loader-overlay">
+                <div class="loader-spinner"></div>
+            </div>
+        `);
+        document.body.appendChild(loader);
+        
         const userProfile = await getUserProfile(currentUser.firebaseUid || currentUser.userId, currentUser.isGuest);
+        loader.remove();
         showUserProfile(userProfile || currentUser);
     });
 
@@ -1153,12 +1163,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (clickableUsername) {
             clickableUsername.addEventListener('click', async () => {
                 const userId = clickableUsername.dataset.userId;
-                // Obtener perfil completo del usuario
+                const loader = createElement(`<div class="profile-loader-overlay"><div class="loader-spinner"></div></div>`);
+                document.body.appendChild(loader);
                 const userProfile = await getUserProfile(message.firebaseUid || userId, message.isGuest);
+                loader.remove();
                 if (userProfile) {
                     showUserProfile(userProfile);
                 } else {
-                    // Fallback con datos del mensaje
                     const userData = {
                         id: userId,
                         username: message.userName,
@@ -1236,7 +1247,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // Click en nombre para ver perfil
         userEl.querySelector('.user-name').addEventListener('click', async (e) => {
             e.stopPropagation();
+            const loader = createElement(`<div class="profile-loader-overlay"><div class="loader-spinner"></div></div>`);
+            document.body.appendChild(loader);
             const userProfile = await getUserProfile(user.firebaseUid || user.id, user.isGuest);
+            loader.remove();
             showUserProfile(userProfile || user);
         });
         
@@ -1310,39 +1324,25 @@ document.addEventListener('DOMContentLoaded', function() {
         `);
         
         userEl.addEventListener('click', async () => {
+            const loader = createElement(`<div class="profile-loader-overlay"><div class="loader-spinner"></div></div>`);
+            document.body.appendChild(loader);
             const userProfile = await getUserProfile(user.firebaseUid || user.id, user.isGuest);
+            loader.remove();
             showUserProfile(userProfile || user);
-            // Cerrar dropdown después de hacer click
             mobileUsersDropdown.classList.remove('active');
         });
         return userEl;
     }
     
     function showUserProfile(user) {
-        // Mostrar loader
-        const loader = createElement(`
-            <div class="user-profile-overlay active">
-                <div class="user-profile-panel">
-                    <div class="profile-loader">
-                        <div class="loader-spinner"></div>
-                    </div>
-                </div>
-            </div>
-        `);
-        document.body.appendChild(loader);
+        const isOnline = user.status === 'online';
+        const userColor = user.textColor || '#ffffff';
+        const countryFlag = user.country || '';
+        const fullUid = user.firebaseUid || user.id || 'N/A';
+        const hasCountry = countryFlag && countryFlag !== 'No especificado' && countryFlag !== '🌎';
+        const isOwnProfile = (user.firebaseUid || user.id) === (currentUser.firebaseUid || currentUser.userId);
         
-        // Pequeño delay para mostrar el loader
-        setTimeout(() => {
-            loader.remove();
-            
-            const isOnline = user.status === 'online';
-            const userColor = user.textColor || '#ffffff';
-            const countryFlag = user.country || '';
-            const fullUid = user.firebaseUid || user.id || 'N/A';
-            const hasCountry = countryFlag && countryFlag !== 'No especificado' && countryFlag !== '🌎';
-            const isOwnProfile = (user.firebaseUid || user.id) === (currentUser.firebaseUid || currentUser.userId);
-            
-            const modal = createElement(`
+        const modal = createElement(`
             <div class="user-profile-overlay active">
                 <div class="user-profile-panel">
                     <div class="user-profile-header">
@@ -1496,11 +1496,10 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
         
-            modal.querySelector('.close-profile').addEventListener('click', () => modal.remove());
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) modal.remove();
-            });
-        }, 300);
+        modal.querySelector('.close-profile').addEventListener('click', () => modal.remove());
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.remove();
+        });
     }
     
     function createElement(html) {
