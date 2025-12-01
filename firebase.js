@@ -1612,31 +1612,7 @@ export async function processAdminCommand(message) {
                 await changeRoom(privateRoomId, false);
                 return { success: true, message: `Sala privada creada: ${privateRoomName}`, roomChanged: true };
                 
-            case '!aceptar':
-                const pendingUsers = await getPendingUsers(currentRoom);
-                if (pendingUsers.length === 0) {
-                    return { success: true, message: 'No hay usuarios pendientes', privateMessage: true };
-                }
-                
-                if (args.length === 0) {
-                    return { success: false, showAcceptPanel: true, pendingUsers: pendingUsers };
-                }
-                
-                const acceptNumId = parseInt(args[0]);
-                if (isNaN(acceptNumId)) {
-                    throw new Error('ID de usuario inválido');
-                }
-                
-                const pendingList = await getPendingUsers(currentRoom);
-                const targetPendingUser = pendingList.find(u => u.numId === acceptNumId);
-                
-                if (!targetPendingUser) {
-                    throw new Error('Usuario no encontrado en lista de pendientes');
-                }
-                
-                await acceptUserToPrivateRoom(currentRoom, targetPendingUser.userId);
-                return { success: true, message: `Usuario ${targetPendingUser.username} aceptado en la sala` };
-                
+
             case '!borrar':
                 if (args.length === 0) {
                     throw new Error('Uso: !borrar <nombre_sala>');

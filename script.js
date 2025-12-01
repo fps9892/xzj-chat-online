@@ -2632,6 +2632,24 @@ document.addEventListener('DOMContentLoaded', function() {
             messageInput.value = '';
             return;
         }
+        if (lowerMessage === '!aceptar') {
+            // Manejar comando !aceptar localmente
+            (async () => {
+                try {
+                    const { getPendingUsers } = await import('./firebase.js');
+                    const pendingUsers = await getPendingUsers(currentRoom);
+                    if (pendingUsers.length === 0) {
+                        showNotification('No hay usuarios pendientes', 'info');
+                    } else {
+                        showAcceptPanel(pendingUsers);
+                    }
+                } catch (error) {
+                    showNotification(error.message || 'Error al obtener usuarios pendientes', 'error');
+                }
+            })();
+            messageInput.value = '';
+            return;
+        }
         
         isSendingMessage = true;
         sendIcon.style.opacity = '0.5';
@@ -2681,12 +2699,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (result && result.showForcebanPanel) {
                     showForcebanPanel(result.users);
-                    unlockSendButton();
-                    return;
-                }
-                
-                if (result && result.showAcceptPanel) {
-                    showAcceptPanel(result.pendingUsers);
                     unlockSendButton();
                     return;
                 }
