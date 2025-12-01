@@ -317,3 +317,27 @@
         text-align: center;
     }
 }
+
+/* YouTube Embed Styles */
+.youtube-embed {
+    margin-top: 8px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.youtube-embed iframe {
+    display: block;
+    border-radius: 12px;
+}
+
+/* Ocultar el link cuando hay video de YouTube */
+.message-content:has(.youtube-embed) .message-text {
+    display: none;
+}
+
+@media (max-width: 767px) {
+    .youtube-embed iframe {
+        height: 180px;
+    }
+}

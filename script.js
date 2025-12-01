@@ -896,21 +896,32 @@ document.addEventListener('DOMContentLoaded', function() {
             return timeA - timeB;
         });
         
+        // Obtener mensajes existentes para evitar recrear iframes
+        const existingMessages = new Map();
+        chatArea.querySelectorAll('.message-container[data-message-id]').forEach(el => {
+            existingMessages.set(el.dataset.messageId, el);
+        });
+        
         // Usar DocumentFragment para renderizado más rápido
         const fragment = document.createDocumentFragment();
         
         sortedMessages.forEach((message, index) => {
-            const messageEl = createMessageElement(message);
-            fragment.appendChild(messageEl);
-            
-            // Inicializar velocidad de audio
-            if (message.type === 'audio') {
-                const audioElement = document.getElementById(`audio-${message.id}`);
-                if (audioElement) {
-                    audioElement.playbackRate = 1;
+            // Reutilizar elemento existente si tiene iframe de YouTube
+            const existingEl = existingMessages.get(message.id);
+            if (existingEl && existingEl.querySelector('.youtube-embed iframe')) {
+                fragment.appendChild(existingEl);
+            } else {
+                const messageEl = createMessageElement(message);
+                fragment.appendChild(messageEl);
+                
+                // Inicializar velocidad de audio
+                if (message.type === 'audio') {
+                    const audioElement = document.getElementById(`audio-${message.id}`);
+                    if (audioElement) {
+                        audioElement.playbackRate = 1;
+                    }
                 }
             }
-            
         });
         
         // Limpiar y agregar todos los mensajes de una vez
@@ -1136,11 +1147,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         `<div class="message-content">
                             ${message.type === 'image' ? 
                                 `<img src="${message.imageData}" alt="Imagen" class="message-image" onclick="showImageModal('${message.imageData}')" />` :
-                                `${message.text ? '<button class="message-options-btn">⋮</button>' : ''}${replyPreview}<div class="message-text copyable-text">${processEmotes(message.text)}</div>
-                                ${message.text && message.text.length > getCharacterLimit() ? '<span class="see-more">ver más</span>' : ''}
-                                ${(() => {
+                                `${message.text ? '<button class="message-options-btn">⋮</button>' : ''}${replyPreview}${(() => {
                                     const youtubeId = extractYouTubeId(message.text);
-                                    return youtubeId ? `<div class="youtube-embed"><iframe width="100%" height="200" src="https://www.youtube.com/embed/${youtubeId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>` : '';
+                                    if (youtubeId) {
+                                        return `<div class="youtube-embed"><iframe width="100%" height="200" src="https://www.youtube.com/embed/${youtubeId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+                                    } else {
+                                        return `<div class="message-text copyable-text">${processEmotes(message.text)}</div>${message.text && message.text.length > getCharacterLimit() ? '<span class="see-more">ver más</span>' : ''}`;
+                                    }
                                 })()}`
                             }
                         </div>`
