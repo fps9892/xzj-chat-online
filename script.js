@@ -4,6 +4,9 @@ import { getUserProfile, findUserByUsername, animateMessageDeletion, initAdminLi
 import { setupMessageOptions, replyingTo, clearReply } from './message-options.js';
 import { showBanPanel, showUnbanPanel, showMutePanel, showUnmutePanel } from './moderation-panels.js';
 import { showGamesPanel } from './games-panel.js';
+import { NotificationManager } from '/notifications.js';
+
+const notificationManager = new NotificationManager();
 
 document.addEventListener('DOMContentLoaded', function() {
     // Elementos de la pantalla de carga
@@ -755,7 +758,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentTypingListener = null;
     let roomEventsListener = null;
     let processedEvents = new Set();
-    let previousUsersList = new Set();
+    let previousUsersList = new Map();
     
     function loadUsers() {
         if (currentUsersListener) {
@@ -763,21 +766,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         currentUsersListener = listenToUsers((users) => {
-            // Detectar usuarios que entraron o salieron
-            const currentUsersList = new Set(users.map(u => u.id));
+            const currentUsersList = new Map();
             
             users.forEach(user => {
+                currentUsersList.set(user.id, user.name);
+                
                 if (!previousUsersList.has(user.id) && previousUsersList.size > 0) {
-                    // Usuario entró
-                    showJoinNotification(user.name);
+                    notificationManager.userJoined(user.name);
                 }
             });
             
-            previousUsersList.forEach(userId => {
+            previousUsersList.forEach((username, userId) => {
                 if (!currentUsersList.has(userId)) {
-                    // Usuario salió
-                    const user = users.find(u => u.id === userId);
-                    if (user) showLeaveNotification(user.name);
+                    notificationManager.userLeft(username);
                 }
             });
             
@@ -787,34 +788,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         listenToRoomEvents();
     }
-    
-    function showJoinNotification(username) {
-        const notification = createElement(`
-            <div class="join-leave-notification join">
-                <span>👋 ${username} entró a la sala</span>
-            </div>
-        `);
-        document.body.appendChild(notification);
-        setTimeout(() => notification.classList.add('show'), 100);
-        setTimeout(() => {
-            notification.classList.remove('show');
-            setTimeout(() => notification.remove(), 300);
-        }, 3000);
-    }
-    
-    function showLeaveNotification(username) {
-        const notification = createElement(`
-            <div class="join-leave-notification leave">
-                <span>👋 ${username} salió de la sala</span>
-            </div>
-        `);
-        document.body.appendChild(notification);
-        setTimeout(() => notification.classList.add('show'), 100);
-        setTimeout(() => {
-            notification.classList.remove('show');
-            setTimeout(() => notification.remove(), 300);
-        }, 3000);
-    }
+
     
     async function listenToRoomEvents() {
         try {
