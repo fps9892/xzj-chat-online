@@ -5,6 +5,7 @@
 }
 
 :root {
+  /* Paleta de Colores */
   --color-bg: #0a0e27;
   --color-primary: #ff6b9d;
   --color-secondary: #ffa07a;
@@ -17,14 +18,21 @@ html {
 }
 
 body {
-  font-family: 'Inter', sans-serif;
-  background: linear-gradient(135deg, #0a0e27 0%, #1a1a3e 30%, #2d1b3d 60%, #0f1428 100%);
+  font-family: "Inter", sans-serif;
+  background: linear-gradient(
+    135deg,
+    #0a0e27 0%,
+    #1a1a3e 30%,
+    #2d1b3d 60%,
+    #0f1428 100%
+  );
   color: var(--color-text);
   overflow: hidden;
   min-height: 100vh;
   position: relative;
 }
 
+/* --- Fondo y Animaciones --- */
 #techCanvas {
   position: fixed;
   top: 0;
@@ -91,23 +99,38 @@ body {
 }
 
 @keyframes float1 {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(20px, -20px); }
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(20px, -20px);
+  }
 }
 
 @keyframes float2 {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(-25px, 25px); }
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-25px, 25px);
+  }
 }
 
+/* --- Botón CTA Fijo --- */
 .cta-button-fixed {
   position: fixed;
   top: 20px;
   right: 20px;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
   border: 2px solid rgba(255, 255, 255, 0.3);
   color: #fff;
-  font-family: 'Orbitron', monospace;
+  font-family: "Orbitron", monospace;
   font-size: clamp(0.8rem, 1.5vw, 0.95rem);
   font-weight: 700;
   padding: 12px 24px;
@@ -138,6 +161,7 @@ body {
   transform: translateX(5px);
 }
 
+/* --- Contenedor del Carrusel --- */
 .carousel-container {
   position: relative;
   z-index: 1;
@@ -198,23 +222,28 @@ body {
 }
 
 .carousel-logo {
-  width: clamp(70px, 12vw, 140px);
-  height: clamp(70px, 12vw, 140px);
-  margin-bottom: 30px;
-  filter: drop-shadow(0 0 25px rgba(255, 107, 157, 0.6));
+  /* Se mantiene el selector aunque el logo se haya eliminado del HTML */
+  display: none;
 }
 
 .carousel-title {
-  font-family: 'Orbitron', monospace;
+  font-family: "Orbitron", monospace;
   font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 900;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary), #fff);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary),
+    #fff
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin-bottom: 20px;
   letter-spacing: 2px;
-  filter: drop-shadow(0 0 15px rgba(255, 107, 157, 0.3));
+  /* VISIBILIDAD MEJORADA: Sombra de texto fuerte */
+  text-shadow: 0 0 10px rgba(255, 107, 157, 0.5),
+    0 0 20px rgba(255, 107, 157, 0.2);
   line-height: 1.2;
 }
 
@@ -236,26 +265,72 @@ body {
 
 .carousel-content p {
   margin-bottom: 12px;
+  /* VISIBILIDAD MEJORADA: Sombra para el texto debajo del título */
+  text-shadow: 0 0 2px rgba(196, 165, 154, 0.8);
 }
 
+/* --- ESTILOS DE GRID DE CARACTERÍSTICAS (SLIDE 4) --- */
 .carousel-content ul {
   list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  /* Cambio a Grid para el layout de tarjetas */
+  display: grid;
+  /* Grilla responsive: columnas de 250px o más */
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+
   text-align: left;
-  max-width: 600px;
-  margin: 0 auto;
+  max-width: 900px;
+  margin: 30px auto 0;
+  padding: 0;
 }
 
 .carousel-content li {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: clamp(0.85rem, 1.8vw, 1rem);
-  padding: 8px 0;
+  /* Estilos de tarjeta basados en .carousel-item */
+  background: rgba(30, 35, 65, 0.5);
+  border: 1px solid rgba(255, 107, 157, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+
+  display: block;
+  font-size: clamp(0.9rem, 1.8vw, 1.05rem);
+  color: var(--color-text);
+  line-height: 1.5;
 }
 
+/* Borde animado */
+.carousel-content li::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 0;
+  background: linear-gradient(
+    180deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
+  transition: height 0.3s ease;
+}
+
+/* Efecto hover */
+.carousel-content li:hover {
+  background: rgba(50, 55, 95, 0.6);
+  border-color: var(--color-primary);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 40px rgba(255, 107, 157, 0.3);
+}
+
+.carousel-content li:hover::before {
+  height: 100%;
+}
+/* --- FIN ESTILOS DE GRID DE CARACTERÍSTICAS (SLIDE 4) --- */
+
+/* --- Grid General de Items (Acceso, Juegos, Niveles) --- */
 .carousel-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -276,13 +351,17 @@ body {
 }
 
 .carousel-item::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   width: 3px;
   height: 0;
-  background: linear-gradient(180deg, var(--color-primary), var(--color-secondary));
+  background: linear-gradient(
+    180deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
   transition: height 0.3s ease;
 }
 
@@ -298,9 +377,13 @@ body {
 }
 
 .carousel-item-title {
-  font-family: 'Orbitron', monospace;
+  font-family: "Orbitron", monospace;
   font-size: clamp(1rem, 2vw, 1.2rem);
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -315,6 +398,7 @@ body {
   line-height: 1.5;
 }
 
+/* --- Controles --- */
 .carousel-controls {
   position: absolute;
   bottom: 30px;
@@ -365,7 +449,11 @@ body {
 }
 
 .carousel-dot.active {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
   border-color: #fff;
   box-shadow: 0 0 15px rgba(255, 107, 157, 0.8);
   transform: scale(1.3);
@@ -381,23 +469,33 @@ body {
   bottom: 0;
   left: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+  background: linear-gradient(
+    90deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
   width: 0%;
   animation: progress 15s linear forwards;
   box-shadow: 0 0 10px rgba(255, 107, 157, 0.6);
 }
 
 @keyframes progress {
-  from { width: 0%; }
-  to { width: 100%; }
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
 }
+
+/* --- Media Queries --- */
 
 @media (max-width: 1024px) {
   .carousel-grid {
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 12px;
   }
-  
+
   .carousel-item {
     padding: 16px;
   }
@@ -429,12 +527,15 @@ body {
     margin-bottom: 25px;
   }
 
-  .carousel-grid {
+  /* Fuerzo 1 columna en móvil para mejor legibilidad en todas las grillas */
+  .carousel-grid,
+  .carousel-content ul {
     grid-template-columns: 1fr;
     gap: 10px;
   }
 
-  .carousel-item {
+  .carousel-item,
+  .carousel-content li {
     padding: 15px;
   }
 
@@ -452,12 +553,6 @@ body {
   .carousel-dot {
     width: 10px;
     height: 10px;
-  }
-
-  .carousel-logo {
-    width: clamp(60px, 15vw, 100px);
-    height: clamp(60px, 15vw, 100px);
-    margin-bottom: 20px;
   }
 }
 
@@ -484,6 +579,7 @@ body {
   }
 }
 
+/* --- Accesibilidad y Rendimiento --- */
 @media (prefers-reduced-motion: reduce) {
   * {
     animation: none !important;
