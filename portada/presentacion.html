@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ChatUp - Chat en Tiempo Real</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="presentacion.css" />
+  </head>
+  <body>
+    <canvas id="techCanvas"></canvas>
+
+    <div class="animated-bg">
+      <div class="shape shape1"></div>
+      <div class="shape shape2"></div>
+      <div class="shape shape3"></div>
+      <div class="shape shape4"></div>
+    </div>
+
+    <button
+      class="cta-button-fixed"
+      onclick="window.location.href='../index.html'"
+    >
+      <span>Entrar a ChatUp</span>
+      <span class="arrow">→</span>
+    </button>
+
+    <div class="carousel-container">
+      <div class="carousel">
+        <div class="carousel-slides">
+          <div class="carousel-slide active">
+            <h1 class="carousel-title">CHATUP</h1>
+            <div class="carousel-content">
+              <p class="highlight">🌍 Conecta con usuarios de todo el mundo</p>
+              <p>
+                Chat en tiempo real con salas públicas, privadas, juegos
+                multijugador y sistema de niveles
+              </p>
+            </div>
+          </div>
+
+          <div class="carousel-slide">
+            <h1 class="carousel-title">🔐 Acceso Rápido</h1>
+            <div class="carousel-grid">
+              <div class="carousel-item">
+                <div class="carousel-item-title">🔑 Google</div>
+                <div class="carousel-item-text">
+                  Acceso instantáneo con tu cuenta de Google
+                </div>
+              </div>
+              <div class="carousel-item">
+                <div class="carousel-item-title">📧 Email</div>
+                <div class="carousel-item-text">
+                  Crea tu cuenta con email y contraseña
+                </div>
+              </div>
+              <div class="carousel-item">
+                <div class="carousel-item-title">👤 Invitado</div>
+                <div class="carousel-item-text">
+                  Entra sin registro y prueba el chat
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="carousel-slide">
+            <h1 class="carousel-title">💬 Salas de Chat</h1>
+            <div class="carousel-grid">
+              <div class="carousel-item">
+                <div class="carousel-item-title">🌟 Públicas</div>
+                <div class="carousel-item-text">
+                  Acceso libre • Miles de usuarios 24/7
+                </div>
+              </div>
+              <div class="carousel-item">
+                <div class="carousel-item-title">🔒 Privadas</div>
+                <div class="carousel-item-text">
+                  Crea salas exclusivas con invitaciones
+                </div>
+              </div>
+              <div class="carousel-item">
+                <div class="carousel-item-title">🏠 General</div>
+                <div class="carousel-item-text">
+                  El corazón de ChatUp • Máxima actividad
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="carousel-slide">
+            <h1 class="carousel-title">⚡ Características</h1>
+            <div class="carousel-content">
+              <ul>
+                <li>💬 Mensajes instantáneos en tiempo real</li>
+                <li>🖼️ Compartir imágenes y contenido visual</li>
+                <li>🎤 Mensajes de voz y audio</li>
+                <li>😊 Emotes personalizados</li>
+                <li>📱 Compatible PC, tablet y móvil</li>
+                <li>⚡ Velocidad máxima con Firebase</li>
+                <li>🛡️ Moderadores activos 24/7</li>
+                <li>🌐 Comunidad internacional</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="carousel-slide">
+            <h1 class="carousel-title">🎮 Juegos</h1>
+            <div class="carousel-grid">
+              <div class="carousel-item">
+                <div class="carousel-item-title">❌⭕ Ta-Te-Ti</div>
+                <div class="carousel-item-text">
+                  3 en raya • Estrategia rápida
+                </div>
+              </div>
+              <div class="carousel-item">
+                <div class="carousel-item-title">🔴 Conecta 4</div>
+                <div class="carousel-item-text">
+                  4 en línea • Calcula movimientos
+                </div>
+              </div>
+              <div class="carousel-item">
+                <div class="carousel-item-title">♟️ Ajedrez</div>
+                <div class="carousel-item-text">
+                  Estrategia clásica • Maestría total
+                </div>
+              </div>
+              <div class="carousel-item">
+                <div class="carousel-item-title">🏁 Carreras</div>
+                <div class="carousel-item-text">
+                  Compite en velocidad en vivo
+                </div>
+              </div>
+              <div class="carousel-item">
+                <div class="carousel-item-title">📝 Tutifruti</div>
+                <div class="carousel-item-text">
+                  Palabras rápidas • Muy adictivo
+                </div>
+              </div>
+              <div class="carousel-item">
+                <div class="carousel-item-title">💣 Buscaminas</div>
+                <div class="carousel-item-text">
+                  Lógica pura • Encuentra las minas
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="carousel-slide">
+            <h1 class="carousel-title">📊 Sistema de Niveles</h1>
+            <div class="carousel-grid">
+              <div class="carousel-item">
+                <div class="carousel-item-title">📈 Progresión</div>
+                <div class="carousel-item-text">
+                  +0.25 por victoria • Sube de nivel
+                </div>
+              </div>
+              <div class="carousel-item">
+                <div class="carousel-item-title">🎯 Objetivos</div>
+                <div class="carousel-item-text">
+                  Desafíos diarios • Puntos extra
+                </div>
+              </div>
+              <div class="carousel-item">
+                <div class="carousel-item-title">🏆 Ranking</div>
+                <div class="carousel-item-text">
+                  Compite globalmente • Top jugadores
+                </div>
+              </div>
+              <div class="carousel-item">
+                <div class="carousel-item-title">🏅 Insignias</div>
+                <div class="carousel-item-text">
+                  Logros únicos • Muestra maestría
+                </div>
+              </div>
+              <div class="carousel-item">
+                <div class="carousel-item-title">⭐ Perfil</div>
+                <div class="carousel-item-text">
+                  Avatar personalizado • Estadísticas
+                </div>
+              </div>
+              <div class="carousel-item">
+                <div class="carousel-item-title">🎁 Recompensas</div>
+                <div class="carousel-item-text">
+                  Emotes exclusivos cada 10 niveles
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="carousel-progress"></div>
+
+        <div class="carousel-controls">
+          <button class="carousel-btn" id="prevBtn">‹</button>
+          <div class="carousel-dots" id="carouselDots"></div>
+          <button class="carousel-btn" id="nextBtn">›</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="tech-canvas.js"></script>
+    <script src="carousel.js"></script>
+  </body>
+</html>
