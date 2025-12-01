@@ -22,6 +22,7 @@ let gameId = null;
 let currentUser = null;
 let gameState = null;
 let autoStartTimer = null;
+let prevState = null; // para detectar cambios entre snapshots
 
 const gameBoard = document.getElementById('gameBoard');
 const welcomeScreen = document.getElementById('welcomeScreen');
@@ -363,24 +364,95 @@ function updateStats() {
     `;
 }
 
+// Mostrar toasts globales (usa #toastContainer en HTML)
+function showToast(message, type = 'info', ttl = 3500) {
+	const container = document.getElementById('toastContainer');
+	if (!container) return;
+	const t = document.createElement('div');
+	t.className = `toast ${type}`;
+	t.textContent = message;
+	container.appendChild(t);
+	setTimeout(() => {
+		t.style.opacity = '0';
+		t.style.transform = 'translateY(-8px)';
+		setTimeout(() => {
+			if (container.contains(t)) container.removeChild(t);
+		}, 300);
+	}, ttl);
+}
+
+// Popup encima del buscaminas cuando es tu turno (parpadea 1 vez y desaparece)
+function showTurnPopup() {
+	const boardContainer = document.querySelector('.board-container');
+	if (!boardContainer) return;
+	// evitar duplicados
+	if (document.getElementById('turnPopup')) return;
+	const popup = document.createElement('div');
+	popup.id = 'turnPopup';
+	popup.className = 'turn-popup';
+	popup.textContent = 'TU TURNO';
+	boardContainer.appendChild(popup);
+	// quitar después de la animación (1.2s)
+	setTimeout(() => {
+		if (popup.parentNode) popup.parentNode.removeChild(popup);
+	}, 1200);
+}
+
 // Escuchar cambios en Firebase cuando el DOM esté listo
 window.addEventListener('DOMContentLoaded', () => {
     const gameRef = ref(database, `games/buscaminas/${gameId}`);
     onValue(gameRef, (snapshot) => {
     if (snapshot.exists()) {
-        gameState = snapshot.val();
-        
+        const newState = snapshot.val();
+
+        // detectar transición a gameOver para todos los clientes
+        if (newState.gameOver && (!prevState || !prevState.gameOver)) {
+            // Si hay loser -> mostrar mensaje que tocó mina; si hay winner -> mostrar ganador
+            if (newState.loser) {
+                const loserName = newState.players?.[newState.loser]?.name || 'Alguien';
+                showToast(`${loserName} tocó una mina`, 'warn', 4000);
+            }
+            if (newState.winner) {
+                const winnerName = newState.players?.[newState.winner]?.name || 'Alguien';
+                showToast(`${winnerName} ganó la partida 🎉`, 'success', 4000);
+            }
+            // Actualizar gameState antes de llamar endGame
+            gameState = newState;
+            // Llamar endGame para que cada cliente muestre la pantalla final
+            setTimeout(() => {
+                // endGame espera que gameState esté actualizado
+                try { endGame(!!newState.winner); } catch (e) { /* ignore */ }
+            }, 300);
+            prevState = newState;
+            // todavía actualizar lista y stats para consistencia
+            updatePlayersList();
+            updateStats();
+            return;
+        }
+
+        // Actualizar gameState local
+        gameState = newState;
+
+        // detectar cambio de turno para mostrar popup local "TU TURNO"
+        const currentTurnId = gameState.playerOrder?.[gameState.currentTurnIndex];
+        const prevTurnId = prevState?.playerOrder?.[prevState.currentTurnIndex];
+        if (currentUser && currentUser.id && currentTurnId === currentUser.id && currentTurnId !== prevTurnId) {
+            // mostrar popup encima del tablero y un toast leve
+            showTurnPopup();
+            showToast('Es tu turno', 'info', 1400);
+        }
+
         updatePlayersList();
-        
+
         if (gameState.status === 'waiting') {
             welcomeScreen.style.display = 'block';
             gameBoard.style.display = 'none';
             finishScreen.style.display = 'none';
             
-            const playerCount = Object.keys(gameState.players || {}).length;
+            const playerCountLocal = Object.keys(gameState.players || {}).length;
             
             // Auto-inicio con 2+ jugadores
-            if (playerCount >= 2 && !autoStartTimer) {
+            if (playerCountLocal >= 2 && !autoStartTimer) {
                 let countdown = 10;
                 welcomeScreen.querySelector('p').textContent = `Iniciando en ${countdown} segundos...`;
                 
@@ -394,7 +466,7 @@ window.addEventListener('DOMContentLoaded', () => {
                         await startNewRound();
                     }
                 }, 1000);
-            } else if (playerCount < 2) {
+            } else if (playerCountLocal < 2) {
                 if (autoStartTimer) {
                     clearInterval(autoStartTimer);
                     autoStartTimer = null;
@@ -408,6 +480,9 @@ window.addEventListener('DOMContentLoaded', () => {
             renderBoard();
             updateStats();
         }
+
+        // guardar estado previo para la próxima actualización
+        prevState = JSON.parse(JSON.stringify(newState));
     }
     });
     

@@ -217,6 +217,50 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative; /* necesario para posicionar el popup encima del tablero */
+  overflow: visible;
+}
+
+/* Popup "TU TURNO" encima del buscaminas */
+.turn-popup {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(201, 122, 111, 0.95);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  z-index: 1500;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  animation: turnBlink 1.1s ease-out 1;
+}
+
+/* animación: un pulso/parpadeo y se queda visible brevemente */
+@keyframes turnBlink {
+  0% {
+    transform: translateX(-50%) scale(1.05);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.12);
+  }
+  60% {
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+/* asegurar que toasts y popup no queden debajo del modal u otros elementos */
+#toastContainer {
+  z-index: 2000;
 }
 
 /* Responsive: tablet - poner tablero arriba y lista de jugadores abajo */
