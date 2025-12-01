@@ -31,8 +31,9 @@ export function animateMessageDeletion(messageElement, callback) {
 }
 
 // user-profile-service.js
-import { db } from './firebase.js';
+import { db, database } from './firebase.js';
 import { doc, getDoc, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { ref, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
 export async function getUserProfile(userId, isGuest = false) {
     try {
@@ -41,6 +42,8 @@ export async function getUserProfile(userId, isGuest = false) {
         let isModerator = false;
         let isBanned = false;
         let isDeveloper = false;
+        let userStatus = 'offline';
+        let lastSeenTimestamp = null;
         
         if (isGuest) {
             const guestDoc = await getDoc(doc(db, 'guests', userId));
@@ -62,6 +65,30 @@ export async function getUserProfile(userId, isGuest = false) {
         
         if (!userData) return null;
         
+        // Buscar el usuario en todas las salas del Realtime Database para obtener su estado actual
+        try {
+            const roomsRef = ref(database, 'rooms');
+            const roomsSnapshot = await get(roomsRef);
+            
+            if (roomsSnapshot.exists()) {
+                roomsSnapshot.forEach((roomSnapshot) => {
+                    const usersData = roomSnapshot.child('users').val();
+                    if (usersData) {
+                        Object.entries(usersData).forEach(([key, user]) => {
+                            if ((user.firebaseUid === userId || key === userId) && user.status === 'online') {
+                                userStatus = 'online';
+                            }
+                            if ((user.firebaseUid === userId || key === userId) && user.lastSeen) {
+                                lastSeenTimestamp = user.lastSeen;
+                            }
+                        });
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error obteniendo estado del usuario:', error);
+        }
+        
         let role = 'Usuario';
         let status = 'Activo';
         
@@ -77,9 +104,9 @@ export async function getUserProfile(userId, isGuest = false) {
             username: userData.username || 'Usuario',
             description: userData.description || 'Sin descripción',
             country: userData.country || 'No especificado',
-            role, status,
+            role, status: userStatus,
             createdAt: userData.createdAt || 'No disponible',
-            lastSeen: userData.lastSeen || 'No disponible',
+            lastSeen: lastSeenTimestamp || userData.lastSeen || null,
             avatar: userData.avatar || 'images/profileuser.svg',
             textColor: userData.textColor || '#ffffff',
             messageCount: userData.messageCount || 0,

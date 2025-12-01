@@ -1407,7 +1407,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </div>
                                 <div class="profile-field-label">Última conexión</div>
                                 <div class="profile-info-item" style="justify-content: center;">
-                                    <span class="profile-info-value">${user.lastSeen ? getTimeAgo(user.lastSeen) : 'Ahora'}</span>
+                                    <span class="profile-info-value">${isOnline ? 'Conectado ahora' : (user.lastSeen ? getTimeAgo(user.lastSeen) : 'Desconocido')}</span>
                                 </div>
                                 ${isOwnProfile ? '<button class="profile-edit-btn" id="logoutBtn">Cerrar Sesión</button>' : ''}
                             </div>

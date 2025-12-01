@@ -67,22 +67,9 @@ initializeAuth();
 
 // Procesar emotes y links en texto
 export function processEmotes(text) {
-    const emoteMap = {
-        ':)': '😊', ':D': '😃', ':(': '😢', ':P': '😛',
-        'xD': '😆', '<3': '❤️', 'kappa': '🐸', 'poggers': '🔥',
-        'sadge': '😭', 'omegalul': '😂', 'monkas': '😰', 'pepehands': '😢',
-        'catjam': '🐱', 'kekw': '🤣'
-    };
-    
-    let processedText = text;
-    Object.keys(emoteMap).forEach(emote => {
-        const regex = new RegExp(emote.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-        processedText = processedText.replace(regex, emoteMap[emote]);
-    });
-    
     // Procesar links
     const urlRegex = /(https?:\/\/[^\s]+)/g;
-    processedText = processedText.replace(urlRegex, '<a href="$1" target="_blank" style="color: #4a9eff; text-decoration: underline;">$1</a>');
+    const processedText = text.replace(urlRegex, '<a href="$1" target="_blank" style="color: #4a9eff; text-decoration: underline;">$1</a>');
     
     return processedText;
 }
@@ -331,7 +318,9 @@ export function setUserOnline() {
     if (currentUser.isGuest) {
         onDisconnect(userRef).remove();
     } else {
+        // Cuando se desconecte, actualizar status y lastSeen
         onDisconnect(userStatusRef).set('offline');
+        onDisconnect(ref(database, `rooms/${currentRoom}/users/${sanitizedUserId}/lastSeen`)).set(serverTimestamp());
     }
 }
 
