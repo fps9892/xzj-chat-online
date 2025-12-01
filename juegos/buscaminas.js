@@ -23,9 +23,10 @@ let currentUser = null;
 let gameState = null;
 let autoStartTimer = null;
 let prevState = null;
-let emptyGameTimer = null; // para limpiar juego sin players
-let betweenRoundsTimer = null; // para countdown entre rondas
-let turnTimer = null; // nuevo: para temporizador de turno
+let emptyGameTimer = null;
+let betweenRoundsTimer = null;
+let turnTimer = null;
+let isReinitializing = false; // nuevo: flag para evitar múltiples reinicies
 
 const gameBoard = document.getElementById('gameBoard');
 const welcomeScreen = document.getElementById('welcomeScreen');
@@ -77,6 +78,53 @@ function checkEmptyGame() {
             emptyGameTimer = null;
             console.log('Juego no está vacío. Timer de limpieza cancelado.');
         }
+    }
+}
+
+// Detectar si queda 1 solo jugador durante el juego y reiniciar
+async function checkGamePlayersCount() {
+    if (!gameState || !gameState.players) return;
+    
+    const playerCount = Object.keys(gameState.players).length;
+    
+    // Si estamos jugando y quedan menos de 2 jugadores, reiniciar a "waiting"
+    if (gameState.status === 'playing' && playerCount < 2 && !isReinitializing) {
+        isReinitializing = true;
+        console.log('Solo queda 1 jugador. Reiniciando ronda...');
+        
+        // Limpiar todos los timers
+        stopTurnTimer();
+        if (autoStartTimer) {
+            clearInterval(autoStartTimer);
+            autoStartTimer = null;
+        }
+        if (betweenRoundsTimer) {
+            clearInterval(betweenRoundsTimer);
+            betweenRoundsTimer = null;
+        }
+        
+        showToast('Jugador desconectado. Esperando más jugadores...', 'warn', 3000);
+        
+        // Resetear a estado "waiting"
+        try {
+            await update(ref(database, `games/buscaminas/${gameId}`), {
+                status: 'waiting',
+                gameOver: false,
+                board: null,
+                revealed: null,
+                flagged: null,
+                currentTurnIndex: 0,
+                playerOrder: [],
+                lastEvent: null
+            });
+        } catch (e) {
+            console.error('Error reiniciando juego:', e);
+        } finally {
+            isReinitializing = false;
+        }
+    } else if (gameState.status === 'waiting' && playerCount >= 2) {
+        // Si volvemos a waiting con 2+ jugadores, permitir reinicio
+        isReinitializing = false;
     }
 }
 
@@ -629,6 +677,10 @@ window.addEventListener('DOMContentLoaded', () => {
         // detectar transición a gameOver para todos los clientes
         if (newState.gameOver && (!prevState || !prevState.gameOver)) {
             stopTurnTimer();
+            if (autoStartTimer) {
+                clearInterval(autoStartTimer);
+                autoStartTimer = null;
+            }
             // Si hay loser -> mostrar mensaje que tocó mina; si hay winner -> mostrar ganador
             if (newState.loser) {
                 const loserName = newState.players?.[newState.loser]?.name || 'Alguien';
@@ -661,21 +713,26 @@ window.addEventListener('DOMContentLoaded', () => {
         // Detectar y manejar juego vacío
         checkEmptyGame();
 
-        // detectar cambio de turno para mostrar popup local "TU TURNO" e iniciar timer
-        const currentTurnId = gameState.playerOrder?.[gameState.currentTurnIndex];
-        const prevTurnId = prevState?.playerOrder?.[prevState.currentTurnIndex];
-        if (currentTurnId !== prevTurnId) {
-            // Turno cambió
-            stopTurnTimer();
-            if (gameState.status === 'playing' && !gameState.gameOver) {
-                // Iniciar temporizador de turno (10seg)
-                startTurnTimer();
-            }
-            
-            if (currentUser && currentUser.id && currentTurnId === currentUser.id) {
-                // Es mi turno
-                showTurnPopup();
-                showToast('Es tu turno', 'info', 1400);
+        // Detectar si quedan menos de 2 jugadores durante el juego (CRÍTICO: antes de cambio de turno)
+        checkGamePlayersCount();
+
+        // Detectar cambio de turno solo si NO estamos reiniciando
+        if (!isReinitializing) {
+            const currentTurnId = gameState.playerOrder?.[gameState.currentTurnIndex];
+            const prevTurnId = prevState?.playerOrder?.[prevState.currentTurnIndex];
+            if (currentTurnId !== prevTurnId) {
+                // Turno cambió
+                stopTurnTimer();
+                if (gameState.status === 'playing' && !gameState.gameOver) {
+                    // Iniciar temporizador de turno (10seg)
+                    startTurnTimer();
+                }
+                
+                if (currentUser && currentUser.id && currentTurnId === currentUser.id) {
+                    // Es mi turno
+                    showTurnPopup();
+                    showToast('Es tu turno', 'info', 1400);
+                }
             }
         }
 
@@ -724,7 +781,6 @@ window.addEventListener('DOMContentLoaded', () => {
             if (newState.lastEvent && JSON.stringify(newState.lastEvent) !== JSON.stringify(prevState?.lastEvent)) {
                 if (newState.lastEvent.type === 'explosion') {
                     setTimeout(() => showExplosionAt(newState.lastEvent.row, newState.lastEvent.col), 120);
-                    // toast que alguien explotó (global)
                     const pl = newState.players?.[newState.lastEvent.playerId]?.name || 'Alguien';
                     showToast(`${pl} tocó una mina`, 'warn', 3200);
                 } else if (newState.lastEvent.type === 'victory') {
