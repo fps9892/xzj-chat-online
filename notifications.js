@@ -46,14 +46,17 @@ export class NotificationManager {
   }
 
   async userJoined(username, userId) {
+    if (!this.notificationsEnabled) return;
     this.showFloatingNotification(`👋 ${username} entró a la sala`, 'join');
   }
 
   async userLeft(username, toRoom, userId) {
+    if (!this.notificationsEnabled) return;
     this.showFloatingNotification(`👋 ${username} salió de la sala`, 'leave');
   }
 
   async userDisconnected(username, userId) {
+    if (!this.notificationsEnabled) return;
     this.showFloatingNotification(`👋 ${username} desconectado`, 'leave');
   }
 

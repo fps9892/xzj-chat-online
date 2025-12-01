@@ -999,6 +999,56 @@ body {
   background: linear-gradient(135deg, #c97a6f 0%, #b86a5f 100%);
   box-shadow: 0 4px 12px rgba(201, 122, 111, 0.4);
 }
+
+/* Panel de aceptar usuarios */
+.accept-panel .moderation-panel-icon {
+  filter: brightness(0) saturate(100%) invert(73%) sepia(13%) saturate(1084%) hue-rotate(314deg) brightness(95%) contrast(89%);
+}
+
+.accept-action-btn {
+  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: "Orbitron", monospace;
+  font-weight: 600;
+  font-size: 12px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.accept-action-btn:hover {
+  background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+.accept-action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.accept-loading,
+.accept-success {
+  font-size: 16px;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+}
   background-color: #f5e6e3;
   color: #1a0f0f;
 }

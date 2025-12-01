@@ -769,6 +769,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let roomEventsListener = null;
     let processedEvents = new Set();
     let previousUsersList = new Map();
+    let isFirstLoad = true;
     
     function loadUsers() {
         if (currentUsersListener) {
@@ -781,12 +782,23 @@ document.addEventListener('DOMContentLoaded', function() {
             users.forEach(user => {
                 currentUsersList.set(user.id, { name: user.name, firebaseUid: user.firebaseUid, isGuest: user.isGuest });
                 
-                if (!previousUsersList.has(user.id) && previousUsersList.size > 0) {
+                // Solo mostrar notificación si no es la primera carga y el usuario no estaba antes
+                if (!isFirstLoad && !previousUsersList.has(user.id) && user.id !== currentUser.userId) {
                     notificationManager.userJoined(user.name, user.firebaseUid || user.id);
                 }
             });
             
+            // Detectar usuarios que salieron
+            if (!isFirstLoad) {
+                previousUsersList.forEach((userData, userId) => {
+                    if (!currentUsersList.has(userId) && userId !== currentUser.userId) {
+                        notificationManager.userLeft(userData.name, null, userData.firebaseUid || userId);
+                    }
+                });
+            }
+            
             previousUsersList = currentUsersList;
+            isFirstLoad = false;
             renderUsers(users);
         });
         
@@ -1731,6 +1743,8 @@ document.addEventListener('DOMContentLoaded', function() {
             processedEvents.clear();
             lastMessageCount = 0;
             isLoadingMessages = false;
+            isFirstLoad = true;
+            previousUsersList.clear();
             
             if (notificationManager) {
                 notificationManager.updateRoom(roomId);
@@ -2671,6 +2685,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 
+                if (result && result.showAcceptPanel) {
+                    showAcceptPanel(result.pendingUsers);
+                    unlockSendButton();
+                    return;
+                }
+                
                 if (result && result.roomChanged) {
                     setTimeout(() => {
                         loadMessages();
@@ -3152,6 +3172,71 @@ function showRefreshPanel(users) {
             } catch (error) {
                 showNotification(error.message, 'error');
                 btn.innerHTML = '<img src="/images/refresh.svg" alt="Refresh" />Refrescar';
+                btn.disabled = false;
+            }
+        });
+    });
+}
+
+// Panel de Aceptar usuarios en sala privada
+function showAcceptPanel(pendingUsers) {
+    const existingPanel = document.querySelector('.moderation-panel');
+    if (existingPanel) existingPanel.remove();
+    
+    const panel = document.createElement('div');
+    panel.className = 'moderation-panel accept-panel';
+    panel.innerHTML = `
+        <div class="moderation-panel-header">
+            <img src="/images/users-connected.svg" class="moderation-panel-icon" alt="Accept" />
+            <span class="moderation-panel-title">📬 Solicitudes de Acceso</span>
+            <button class="close-moderation-panel">×</button>
+        </div>
+        <div class="moderation-list">
+            ${pendingUsers.map(user => {
+                return `
+                    <div class="moderation-user-item">
+                        <div class="moderation-user-info">
+                            <span class="moderation-user-name">${user.username}</span>
+                        </div>
+                        <button class="moderation-action-btn accept-action-btn" data-user-id="${user.userId}" data-username="${user.username}">
+                            <span>✓</span>
+                            Aceptar
+                        </button>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+    
+    document.body.appendChild(panel);
+    
+    panel.querySelector('.close-moderation-panel').addEventListener('click', () => panel.remove());
+    
+    panel.querySelectorAll('.accept-action-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const userId = btn.dataset.userId;
+            const username = btn.dataset.username;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="accept-loading">⏳</span>';
+            
+            try {
+                const { acceptUserToPrivateRoom } = await import('./firebase.js');
+                await acceptUserToPrivateRoom(currentRoom, userId);
+                btn.innerHTML = '<span class="accept-success">✓</span>';
+                showNotification(`${username} aceptado en la sala`, 'success');
+                setTimeout(() => {
+                    btn.closest('.moderation-user-item').style.animation = 'fadeOut 0.3s ease';
+                    setTimeout(() => {
+                        btn.closest('.moderation-user-item').remove();
+                        if (panel.querySelectorAll('.moderation-user-item').length === 0) {
+                            panel.remove();
+                        }
+                    }, 300);
+                }, 500);
+            } catch (error) {
+                showNotification(error.message, 'error');
+                btn.innerHTML = '<span>✓</span>Aceptar';
                 btn.disabled = false;
             }
         });

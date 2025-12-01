@@ -1613,17 +1613,13 @@ export async function processAdminCommand(message) {
                 return { success: true, message: `Sala privada creada: ${privateRoomName}`, roomChanged: true };
                 
             case '!aceptar':
+                const pendingUsers = await getPendingUsers(currentRoom);
+                if (pendingUsers.length === 0) {
+                    return { success: true, message: 'No hay usuarios pendientes', privateMessage: true };
+                }
+                
                 if (args.length === 0) {
-                    const pendingUsers = await getPendingUsers(currentRoom);
-                    if (pendingUsers.length === 0) {
-                        return { success: true, message: 'No hay usuarios pendientes', privateMessage: true };
-                    }
-                    let userList = '📋 Usuarios pendientes:\n';
-                    pendingUsers.forEach(u => {
-                        userList += `${u.numId}. ${u.username}\n`;
-                    });
-                    userList += '\nUso: !aceptar <número>';
-                    return { success: true, message: userList, privateMessage: true };
+                    return { success: false, showAcceptPanel: true, pendingUsers: pendingUsers };
                 }
                 
                 const acceptNumId = parseInt(args[0]);
