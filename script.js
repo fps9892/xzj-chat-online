@@ -1898,9 +1898,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Escuchar comando de refresh
     listenToRefreshCommand((data) => {
         console.log('Refresh command received:', data);
-        showNotification('🔄 Un desarrollador está refrescando tu página...', 'warning');
+        showNotification('🔄 Un desarrollador está reiniciando tu sesión...', 'warning');
         setTimeout(() => {
-            window.location.reload();
+            window.location.href = '/index.html';
         }, 1000);
     });
     
