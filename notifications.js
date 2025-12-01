@@ -9,29 +9,28 @@ export class NotificationManager {
     this.currentRoom = roomId;
   }
 
-  async sendSystemMessage(text, userId = null) {
-    if (!this.currentRoom) return;
-    
-    const messageRef = push(ref(database, `rooms/${this.currentRoom}/messages`));
-    await set(messageRef, {
-      text,
-      type: 'system-notification',
-      timestamp: Date.now(),
-      id: messageRef.key,
-      notificationUserId: userId
-    });
+  // Muestra una notificación flotante pequeña (no persistente)
+  showFloatingNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `user-notification ${type}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    setTimeout(() => notification.classList.add('show'), 100);
+
+    setTimeout(() => {
+      notification.classList.remove('show');
+      setTimeout(() => notification.remove(), 300);
+    }, 3000);
   }
 
+  // Notifica cuando un usuario entra a la sala (solo notificación pequeña)
   async userJoined(username, userId) {
-    await this.sendSystemMessage(`👋 ${username} entró a la sala`, userId);
+    this.showFloatingNotification(`👋 ${username} entró a la sala`, 'join');
   }
 
+  // Notifica cuando un usuario sale de la sala (solo notificación pequeña)
   async userLeft(username, toRoom, userId) {
-    if (toRoom) {
-      const roomHash = toRoom === 'general' ? '#general' : `#${toRoom}`;
-      await this.sendSystemMessage(`👋 ${username} se fue a ${roomHash}`, userId);
-    } else {
-      await this.sendSystemMessage(`👋 ${username} salió de la sala`, userId);
-    }
+    this.showFloatingNotification(`👋 ${username} salió de la sala`, 'leave');
   }
 }
