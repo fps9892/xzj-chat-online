@@ -25,6 +25,7 @@ let autoStartTimer = null;
 let prevState = null;
 let emptyGameTimer = null; // para limpiar juego sin players
 let betweenRoundsTimer = null; // para countdown entre rondas
+let turnTimer = null; // nuevo: para temporizador de turno
 
 const gameBoard = document.getElementById('gameBoard');
 const welcomeScreen = document.getElementById('welcomeScreen');
@@ -485,6 +486,45 @@ function showTurnPopup() {
 	}, 1200);
 }
 
+// Temporizador de turno: 10seg para jugar, luego auto-skip
+function startTurnTimer() {
+    if (turnTimer) clearInterval(turnTimer);
+    
+    let timeLeft = 10;
+    const turnCountdownEl = document.getElementById('turnCountdown');
+    const turnInfo = document.getElementById('turnInfo');
+    
+    if (turnInfo) turnInfo.style.display = 'flex';
+    if (turnCountdownEl) turnCountdownEl.textContent = `${timeLeft}s`;
+    
+    turnTimer = setInterval(async () => {
+        timeLeft--;
+        if (turnCountdownEl) turnCountdownEl.textContent = `${timeLeft}s`;
+        
+        if (timeLeft <= 0) {
+            clearInterval(turnTimer);
+            turnTimer = null;
+            // Auto-skip al siguiente turno
+            if (gameState && gameState.playerOrder && gameState.playerOrder.length > 0) {
+                const nextIndex = (gameState.currentTurnIndex + 1) % gameState.playerOrder.length;
+                await update(ref(database, `games/buscaminas/${gameId}`), {
+                    currentTurnIndex: nextIndex
+                });
+                showToast('Tiempo agotado. Turno siguiente.', 'warn', 2000);
+            }
+        }
+    }, 1000);
+}
+
+function stopTurnTimer() {
+    if (turnTimer) {
+        clearInterval(turnTimer);
+        turnTimer = null;
+    }
+    const turnInfo = document.getElementById('turnInfo');
+    if (turnInfo) turnInfo.style.display = 'none';
+}
+
 // Conectar botón de salir y modal de unirse
 window.addEventListener('DOMContentLoaded', () => {
     const exitBtn = document.getElementById('exitBtn');
@@ -506,10 +546,24 @@ window.addEventListener('DOMContentLoaded', () => {
                 showToast('Ya estás unido al juego', 'info', 2000);
                 return;
             }
-            // Abrir modal
-            if (joinModal) {
-                joinModal.style.display = 'flex';
-                if (usernameInput) usernameInput.focus();
+            
+            // Obtener username del localStorage
+            const userData = JSON.parse(localStorage.getItem('currentUser'));
+            const savedUsername = userData?.username || '';
+            
+            // Si hay username guardado, unirse directamente
+            if (savedUsername) {
+                joinGame(savedUsername);
+                showToast(`Bienvenido de vuelta, ${savedUsername} 🎮`, 'success', 2500);
+            } else {
+                // Si no hay username, abrir modal para ingresarlo
+                if (joinModal) {
+                    joinModal.style.display = 'flex';
+                    if (usernameInput) {
+                        usernameInput.value = '';
+                        usernameInput.focus();
+                    }
+                }
             }
         });
     }
@@ -537,6 +591,8 @@ window.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             if (joinModal) joinModal.style.display = 'none';
+            // Guardar en localStorage antes de unirse
+            localStorage.setItem('currentUser', JSON.stringify({ username: name }));
             await joinGame(name);
             showToast(`Bienvenido, ${name} 🎮`, 'success', 2500);
         });
@@ -552,6 +608,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
                 if (joinModal) joinModal.style.display = 'none';
+                localStorage.setItem('currentUser', JSON.stringify({ username: name }));
                 await joinGame(name);
                 showToast(`Bienvenido, ${name} 🎮`, 'success', 2500);
             }
@@ -560,7 +617,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // Auto-unirse si hay datos en localStorage
     const userData = JSON.parse(localStorage.getItem('currentUser'));
-    if (userData && userData.username) {
+    if (userData && userData.username && !currentUser) {
         joinGame(userData.username);
     }
 
@@ -571,6 +628,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
         // detectar transición a gameOver para todos los clientes
         if (newState.gameOver && (!prevState || !prevState.gameOver)) {
+            stopTurnTimer();
             // Si hay loser -> mostrar mensaje que tocó mina; si hay winner -> mostrar ganador
             if (newState.loser) {
                 const loserName = newState.players?.[newState.loser]?.name || 'Alguien';
@@ -603,18 +661,28 @@ window.addEventListener('DOMContentLoaded', () => {
         // Detectar y manejar juego vacío
         checkEmptyGame();
 
-        // detectar cambio de turno para mostrar popup local "TU TURNO"
+        // detectar cambio de turno para mostrar popup local "TU TURNO" e iniciar timer
         const currentTurnId = gameState.playerOrder?.[gameState.currentTurnIndex];
         const prevTurnId = prevState?.playerOrder?.[prevState.currentTurnIndex];
-        if (currentUser && currentUser.id && currentTurnId === currentUser.id && currentTurnId !== prevTurnId) {
-            // mostrar popup encima del tablero y un toast leve
-            showTurnPopup();
-            showToast('Es tu turno', 'info', 1400);
+        if (currentTurnId !== prevTurnId) {
+            // Turno cambió
+            stopTurnTimer();
+            if (gameState.status === 'playing' && !gameState.gameOver) {
+                // Iniciar temporizador de turno (10seg)
+                startTurnTimer();
+            }
+            
+            if (currentUser && currentUser.id && currentTurnId === currentUser.id) {
+                // Es mi turno
+                showTurnPopup();
+                showToast('Es tu turno', 'info', 1400);
+            }
         }
 
         updatePlayersList();
 
         if (gameState.status === 'waiting') {
+            stopTurnTimer();
             welcomeScreen.style.display = 'block';
             gameBoard.style.display = 'none';
             finishScreen.style.display = 'none';
