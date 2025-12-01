@@ -1319,14 +1319,30 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function showUserProfile(user) {
-        const isOnline = user.status === 'online';
-        const userColor = user.textColor || '#ffffff';
-        const countryFlag = user.country || '';
-        const fullUid = user.firebaseUid || user.id || 'N/A';
-        const hasCountry = countryFlag && countryFlag !== 'No especificado' && countryFlag !== '🌎';
-        const isOwnProfile = (user.firebaseUid || user.id) === (currentUser.firebaseUid || currentUser.userId);
+        // Mostrar loader
+        const loader = createElement(`
+            <div class="user-profile-overlay active">
+                <div class="user-profile-panel">
+                    <div class="profile-loader">
+                        <div class="loader-spinner"></div>
+                    </div>
+                </div>
+            </div>
+        `);
+        document.body.appendChild(loader);
         
-        const modal = createElement(`
+        // Pequeño delay para mostrar el loader
+        setTimeout(() => {
+            loader.remove();
+            
+            const isOnline = user.status === 'online';
+            const userColor = user.textColor || '#ffffff';
+            const countryFlag = user.country || '';
+            const fullUid = user.firebaseUid || user.id || 'N/A';
+            const hasCountry = countryFlag && countryFlag !== 'No especificado' && countryFlag !== '🌎';
+            const isOwnProfile = (user.firebaseUid || user.id) === (currentUser.firebaseUid || currentUser.userId);
+            
+            const modal = createElement(`
             <div class="user-profile-overlay active">
                 <div class="user-profile-panel">
                     <div class="user-profile-header">
@@ -1480,10 +1496,11 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
         
-        modal.querySelector('.close-profile').addEventListener('click', () => modal.remove());
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) modal.remove();
-        });
+            modal.querySelector('.close-profile').addEventListener('click', () => modal.remove());
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
+        }, 300);
     }
     
     function createElement(html) {

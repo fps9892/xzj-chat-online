@@ -31,13 +31,11 @@
   transform: scale(0.95);
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
   .refresh-btn {
     display: block;
   }
-}
-
-@media (max-width: 768px) {
+  
   .refresh-btn {
     bottom: 70px;
     right: 15px;

@@ -79,7 +79,7 @@ export async function getUserProfile(userId, isGuest = false) {
             country: userData.country || 'No especificado',
             role, status,
             createdAt: userData.createdAt || 'No disponible',
-            lastSeen: userData.lastSeen || userData.lastUpdated || 'No disponible',
+            lastSeen: userData.lastSeen || 'No disponible',
             avatar: userData.avatar || 'images/profileuser.svg',
             textColor: userData.textColor || '#ffffff',
             messageCount: userData.messageCount || 0,
