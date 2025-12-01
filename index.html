@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="/emotes.css" />
     <link rel="stylesheet" href="/rooms-management.css" />
     <link rel="stylesheet" href="/join-notifications.css" />
+    <link rel="stylesheet" href="/refresh-button.css" />
     <link rel="stylesheet" href="/games-panel.css" />
     <link rel="stylesheet" href="/developer-panel.css" />
     <link rel="stylesheet" href="/resolutions/mobile.css" />
@@ -139,6 +140,11 @@
         <img src="/images/send.svg" alt="Send" class="send-icon" />
       </div>
     </footer>
+
+    <!-- Botón de refrescar (solo mobile/tablet) -->
+    <button class="refresh-btn" id="refreshBtn">
+      <img src="/images/refresh.svg" alt="Refresh" />
+    </button>
 
     <!-- Controles flotantes independientes -->
     <div class="chat-controls">
@@ -300,6 +306,7 @@
     </div>
 
     <script src="/loading-animation.js"></script>
+    <script src="/refresh-button.js"></script>
     <script type="module" src="/main.js"></script>
     <script type="module" src="/firebase.js"></script>
     <script type="module" src="/games-panel.js"></script>
