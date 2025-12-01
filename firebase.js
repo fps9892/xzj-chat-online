@@ -785,7 +785,6 @@ export async function requestPrivateRoomAccess(roomId) {
         
         const roomData = roomDoc.data();
         
-        // Si no es sala privada, no hacer nada
         if (!roomData.isPrivate) {
             return false;
         }
@@ -797,7 +796,16 @@ export async function requestPrivateRoomAccess(roomId) {
                 pendingUsers: [...pendingUsers, userId]
             });
             
-            // Enviar notificación en el chat de la sala privada
+            if (currentUser.isGuest) {
+                await setDoc(doc(db, 'guests', userId), {
+                    userId: userId,
+                    username: currentUser.username,
+                    name: currentUser.username,
+                    isGuest: true,
+                    createdAt: currentUser.createdAt || new Date().toISOString()
+                }, { merge: true });
+            }
+            
             const messagesRef = ref(database, `rooms/${roomId}/messages`);
             await push(messagesRef, {
                 text: `📨 ${currentUser.username} solicita el acceso a esta sala privada`,
@@ -829,6 +837,7 @@ export async function getPendingUsers(roomId) {
         let index = 1;
         for (const userId of pendingUserIds) {
             let username = 'Usuario desconocido';
+            let isGuest = false;
             
             try {
                 const userDoc = await getDoc(doc(db, 'users', userId));
@@ -837,7 +846,8 @@ export async function getPendingUsers(roomId) {
                 } else {
                     const guestDoc = await getDoc(doc(db, 'guests', userId));
                     if (guestDoc.exists()) {
-                        username = guestDoc.data().username || 'Invitado';
+                        username = guestDoc.data().username || guestDoc.data().name || 'Invitado';
+                        isGuest = true;
                     }
                 }
             } catch (error) {
@@ -847,7 +857,7 @@ export async function getPendingUsers(roomId) {
             pendingUsers.push({
                 numId: index++,
                 userId: userId,
-                username: username
+                username: isGuest ? `${username} (invitado)` : username
             });
         }
         
