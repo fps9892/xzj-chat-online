@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Buscaminas Multijugador</title>
+    <link rel="stylesheet" href="buscaminas.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <div class="header">
+        <div class="header-content">
+          <div class="header-left">
+            <svg
+              class="trophy-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+              <path d="M4 22h16"></path>
+              <path
+                d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"
+              ></path>
+              <path
+                d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"
+              ></path>
+              <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+            </svg>
+            <h1>Buscaminas Multijugador</h1>
+          </div>
+          <button id="joinBtn" class="join-btn">
+            <svg
+              class="btn-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <line x1="19" x2="19" y1="8" y2="14"></line>
+              <line x1="22" x2="16" y1="11" y2="11"></line>
+            </svg>
+            Unirse
+          </button>
+        </div>
+      </div>
+
+      <div class="main-grid">
+        <!-- Panel izquierdo -->
+        <div class="left-panel">
+          <!-- Jugadores actuales -->
+          <div class="card">
+            <h2 class="card-title">
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              Jugadores (<span id="playerCount">0</span>)
+            </h2>
+            <div id="playersList" class="players-list"></div>
+          </div>
+
+          <!-- Controles -->
+          <div class="card">
+            <button id="startBtn" class="start-btn">Iniciar Partida</button>
+            <p class="help-text">
+              Click izquierdo: revelar | Click derecho: bandera
+            </p>
+          </div>
+
+          <!-- Estadísticas -->
+          <div class="card">
+            <h2 class="card-title">
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+                <polyline points="16 7 22 7 22 13"></polyline>
+              </svg>
+              Estadísticas
+            </h2>
+            <div id="statsList" class="stats-list"></div>
+          </div>
+        </div>
+
+        <!-- Panel central - Tablero -->
+        <div class="center-panel">
+          <div class="card board-container">
+            <!-- Estado inicial -->
+            <div id="welcomeScreen" class="welcome-screen">
+              <svg
+                class="welcome-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                <path d="M4 22h16"></path>
+                <path
+                  d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"
+                ></path>
+                <path
+                  d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"
+                ></path>
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+              </svg>
+              <h2>¡Bienvenido!</h2>
+              <p>Únete al juego y presiona "Iniciar Partida"</p>
+            </div>
+
+            <!-- Tablero de juego -->
+            <div id="gameBoard" class="game-board" style="display: none"></div>
+
+            <!-- Pantalla de finalización -->
+            <div id="finishScreen" class="finish-screen" style="display: none">
+              <svg
+                class="finish-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                <path d="M4 22h16"></path>
+                <path
+                  d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"
+                ></path>
+                <path
+                  d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"
+                ></path>
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+              </svg>
+              <h2 id="winnerText"></h2>
+              <div id="finalScores" class="final-scores"></div>
+              <p class="restart-text">Nueva partida en 5 segundos...</p>
+              <div id="revealedBoard" class="game-board"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de unirse -->
+    <div id="joinModal" class="modal" style="display: none">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Unirse al Juego</h3>
+          <button id="closeModal" class="close-btn">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <input
+          type="text"
+          id="usernameInput"
+          placeholder="Ingresa tu nombre"
+          class="username-input"
+        />
+        <button id="confirmJoin" class="confirm-btn">Unirse</button>
+      </div>
+    </div>
+
+    <script src="buscaminas.js"></script>
+  </body>
+</html>
