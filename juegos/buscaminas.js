@@ -1,6 +1,6 @@
 // Configuración de Firebase
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getDatabase, ref, onValue, set, push, remove, onDisconnect } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { getDatabase, ref, onValue, set, update, remove, onDisconnect } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
@@ -15,39 +15,25 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-// Configuración del juego
 const BOARD_SIZE = 10;
 const MINES_COUNT = 15;
 
-// Estado del juego
-let gameState = {
-    board: [],
-    revealed: [],
-    flagged: [],
-    players: {},
-    currentPlayer: null,
-    gameStarted: false,
-    gameOver: false
-};
-
 let gameId = null;
 let currentUser = null;
+let gameState = null;
+let autoStartTimer = null;
 
-// Elementos del DOM
-const joinBtn = document.getElementById('joinBtn');
-const joinModal = document.getElementById('joinModal');
-const closeModal = document.getElementById('closeModal');
-const usernameInput = document.getElementById('usernameInput');
-const confirmJoin = document.getElementById('confirmJoin');
-const startBtn = document.getElementById('startBtn');
 const gameBoard = document.getElementById('gameBoard');
 const welcomeScreen = document.getElementById('welcomeScreen');
 const finishScreen = document.getElementById('finishScreen');
 const playersList = document.getElementById('playersList');
 const playerCount = document.getElementById('playerCount');
 const statsList = document.getElementById('statsList');
+const startBtn = document.getElementById('startBtn');
 
-// Obtener ID del juego de la URL
+// Ocultar botón de inicio
+startBtn.style.display = 'none';
+
 const urlParams = new URLSearchParams(window.location.search);
 gameId = urlParams.get('id');
 
@@ -62,43 +48,8 @@ if (userData && userData.username) {
     joinGame(userData.username);
 }
 
-// Event Listeners
-joinBtn.addEventListener('click', () => {
-    if (userData && userData.username) {
-        joinGame(userData.username);
-    } else {
-        joinModal.style.display = 'flex';
-    }
-});
-
-closeModal.addEventListener('click', () => {
-    joinModal.style.display = 'none';
-});
-
-confirmJoin.addEventListener('click', () => {
-    const username = usernameInput.value.trim();
-    if (username) {
-        joinGame(username);
-        joinModal.style.display = 'none';
-        usernameInput.value = '';
-    }
-});
-
-usernameInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        confirmJoin.click();
-    }
-});
-
-startBtn.addEventListener('click', () => {
-    if (gameState.currentPlayer && Object.keys(gameState.players).length > 0) {
-        startGame();
-    }
-});
-
-// Funciones del juego
 async function joinGame(username) {
-    const playerId = Date.now().toString();
+    const playerId = Date.now().toString() + Math.random().toString(36).substring(2, 9);
     currentUser = { id: playerId, name: username };
     
     const playerRef = ref(database, `games/buscaminas/${gameId}/players/${playerId}`);
@@ -110,24 +61,8 @@ async function joinGame(username) {
     
     onDisconnect(playerRef).remove();
     
-    gameState.currentPlayer = playerId;
-    joinBtn.textContent = 'Jugando';
-    joinBtn.disabled = true;
-    startBtn.disabled = false;
-}
-
-async function startGame() {
-    const gameRef = ref(database, `games/buscaminas/${gameId}`);
-    const board = generateBoard();
-    
-    await set(gameRef, {
-        status: 'playing',
-        board: board,
-        revealed: Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(false)),
-        flagged: Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(false)),
-        players: gameState.players,
-        startedAt: Date.now()
-    });
+    document.getElementById('joinBtn').textContent = 'Jugando';
+    document.getElementById('joinBtn').disabled = true;
 }
 
 function generateBoard() {
@@ -159,8 +94,31 @@ function generateBoard() {
     return board;
 }
 
+async function startNewRound() {
+    const board = generateBoard();
+    const playerIds = Object.keys(gameState.players);
+    
+    await update(ref(database, `games/buscaminas/${gameId}`), {
+        status: 'playing',
+        board: board,
+        revealed: Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(false)),
+        flagged: Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(false)),
+        currentTurnIndex: 0,
+        playerOrder: playerIds,
+        startedAt: Date.now(),
+        gameOver: false
+    });
+}
+
 function renderBoard() {
+    if (!gameState || !gameState.board) return;
+    
     gameBoard.innerHTML = '';
+    gameBoard.style.display = 'grid';
+    gameBoard.style.gridTemplateColumns = `repeat(${BOARD_SIZE}, 40px)`;
+    
+    const isMyTurn = gameState.playerOrder && 
+                     gameState.playerOrder[gameState.currentTurnIndex] === currentUser?.id;
     
     for (let row = 0; row < BOARD_SIZE; row++) {
         for (let col = 0; col < BOARD_SIZE; col++) {
@@ -184,11 +142,13 @@ function renderBoard() {
                 cell.textContent = '🚩';
             }
             
-            cell.addEventListener('click', () => handleCellClick(row, col));
-            cell.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                handleRightClick(row, col);
-            });
+            if (isMyTurn && !gameState.gameOver) {
+                cell.addEventListener('click', () => handleCellClick(row, col));
+                cell.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    handleRightClick(row, col);
+                });
+            }
             
             gameBoard.appendChild(cell);
         }
@@ -196,91 +156,104 @@ function renderBoard() {
 }
 
 async function handleCellClick(row, col) {
-    if (!gameState.gameStarted || gameState.gameOver) return;
+    if (!gameState || gameState.gameOver) return;
     if (gameState.revealed[row][col] || gameState.flagged[row][col]) return;
+    
+    const isMyTurn = gameState.playerOrder[gameState.currentTurnIndex] === currentUser.id;
+    if (!isMyTurn) return;
     
     const value = gameState.board[row][col];
     
     if (value === -1) {
-        gameState.gameOver = true;
-        revealAll();
-        await endGame(false);
-    } else {
-        revealCell(row, col);
-        
-        if (gameState.currentPlayer) {
-            gameState.players[gameState.currentPlayer].score += value === 0 ? 1 : value;
-            const playerRef = ref(database, `games/buscaminas/${gameId}/players/${gameState.currentPlayer}`);
-            await set(playerRef, gameState.players[gameState.currentPlayer]);
+        // Mina - fin del juego
+        const newRevealed = JSON.parse(JSON.stringify(gameState.revealed));
+        for (let r = 0; r < BOARD_SIZE; r++) {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                newRevealed[r][c] = true;
+            }
         }
         
-        if (checkWin()) {
-            gameState.gameOver = true;
-            await endGame(true);
-        }
-        
-        const gameRef = ref(database, `games/buscaminas/${gameId}`);
-        await set(gameRef, {
-            ...gameState,
-            revealed: gameState.revealed,
-            flagged: gameState.flagged
+        await update(ref(database, `games/buscaminas/${gameId}`), {
+            revealed: newRevealed,
+            gameOver: true,
+            loser: currentUser.id
         });
         
-        renderBoard();
-        updateStats();
+        setTimeout(() => endGame(false), 1000);
+    } else {
+        // Revelar celda
+        const newRevealed = JSON.parse(JSON.stringify(gameState.revealed));
+        revealCells(row, col, newRevealed);
+        
+        // Actualizar puntos
+        let points = 0;
+        for (let r = 0; r < BOARD_SIZE; r++) {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                if (newRevealed[r][c] && !gameState.revealed[r][c] && gameState.board[r][c] !== -1) {
+                    points += gameState.board[r][c] === 0 ? 1 : gameState.board[r][c];
+                }
+            }
+        }
+        
+        const newScore = (gameState.players[currentUser.id]?.score || 0) + points;
+        
+        // Verificar victoria
+        let revealedCount = 0;
+        for (let r = 0; r < BOARD_SIZE; r++) {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                if (newRevealed[r][c] && gameState.board[r][c] !== -1) {
+                    revealedCount++;
+                }
+            }
+        }
+        
+        const won = revealedCount === (BOARD_SIZE * BOARD_SIZE - MINES_COUNT);
+        
+        // Siguiente turno
+        const nextTurnIndex = (gameState.currentTurnIndex + 1) % gameState.playerOrder.length;
+        
+        await update(ref(database, `games/buscaminas/${gameId}`), {
+            revealed: newRevealed,
+            currentTurnIndex: nextTurnIndex,
+            [`players/${currentUser.id}/score`]: newScore,
+            gameOver: won,
+            winner: won ? currentUser.id : null
+        });
+        
+        if (won) {
+            setTimeout(() => endGame(true), 1000);
+        }
     }
 }
 
 async function handleRightClick(row, col) {
-    if (!gameState.gameStarted || gameState.gameOver) return;
+    if (!gameState || gameState.gameOver) return;
     if (gameState.revealed[row][col]) return;
     
-    gameState.flagged[row][col] = !gameState.flagged[row][col];
+    const isMyTurn = gameState.playerOrder[gameState.currentTurnIndex] === currentUser.id;
+    if (!isMyTurn) return;
     
-    const gameRef = ref(database, `games/buscaminas/${gameId}`);
-    await set(gameRef, {
-        ...gameState,
-        flagged: gameState.flagged
+    const newFlagged = JSON.parse(JSON.stringify(gameState.flagged));
+    newFlagged[row][col] = !newFlagged[row][col];
+    
+    await update(ref(database, `games/buscaminas/${gameId}`), {
+        flagged: newFlagged
     });
-    
-    renderBoard();
-    updateStats();
 }
 
-function revealCell(row, col) {
+function revealCells(row, col, revealed) {
     if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) return;
-    if (gameState.revealed[row][col]) return;
+    if (revealed[row][col]) return;
     
-    gameState.revealed[row][col] = true;
+    revealed[row][col] = true;
     
     if (gameState.board[row][col] === 0) {
         for (let i = -1; i <= 1; i++) {
             for (let j = -1; j <= 1; j++) {
-                revealCell(row + i, col + j);
+                revealCells(row + i, col + j, revealed);
             }
         }
     }
-}
-
-function revealAll() {
-    for (let row = 0; row < BOARD_SIZE; row++) {
-        for (let col = 0; col < BOARD_SIZE; col++) {
-            gameState.revealed[row][col] = true;
-        }
-    }
-    renderBoard();
-}
-
-function checkWin() {
-    let revealedCount = 0;
-    for (let row = 0; row < BOARD_SIZE; row++) {
-        for (let col = 0; col < BOARD_SIZE; col++) {
-            if (gameState.revealed[row][col] && gameState.board[row][col] !== -1) {
-                revealedCount++;
-            }
-        }
-    }
-    return revealedCount === (BOARD_SIZE * BOARD_SIZE - MINES_COUNT);
 }
 
 async function endGame(won) {
@@ -298,7 +271,8 @@ async function endGame(won) {
     if (won) {
         winnerText.textContent = `🎉 ¡${sortedPlayers[0][1].name} ganó!`;
     } else {
-        winnerText.textContent = '💥 ¡Mina explotada!';
+        const loserName = gameState.players[gameState.loser]?.name || 'Alguien';
+        winnerText.textContent = `💥 ${loserName} tocó una mina`;
     }
     
     finalScores.innerHTML = sortedPlayers.map(([id, player], index) => `
@@ -330,31 +304,37 @@ async function endGame(won) {
         }
     }
     
-    const gameRef = ref(database, `games/buscaminas/${gameId}`);
-    await set(gameRef, {
-        status: 'finished',
-        winner: sortedPlayers[0][1].name,
-        finalScores: sortedPlayers.map(([id, p]) => ({ name: p.name, score: p.score }))
-    });
-    
     setTimeout(async () => {
-        await startGame();
+        // Resetear puntos
+        const updates = {};
+        Object.keys(gameState.players).forEach(playerId => {
+            updates[`players/${playerId}/score`] = 0;
+        });
+        await update(ref(database, `games/buscaminas/${gameId}`), updates);
+        
+        await startNewRound();
     }, 5000);
 }
 
 function updatePlayersList() {
+    if (!gameState || !gameState.players) return;
+    
     const players = Object.entries(gameState.players);
     playerCount.textContent = players.length;
     
+    const currentTurnId = gameState.playerOrder?.[gameState.currentTurnIndex];
+    
     playersList.innerHTML = players.map(([id, player]) => `
-        <div class="player-item">
-            <span class="player-name">${player.name}</span>
+        <div class="player-item ${id === currentTurnId ? 'active-turn' : ''}">
+            <span class="player-name">${player.name}${id === currentTurnId ? ' 🎯' : ''}</span>
             <span class="player-score">${player.score}</span>
         </div>
     `).join('');
 }
 
 function updateStats() {
+    if (!gameState || !gameState.revealed) return;
+    
     const totalCells = BOARD_SIZE * BOARD_SIZE;
     const revealedCount = gameState.revealed.flat().filter(Boolean).length;
     const flaggedCount = gameState.flagged.flat().filter(Boolean).length;
@@ -384,23 +364,42 @@ function updateStats() {
 const gameRef = ref(database, `games/buscaminas/${gameId}`);
 onValue(gameRef, (snapshot) => {
     if (snapshot.exists()) {
-        const data = snapshot.val();
+        gameState = snapshot.val();
         
-        if (data.players) {
-            gameState.players = data.players;
-            updatePlayersList();
-        }
+        updatePlayersList();
         
-        if (data.status === 'playing') {
-            gameState.gameStarted = true;
-            gameState.board = data.board;
-            gameState.revealed = data.revealed;
-            gameState.flagged = data.flagged;
+        if (gameState.status === 'waiting') {
+            welcomeScreen.style.display = 'block';
+            gameBoard.style.display = 'none';
+            finishScreen.style.display = 'none';
             
+            const playerCount = Object.keys(gameState.players || {}).length;
+            
+            // Auto-inicio con 2+ jugadores
+            if (playerCount >= 2 && !autoStartTimer) {
+                let countdown = 10;
+                welcomeScreen.querySelector('p').textContent = `Iniciando en ${countdown} segundos...`;
+                
+                autoStartTimer = setInterval(async () => {
+                    countdown--;
+                    if (countdown > 0) {
+                        welcomeScreen.querySelector('p').textContent = `Iniciando en ${countdown} segundos...`;
+                    } else {
+                        clearInterval(autoStartTimer);
+                        autoStartTimer = null;
+                        await startNewRound();
+                    }
+                }, 1000);
+            } else if (playerCount < 2) {
+                if (autoStartTimer) {
+                    clearInterval(autoStartTimer);
+                    autoStartTimer = null;
+                }
+                welcomeScreen.querySelector('p').textContent = 'Esperando más jugadores...';
+            }
+        } else if (gameState.status === 'playing') {
             welcomeScreen.style.display = 'none';
             finishScreen.style.display = 'none';
-            gameBoard.style.display = 'grid';
-            gameBoard.style.gridTemplateColumns = `repeat(${BOARD_SIZE}, 40px)`;
             
             renderBoard();
             updateStats();
@@ -408,5 +407,4 @@ onValue(gameRef, (snapshot) => {
     }
 });
 
-// Inicializar estadísticas
 updateStats();
