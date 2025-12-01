@@ -2,6 +2,9 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getDatabase, ref, push, onValue, serverTimestamp, set, onDisconnect, query as dbQuery, limitToLast, remove, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 import { getFirestore, doc, updateDoc, getDoc, setDoc, deleteDoc, collection, query as fsQuery, where, getDocs, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
+// Re-exportar funciones necesarias para otros módulos
+export { ref, push, set, onValue, serverTimestamp, remove, get, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, onSnapshot };
+
 const firebaseConfig = {
     apiKey: "AIzaSyDavetvIrVymmoiIpRxUigCd5hljMtsr0c",
     authDomain: "fyzar-80936.firebaseapp.com",
@@ -13,8 +16,8 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
-const db = getFirestore(app);
+export const database = getDatabase(app);
+export const db = getFirestore(app);
 
 // Limpiar userId para evitar caracteres no permitidos
 function sanitizeUserId(userId) {
@@ -22,7 +25,7 @@ function sanitizeUserId(userId) {
 }
 
 // Usuario actual desde localStorage
-let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+export let currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
 // Redirect to login if no user
 if (!currentUser) {
@@ -34,7 +37,7 @@ if (currentUser && currentUser.userId) {
     currentUser.userId = sanitizeUserId(currentUser.userId);
 }
 
-let currentRoom = window.location.hash.substring(1) || 'general';
+export let currentRoom = window.location.hash.substring(1) || 'general';
 
 
 
