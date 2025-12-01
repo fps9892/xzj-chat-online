@@ -56,9 +56,19 @@ if (!gameId) {
     window.close();
 }
 
+// Auto-unirse con datos del usuario
+const userData = JSON.parse(localStorage.getItem('currentUser'));
+if (userData && userData.username) {
+    joinGame(userData.username);
+}
+
 // Event Listeners
 joinBtn.addEventListener('click', () => {
-    joinModal.style.display = 'flex';
+    if (userData && userData.username) {
+        joinGame(userData.username);
+    } else {
+        joinModal.style.display = 'flex';
+    }
 });
 
 closeModal.addEventListener('click', () => {
@@ -280,19 +290,21 @@ async function endGame(won) {
     const winnerText = document.getElementById('winnerText');
     const finalScores = document.getElementById('finalScores');
     
+    const sortedPlayers = Object.entries(gameState.players)
+        .sort((a, b) => b[1].score - a[1].score);
+    
+    const medals = ['🥇', '🥈', '🥉'];
+    
     if (won) {
-        winnerText.textContent = '🎉 ¡Victoria!';
+        winnerText.textContent = `🎉 ¡${sortedPlayers[0][1].name} ganó!`;
     } else {
         winnerText.textContent = '💥 ¡Mina explotada!';
     }
     
-    const sortedPlayers = Object.entries(gameState.players)
-        .sort((a, b) => b[1].score - a[1].score);
-    
     finalScores.innerHTML = sortedPlayers.map(([id, player], index) => `
-        <div class="score-item ${index === 0 ? 'winner' : ''}">
-            <span>${index + 1}. ${player.name}</span>
-            <span>${player.score} puntos</span>
+        <div class="score-item ${index === 0 ? 'winner' : index === 1 ? 'second' : index === 2 ? 'third' : ''}">
+            <span>${medals[index] || (index + 1) + '.'} ${player.name}</span>
+            <span>${player.score} pts</span>
         </div>
     `).join('');
     
@@ -318,10 +330,15 @@ async function endGame(won) {
         }
     }
     
-    setTimeout(() => {
-        if (gameState.currentPlayer) {
-            startGame();
-        }
+    const gameRef = ref(database, `games/buscaminas/${gameId}`);
+    await set(gameRef, {
+        status: 'finished',
+        winner: sortedPlayers[0][1].name,
+        finalScores: sortedPlayers.map(([id, p]) => ({ name: p.name, score: p.score }))
+    });
+    
+    setTimeout(async () => {
+        await startGame();
     }, 5000);
 }
 
