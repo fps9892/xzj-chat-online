@@ -1234,6 +1234,7 @@ body {
   align-items: center;
   gap: 10px;
   box-shadow: 0 4px 15px rgba(42, 26, 26, 0.5);
+  /* Cada notificación se posiciona dinámicamente */
 }
 
 .user-notification.show {
@@ -2810,7 +2811,7 @@ body {
   background: rgba(201, 122, 111, 0.1);
   cursor: pointer;
   display: flex;
-  align-items: center;
+   align-items: center;
   justify-content: center;
   transition: all 0.3s;
   font-size: 24px;
@@ -4040,9 +4041,6 @@ body {
     font-size: 12px;
   }
 }
-
-
-
 
 @keyframes spin {
   0%,

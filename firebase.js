@@ -793,6 +793,17 @@ export async function requestPrivateRoomAccess(roomId) {
             await updateDoc(roomRef, {
                 pendingUsers: [...pendingUsers, userId]
             });
+            
+            // Enviar notificación en el chat de la sala privada
+            const messagesRef = ref(database, `rooms/${roomId}/messages`);
+            await push(messagesRef, {
+                text: `📨 ${currentUser.username} solicita el acceso a esta sala privada`,
+                type: 'access-request',
+                timestamp: serverTimestamp(),
+                requestedUserId: userId,
+                requestedUsername: currentUser.username,
+                isSystemNotification: true
+            });
         }
         
         return true;
@@ -1185,7 +1196,7 @@ export async function muteUser(userId, duration = 5 * 60 * 1000) {
     }
 }
 
-// Verificar si usuario está muteado
+// Verificar si el usuario está muteado
 export async function checkMutedStatus(userId) {
     if (!userId) return false;
     
@@ -1972,7 +1983,7 @@ export async function clearRoomMessages() {
     }
 }
 
-// Obtener todas las salas disponibles con conteo de usuarios
+// Obtener todas las salas disponibles with user count
 export async function getRooms() {
     try {
         const roomsSnapshot = await getDocs(collection(db, 'rooms'));
@@ -2299,7 +2310,7 @@ export async function createConecta4Game() {
         board: Array(42).fill(''),
         currentTurn: 'red',
         winner: null,
-        stats: { rounds: 0, winsRed: 0, winsYellow: 0, draws: 0 }
+        stats: { rounds: 0, winsRed: 0, winsO: 0, draws: 0 }
     });
     
     setTimeout(async () => {
@@ -2561,5 +2572,3 @@ export async function createBuscaminasGame() {
     
     return gameId;
 }
-
-export { currentUser, currentRoom, database, db, ref, onValue, set, push, serverTimestamp };

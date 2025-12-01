@@ -4,9 +4,9 @@ import { getUserProfile, findUserByUsername, animateMessageDeletion, initAdminLi
 import { setupMessageOptions, replyingTo, clearReply } from './message-options.js';
 import { showBanPanel, showUnbanPanel, showMutePanel, showUnmutePanel } from './moderation-panels.js';
 import { showGamesPanel } from './games-panel.js';
-import { NotificationManager } from '/notifications.js';
+import { NotificationManager } from './notifications.js';
 
-let notificationManager = null;
+let notificationManager = new NotificationManager(currentRoom);
 
 document.addEventListener('DOMContentLoaded', function() {
     // Elementos de la pantalla de carga
@@ -1873,7 +1873,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         pollsBtn.style.pointerEvents = 'auto';
                         pollsBtn.style.opacity = '1';
                     }
-                    sendIcon.style.pointerEvents = 'auto';
+                                       sendIcon.style.pointerEvents = 'auto';
                     sendIcon.style.opacity = '1';
                 }
             });
@@ -3211,5 +3211,3 @@ function showForcebanPanel(users) {
         });
     });
 }
-
-// Global refresh disabled
