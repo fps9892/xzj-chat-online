@@ -264,6 +264,22 @@ export function listenToMessages(callback) {
             callback(messages, true);
             isInitialLoad = false;
         } else {
+            // Detectar mensajes eliminados
+            const currentIds = new Set();
+            snapshot.forEach((childSnapshot) => {
+                currentIds.add(childSnapshot.key);
+            });
+            
+            loadedMessageIds.forEach(id => {
+                if (!currentIds.has(id)) {
+                    // Mensaje eliminado
+                    const messageEl = document.querySelector(`[data-message-id="${id}"]`);
+                    if (messageEl) messageEl.remove();
+                    loadedMessageIds.delete(id);
+                }
+            });
+            
+            // Detectar mensajes nuevos
             const newMessages = [];
             snapshot.forEach((childSnapshot) => {
                 if (!loadedMessageIds.has(childSnapshot.key)) {
@@ -636,6 +652,16 @@ export async function changePassword(newPassword) {
 // Función para eliminar mensaje (mejorada con permisos)
 export async function deleteMessage(messageId, messageData = null) {
     try {
+        // Verificar permisos
+        const isOwner = messageData && messageData.userId === currentUser.userId;
+        const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
+        const isMod = await checkModeratorStatus(currentUser.firebaseUid);
+        const isDev = await checkDeveloperStatus(currentUser.firebaseUid);
+        
+        if (!isOwner && !isAdmin && !isMod && !isDev) {
+            throw new Error('No tienes permisos para eliminar este mensaje');
+        }
+        
         const messageRef = ref(database, `rooms/${currentRoom}/messages/${messageId}`);
         await remove(messageRef);
         return true;
@@ -1958,14 +1984,53 @@ export async function clearRoomMessages() {
     
     const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
     const isModerator = await checkModeratorStatus(currentUser.firebaseUid);
+    const isDev = await checkDeveloperStatus(currentUser.firebaseUid);
     
-    if (!isAdmin && !isModerator) {
-        throw new Error('Solo administradores y moderadores pueden borrar el chat');
+    if (!isAdmin && !isModerator && !isDev) {
+        throw new Error('Solo administradores, moderadores y desarrolladores pueden borrar el chat');
     }
     
     try {
+        // Enviar mensaje de advertencia con temporizador de 10 segundos
+        const warningMessageData = {
+            text: '⚠️ El historial del chat será eliminado en 10 segundos.',
+            userId: 'system',
+            userName: 'Sistema',
+            userAvatar: 'images/logo.svg',
+            textColor: '#ff9900',
+            timestamp: serverTimestamp(),
+            type: 'system',
+            isGuest: false,
+            role: 'system',
+            firebaseUid: null
+        };
+        
         const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
+        await push(messagesRef, warningMessageData);
+        
+        // Esperar 10 segundos
+        await new Promise(resolve => setTimeout(resolve, 10000));
+        
+        // Borrar todos los mensajes
         await remove(messagesRef);
+        
+        // Enviar mensaje de confirmación con animación de tipeo
+        const confirmMessageData = {
+            text: 'Historial de chat eliminado',
+            userId: 'system',
+            userName: 'Sistema',
+            userAvatar: 'images/logo.svg',
+            textColor: '#00ff00',
+            timestamp: serverTimestamp(),
+            type: 'system',
+            isGuest: false,
+            role: 'system',
+            firebaseUid: null,
+            typewriterEffect: true
+        };
+        
+        await push(messagesRef, confirmMessageData);
+        
         return true;
     } catch (error) {
         console.error('Error clearing room messages:', error);

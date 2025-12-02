@@ -972,15 +972,32 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Manejar mensajes del sistema
         if (message.type === 'system') {
-            return createElement(`
+            const systemEl = createElement(`
                 <div class="message-container system-message" data-message-id="${message.id}">
                     <div class="message system">
                         <div class="message-content">
-                            <div class="message-text">${message.text}</div>
+                            <div class="message-text">${message.typewriterEffect ? '' : message.text}</div>
                         </div>
                     </div>
                 </div>
             `);
+            
+            // Aplicar efecto de tipeo si está habilitado
+            if (message.typewriterEffect) {
+                const textEl = systemEl.querySelector('.message-text');
+                const text = message.text;
+                let i = 0;
+                const typeInterval = setInterval(() => {
+                    if (i < text.length) {
+                        textEl.textContent += text.charAt(i);
+                        i++;
+                    } else {
+                        clearInterval(typeInterval);
+                    }
+                }, 80);
+            }
+            
+            return systemEl;
         }
         
         // Manejar notificaciones de sistema (entrada/salida)
