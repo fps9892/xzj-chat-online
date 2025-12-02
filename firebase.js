@@ -591,42 +591,10 @@ export async function sendImage(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = (e) => {
-            // Si es un GIF, enviarlo directamente para conservar la animación
-            if (file.type === 'image/gif') {
-                sendMessage('', 'image', e.target.result)
-                    .then(resolve)
-                    .catch(reject);
-            } else {
-                // Para otras imágenes, procesar y comprimir
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-                    const maxSize = 800;
-
-                    if (width > height && width > maxSize) {
-                        height = Math.round((height * maxSize) / width);
-                        width = maxSize;
-                    } else if (height > maxSize) {
-                        width = Math.round((width * maxSize) / height);
-                        height = maxSize;
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    const mimeType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-                    const quality = mimeType === 'image/png' ? 0.9 : 0.7; // Calidad ligeramente mejor para PNG
-                    const compressedImage = canvas.toDataURL(mimeType, quality);
-                    sendMessage('', 'image', compressedImage)
-                        .then(resolve)
-                        .catch(reject);
-                };
-                img.src = e.target.result;
-                }
+            // Enviar directamente sin compresión para mantener formato original
+            sendMessage('', 'image', e.target.result)
+                .then(resolve)
+                .catch(reject);
         };
         reader.onerror = () => reject(new Error('Error al leer el archivo'));
         reader.readAsDataURL(file);

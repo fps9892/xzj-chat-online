@@ -1208,7 +1208,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="reactions-container">
                             ${renderReactions(message.reactions, message.id)}
                         </div>
-                        }
                     </div>
                 </div>
             `);
@@ -2252,11 +2251,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="image-modal">
                     <div class="image-modal-header">
                         <div class="image-modal-controls">
-                            <button class="modal-control-btn" id="zoomInBtn" title="Acercar"><img src="/images/zoom-in.svg" alt="+"></button>
-                            <button class="modal-control-btn" id="zoomOutBtn" title="Alejar"><img src="/images/zoom-out.svg" alt="-"></button>
+                            <button class="modal-control-btn" id="zoomInBtn" title="Acercar">➕</button>
+                            <button class="modal-control-btn" id="zoomOutBtn" title="Alejar">➖</button>
                             <button class="modal-control-btn" id="resetZoomBtn" title="Restablecer">🔄</button>
-                            <button class="modal-control-btn" id="downloadBtn" title="Descargar"><img src="/images/download.svg" alt="↓"></button>
-                            <button class="modal-control-btn" id="copyLinkBtn" title="Copiar enlace"><img src="/images/copy.svg" alt="📋"></button>
+                            <button class="modal-control-btn" id="downloadBtn" title="Descargar">💾</button>
+                            <button class="modal-control-btn" id="copyLinkBtn" title="Copiar enlace">🔗</button>
                         </div>
                         <span class="image-modal-title">Enviada por ${username} a las ${time}</span>
                         <button class="close-modal" title="Cerrar">❌</button>
@@ -2347,21 +2346,6 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.querySelector('.close-modal').addEventListener('click', () => modal.remove());
         modal.addEventListener('click', (e) => {
             if (e.target === modal) modal.remove();
-        });
-
-        // Reemplazar imágenes de botones por emojis si no cargan
-        const buttons = modal.querySelectorAll('.modal-control-btn');
-        buttons.forEach(button => {
-            const img = button.querySelector('img');
-            if (img) {
-                img.onerror = () => {
-                    const emojiMap = { 'zoomInBtn': '➕', 'zoomOutBtn': '➖', 'downloadBtn': '💾', 'copyLinkBtn': '🔗' };
-                    if (emojiMap[button.id]) {
-                        button.innerHTML = emojiMap[button.id];
-                        button.style.fontSize = '18px';
-                    }
-                };
-            }
         });
     };
 
