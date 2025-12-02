@@ -2014,23 +2014,6 @@ export async function clearRoomMessages() {
         // Borrar todos los mensajes
         await remove(messagesRef);
         
-        // Enviar mensaje de confirmación con animación de tipeo
-        const confirmMessageData = {
-            text: 'Historial de chat eliminado',
-            userId: 'system',
-            userName: 'Sistema',
-            userAvatar: 'images/logo.svg',
-            textColor: '#00ff00',
-            timestamp: serverTimestamp(),
-            type: 'system',
-            isGuest: false,
-            role: 'system',
-            firebaseUid: null,
-            typewriterEffect: true
-        };
-        
-        await push(messagesRef, confirmMessageData);
-        
         return true;
     } catch (error) {
         console.error('Error clearing room messages:', error);
