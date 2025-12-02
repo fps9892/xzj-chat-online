@@ -235,33 +235,49 @@ async function limitMessages() {
 
 let currentMessagesListener = null;
 let activeRoom = null;
+let loadedMessageIds = new Set();
 
 export function listenToMessages(callback) {
-    // Limpiar listener anterior si existe
     if (currentMessagesListener) {
         currentMessagesListener();
         currentMessagesListener = null;
     }
     
     activeRoom = currentRoom;
-    // Reducir a 30 mensajes para carga más rápida
+    loadedMessageIds.clear();
+    
     const messagesRef = dbQuery(ref(database, `rooms/${currentRoom}/messages`), limitToLast(30));
+    
+    let isInitialLoad = true;
     currentMessagesListener = onValue(messagesRef, (snapshot) => {
-        // Solo procesar si seguimos en la misma sala
         if (activeRoom !== currentRoom) return;
         
-        const messages = [];
-        snapshot.forEach((childSnapshot) => {
-            const data = childSnapshot.val();
-            // Solo agregar mensajes válidos
-            if (data && data.timestamp) {
-                messages.push({
-                    id: childSnapshot.key,
-                    ...data
-                });
+        if (isInitialLoad) {
+            const messages = [];
+            snapshot.forEach((childSnapshot) => {
+                const data = childSnapshot.val();
+                if (data && data.timestamp) {
+                    loadedMessageIds.add(childSnapshot.key);
+                    messages.push({ id: childSnapshot.key, ...data });
+                }
+            });
+            callback(messages, true);
+            isInitialLoad = false;
+        } else {
+            const newMessages = [];
+            snapshot.forEach((childSnapshot) => {
+                if (!loadedMessageIds.has(childSnapshot.key)) {
+                    const data = childSnapshot.val();
+                    if (data && data.timestamp) {
+                        loadedMessageIds.add(childSnapshot.key);
+                        newMessages.push({ id: childSnapshot.key, ...data });
+                    }
+                }
+            });
+            if (newMessages.length > 0) {
+                callback(newMessages, false);
             }
-        });
-        callback(messages);
+        }
     });
     
     return currentMessagesListener;

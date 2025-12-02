@@ -317,15 +317,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Abrir panel de usuario (ahora abre el perfil)
     userInfo.addEventListener('click', async function(e) {
         e.stopPropagation();
-        showUserProfile(currentUser);
         
-        getUserProfile(currentUser.firebaseUid || currentUser.userId, currentUser.isGuest).then(userProfile => {
-            if (userProfile && document.querySelector('.user-profile-overlay')) {
-                const overlay = document.querySelector('.user-profile-overlay');
-                overlay.remove();
-                showUserProfile(userProfile);
-            }
-        });
+        const loader = createElement(`<div class="profile-loader-overlay"><div class="loader-spinner"></div></div>`);
+        document.body.appendChild(loader);
+        
+        const userProfile = await getUserProfile(currentUser.firebaseUid || currentUser.userId, currentUser.isGuest);
+        loader.remove();
+        showUserProfile(userProfile || currentUser);
     });
 
     // Cerrar panel de usuario
@@ -683,8 +681,11 @@ document.addEventListener('DOMContentLoaded', function() {
             initializeMessages();
             isLoadingMessages = false;
         } else {
-            // Solo mostrar loader si no hay caché
             chatArea.innerHTML = '<div class="chat-loader"></div>';
+            setTimeout(() => {
+                const loader = chatArea.querySelector('.chat-loader');
+                if (loader) loader.remove();
+            }, 1000);
         }
         
         // Verificar acceso a sala privada (en paralelo)
@@ -694,13 +695,18 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!accessCheck.isPrivate) {
             hasPrivateRoomAccess = true;
             enableChatControls();
-            listenToMessages((messages) => {
+            listenToMessages((messages, isInitial) => {
                 if (isLoadingMessages) isLoadingMessages = false;
-                messagesCache[currentRoom] = messages;
-                renderMessages(messages);
-                if (firstLoad) {
-                    initializeMessages();
-                    firstLoad = false;
+                
+                if (isInitial) {
+                    messagesCache[currentRoom] = messages;
+                    renderMessages(messages, true);
+                    if (firstLoad) {
+                        initializeMessages();
+                        firstLoad = false;
+                    }
+                } else {
+                    renderMessages(messages, false);
                 }
             });
             return;
@@ -710,25 +716,30 @@ document.addEventListener('DOMContentLoaded', function() {
         if (accessCheck.isOwner || accessCheck.hasAccess) {
             hasPrivateRoomAccess = true;
             enableChatControls();
-            listenToMessages((messages) => {
-                if (isLoadingMessages) isLoadingMessages = false;
-                messagesCache[currentRoom] = messages;
-                renderMessages(messages);
-                if (firstLoad) {
-                    initializeMessages();
-                    firstLoad = false;
+            listenToMessages((messages, isInitial) => {
+                isLoadingMessages = false;
+                
+                if (isInitial) {
+                    messagesCache[currentRoom] = messages;
+                    renderMessages(messages, true);
+                    if (firstLoad) {
+                        initializeMessages();
+                        firstLoad = false;
+                    }
+                } else {
+                    renderMessages(messages, false);
                 }
             });
         } else if (accessCheck.isPending) {
             hasPrivateRoomAccess = false;
             isLoadingMessages = false;
-            chatArea.innerHTML = '<div class="room-loader"><p>Solicitud pendiente de ingreso</p><small>Esperando aprobación del dueño</small></div>';
+            chatArea.innerHTML = '<div class="room-loader"><p>Solicitud pendiente</p></div>';
             disableChatControls();
         } else {
             hasPrivateRoomAccess = false;
             await requestPrivateRoomAccess(currentRoom);
             isLoadingMessages = false;
-            chatArea.innerHTML = '<div class="room-loader"><p>Solicitud enviada</p><small>Esperando aprobación del dueño</small></div>';
+            chatArea.innerHTML = '<div class="room-loader"><p>Solicitud enviada</p></div>';
             disableChatControls();
         }
     }
@@ -875,61 +886,53 @@ document.addEventListener('DOMContentLoaded', function() {
         chatArea.dataset.speedListenerAdded = 'true';
     }
     
-    function renderMessages(messages) {
-        if (!isPageVisible && messages.length > lastMessageCount) {
-            unreadMessages += (messages.length - lastMessageCount);
-            document.title = `(${unreadMessages}) ${originalTitle}`;
-        }
-        
-        lastMessageCount = messages.length;
-        
+    function renderMessages(messages, isInitialLoad = true) {
         const chatArea = document.querySelector('.chat-area');
         const wasAtBottom = chatArea.scrollHeight - chatArea.scrollTop <= chatArea.clientHeight + 50;
         
-        // Ordenar mensajes por timestamp
-        const sortedMessages = messages.sort((a, b) => {
-            const timeA = a.timestamp || 0;
-            const timeB = b.timestamp || 0;
-            return timeA - timeB;
-        });
-        
-        // Obtener mensajes existentes para evitar recrear iframes
-        const existingMessages = new Map();
-        chatArea.querySelectorAll('.message-container[data-message-id]').forEach(el => {
-            existingMessages.set(el.dataset.messageId, el);
-        });
-        
-        // Usar DocumentFragment para renderizado más rápido
-        const fragment = document.createDocumentFragment();
-        
-        sortedMessages.forEach((message, index) => {
-            // Reutilizar elemento existente si tiene iframe de YouTube
-            const existingEl = existingMessages.get(message.id);
-            if (existingEl && existingEl.querySelector('.youtube-embed iframe')) {
-                fragment.appendChild(existingEl);
-            } else {
+        if (isInitialLoad) {
+            chatArea.innerHTML = '';
+            lastMessageCount = messages.length;
+            
+            const sortedMessages = messages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+            
+            sortedMessages.forEach((message) => {
                 const messageEl = createMessageElement(message);
-                fragment.appendChild(messageEl);
+                chatArea.appendChild(messageEl);
                 
-                // Inicializar velocidad de audio
                 if (message.type === 'audio') {
                     const audioElement = document.getElementById(`audio-${message.id}`);
-                    if (audioElement) {
-                        audioElement.playbackRate = 1;
-                    }
+                    if (audioElement) audioElement.playbackRate = 1;
                 }
-            }
-        });
-        
-        // Limpiar y agregar todos los mensajes de una vez
-        chatArea.innerHTML = '';
-        chatArea.appendChild(fragment);
-        
-        // Scroll automático solo si estaba cerca del final
-        if (wasAtBottom) {
+            });
+            
             requestAnimationFrame(() => {
                 chatArea.scrollTop = chatArea.scrollHeight;
             });
+        } else {
+            messages.forEach((message) => {
+                if (chatArea.querySelector(`[data-message-id="${message.id}"]`)) return;
+                
+                const messageEl = createMessageElement(message);
+                chatArea.appendChild(messageEl);
+                
+                if (message.type === 'audio') {
+                    const audioElement = document.getElementById(`audio-${message.id}`);
+                    if (audioElement) audioElement.playbackRate = 1;
+                }
+                
+                lastMessageCount++;
+                if (!isPageVisible) {
+                    unreadMessages++;
+                    document.title = `(${unreadMessages}) ${originalTitle}`;
+                }
+            });
+            
+            if (wasAtBottom) {
+                requestAnimationFrame(() => {
+                    chatArea.scrollTop = chatArea.scrollHeight;
+                });
+            }
         }
     }
     
@@ -1185,25 +1188,28 @@ document.addEventListener('DOMContentLoaded', function() {
         if (clickableUsername) {
             clickableUsername.addEventListener('click', async () => {
                 const userId = clickableUsername.dataset.userId;
-                const userData = {
-                    id: userId,
-                    username: message.userName,
-                    avatar: message.userAvatar,
-                    role: message.isGuest ? 'Invitado' : 'Usuario',
-                    description: 'Cargando...',
-                    textColor: message.textColor,
-                    firebaseUid: message.firebaseUid,
-                    isGuest: message.isGuest
-                };
-                showUserProfile(userData);
                 
-                getUserProfile(message.firebaseUid || userId, message.isGuest).then(userProfile => {
-                    if (userProfile && document.querySelector('.user-profile-overlay')) {
-                        const overlay = document.querySelector('.user-profile-overlay');
-                        overlay.remove();
-                        showUserProfile(userProfile);
-                    }
-                });
+                const loader = createElement(`<div class="profile-loader-overlay"><div class="loader-spinner"></div></div>`);
+                document.body.appendChild(loader);
+                
+                const userProfile = await getUserProfile(message.firebaseUid || userId, message.isGuest);
+                loader.remove();
+                
+                if (userProfile) {
+                    showUserProfile(userProfile);
+                } else {
+                    const userData = {
+                        id: userId,
+                        username: message.userName,
+                        avatar: message.userAvatar,
+                        role: message.isGuest ? 'Invitado' : 'Usuario',
+                        description: 'Usuario del chat',
+                        textColor: message.textColor,
+                        firebaseUid: message.firebaseUid,
+                        isGuest: message.isGuest
+                    };
+                    showUserProfile(userData);
+                }
             });
         }
         
@@ -1269,15 +1275,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Click en nombre para ver perfil
         userEl.querySelector('.user-name').addEventListener('click', async (e) => {
             e.stopPropagation();
-            showUserProfile(user);
             
-            getUserProfile(user.firebaseUid || user.id, user.isGuest).then(userProfile => {
-                if (userProfile && document.querySelector('.user-profile-overlay')) {
-                    const overlay = document.querySelector('.user-profile-overlay');
-                    overlay.remove();
-                    showUserProfile(userProfile);
-                }
-            });
+            const loader = createElement(`<div class="profile-loader-overlay"><div class="loader-spinner"></div></div>`);
+            document.body.appendChild(loader);
+            
+            const userProfile = await getUserProfile(user.firebaseUid || user.id, user.isGuest);
+            loader.remove();
+            showUserProfile(userProfile || user);
         });
         
         // Botones de moderación
@@ -1350,16 +1354,13 @@ document.addEventListener('DOMContentLoaded', function() {
         `);
         
         userEl.addEventListener('click', async () => {
-            showUserProfile(user);
-            mobileUsersDropdown.classList.remove('active');
+            const loader = createElement(`<div class="profile-loader-overlay"><div class="loader-spinner"></div></div>`);
+            document.body.appendChild(loader);
             
-            getUserProfile(user.firebaseUid || user.id, user.isGuest).then(userProfile => {
-                if (userProfile && document.querySelector('.user-profile-overlay')) {
-                    const overlay = document.querySelector('.user-profile-overlay');
-                    overlay.remove();
-                    showUserProfile(userProfile);
-                }
-            });
+            const userProfile = await getUserProfile(user.firebaseUid || user.id, user.isGuest);
+            loader.remove();
+            showUserProfile(userProfile || user);
+            mobileUsersDropdown.classList.remove('active');
         });
         return userEl;
     }
@@ -1712,14 +1713,12 @@ document.addEventListener('DOMContentLoaded', function() {
         initAdminListener();
         
         const roomHash = window.location.hash.substring(1) || 'general';
-        setTimeout(() => {
-            changeRoom(roomHash, true);
-            loadMessages();
-            loadUsers();
-            setupRoomDeletedListener();
-        }, 500);
+        changeRoom(roomHash, true);
+        loadMessages();
+        loadUsers();
+        setupRoomDeletedListener();
         
-        setTimeout(clearSkeletons, 3000);
+        setTimeout(clearSkeletons, 1000);
     }
     
     function updateGuestUI() {
@@ -1755,7 +1754,15 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             const chatArea = document.querySelector('.chat-area');
-            chatArea.innerHTML = '<div class="chat-loader"></div>';
+            if (!messagesCache[roomId] || messagesCache[roomId].length === 0) {
+                chatArea.innerHTML = '<div class="chat-loader"></div>';
+                setTimeout(() => {
+                    const loader = chatArea.querySelector('.chat-loader');
+                    if (loader) loader.remove();
+                }, 1000);
+            } else {
+                chatArea.innerHTML = '';
+            }
             
             cleanupListeners();
             processedEvents.clear();
