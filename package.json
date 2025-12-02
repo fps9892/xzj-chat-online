@@ -1,0 +1,18 @@
+{
+  "name": "chatup-redis",
+  "version": "3.9.4",
+  "description": "Chat en tiempo real con Redis cache",
+  "scripts": {
+    "start:games": "node server.js",
+    "start:chat": "node chat-server.js",
+    "start:all": "node server.js & node chat-server.js",
+    "dev": "npm run start:all"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "http": "^0.0.1-security",
+    "ioredis": "^5.8.2",
+    "socket.io": "^4.8.1"
+  }
+}

@@ -3,6 +3,7 @@ const http = require('http');
 const socketIO = require('socket.io');
 const cors = require('cors');
 const path = require('path');
+const Redis = require('ioredis');
 
 const app = express();
 const server = http.createServer(app);
@@ -14,8 +15,17 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Almacenamiento de partidas
-const games = new Map();
+// Redis Client
+const redis = new Redis({
+  host: 'localhost',
+  port: 6379,
+  retryStrategy: (times) => Math.min(times * 50, 2000)
+});
+
+redis.on('connect', () => console.log('✅ Redis conectado'));
+redis.on('error', (err) => console.error('❌ Redis error:', err));
+
+// Almacenamiento de jugadores (mantener en memoria por simplicidad)
 const players = new Map();
 
 class Game {
@@ -131,27 +141,91 @@ class Game {
       winner: this.winner
     };
   }
+
+  // Serializar para Redis
+  toJSON() {
+    return {
+      gameId: this.gameId,
+      rows: this.rows,
+      cols: this.cols,
+      mines: this.mines,
+      maxPlayers: this.maxPlayers,
+      players: this.players,
+      board: this.board,
+      revealed: this.revealed,
+      currentPlayerIndex: this.currentPlayerIndex,
+      gameStatus: this.gameStatus,
+      scores: this.scores,
+      moveHistory: this.moveHistory,
+      startTime: this.startTime,
+      winner: this.winner
+    };
+  }
+
+  // Deserializar desde Redis
+  static fromJSON(data) {
+    const game = new Game(data.gameId, data.rows, data.cols, data.mines, data.maxPlayers);
+    game.players = data.players;
+    game.board = data.board;
+    game.revealed = data.revealed;
+    game.currentPlayerIndex = data.currentPlayerIndex;
+    game.gameStatus = data.gameStatus;
+    game.scores = data.scores;
+    game.moveHistory = data.moveHistory;
+    game.startTime = data.startTime;
+    game.winner = data.winner;
+    return game;
+  }
+}
+
+// Funciones auxiliares Redis
+async function saveGameToRedis(game) {
+  const gameKey = `game:${game.gameId}`;
+  await redis.set(gameKey, JSON.stringify(game.toJSON()));
+  await redis.sadd('active_game_ids', game.gameId);
+}
+
+async function getGameFromRedis(gameId) {
+  const gameKey = `game:${gameId}`;
+  const data = await redis.get(gameKey);
+  return data ? Game.fromJSON(JSON.parse(data)) : null;
+}
+
+async function deleteGameFromRedis(gameId) {
+  const gameKey = `game:${gameId}`;
+  await redis.del(gameKey);
+  await redis.srem('active_game_ids', gameId);
+}
+
+async function getActiveGames() {
+  const gameIds = await redis.smembers('active_game_ids');
+  const games = [];
+  for (const gameId of gameIds) {
+    const game = await getGameFromRedis(gameId);
+    if (game) games.push(game.getGameState());
+  }
+  return games;
 }
 
 // Socket.io eventos
 io.on('connection', (socket) => {
   console.log('Nuevo jugador conectado:', socket.id);
 
-  socket.on('createGame', (data) => {
+  socket.on('createGame', async (data) => {
     const gameId = `game_${Date.now()}`;
     const game = new Game(gameId, data.rows || 10, data.cols || 10, data.mines || 10, data.maxPlayers || 4);
-    games.set(gameId, game);
-    players.set(socket.id, { name: data.playerName, gameId });
-
-    socket.join(gameId);
     game.addPlayer(socket.id, data.playerName);
+    
+    await saveGameToRedis(game);
+    players.set(socket.id, { name: data.playerName, gameId });
+    socket.join(gameId);
     
     io.to(gameId).emit('gameCreated', { gameId, game: game.getGameState() });
     socket.emit('notification', { type: 'success', message: `Partida ${gameId} creada` });
   });
 
-  socket.on('joinGame', (data) => {
-    const game = games.get(data.gameId);
+  socket.on('joinGame', async (data) => {
+    const game = await getGameFromRedis(data.gameId);
     if (!game) {
       socket.emit('notification', { type: 'error', message: 'Partida no encontrada' });
       return;
@@ -162,6 +236,7 @@ io.on('connection', (socket) => {
       return;
     }
 
+    await saveGameToRedis(game);
     players.set(socket.id, { name: data.playerName, gameId: data.gameId });
     socket.join(data.gameId);
 
@@ -172,21 +247,23 @@ io.on('connection', (socket) => {
     io.to(data.gameId).emit('notification', { type: 'info', message: `${data.playerName} se unió a la partida` });
   });
 
-  socket.on('startGame', (data) => {
-    const game = games.get(data.gameId);
+  socket.on('startGame', async (data) => {
+    const game = await getGameFromRedis(data.gameId);
     if (game && game.players.length > 1) {
       game.gameStatus = 'playing';
       game.startTime = Date.now();
+      await saveGameToRedis(game);
       io.to(data.gameId).emit('gameStarted', game.getGameState());
       io.to(data.gameId).emit('notification', { type: 'success', message: '¡Juego iniciado!' });
     }
   });
 
-  socket.on('revealCell', (data) => {
-    const game = games.get(data.gameId);
+  socket.on('revealCell', async (data) => {
+    const game = await getGameFromRedis(data.gameId);
     if (!game) return;
 
     const result = game.revealCell(data.row, data.col, socket.id);
+    await saveGameToRedis(game);
     
     io.to(data.gameId).emit('cellRevealed', {
       row: data.row,
@@ -216,6 +293,11 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('getActiveGames', async () => {
+    const games = await getActiveGames();
+    socket.emit('activeGamesList', games);
+  });
+
   socket.on('sendMessage', (data) => {
     const gameId = players.get(socket.id)?.gameId;
     if (gameId) {
@@ -227,10 +309,10 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('disconnect', () => {
+  socket.on('disconnect', async () => {
     const player = players.get(socket.id);
     if (player) {
-      const game = games.get(player.gameId);
+      const game = await getGameFromRedis(player.gameId);
       if (game) {
         game.removePlayer(socket.id);
         io.to(player.gameId).emit('notification', { 
@@ -240,7 +322,9 @@ io.on('connection', (socket) => {
         io.to(player.gameId).emit('gameUpdated', game.getGameState());
 
         if (game.players.length === 0) {
-          games.delete(player.gameId);
+          await deleteGameFromRedis(player.gameId);
+        } else {
+          await saveGameToRedis(game);
         }
       }
       players.delete(socket.id);
