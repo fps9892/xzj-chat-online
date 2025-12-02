@@ -1,10 +1,11 @@
-import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, currentRoom, updateUserData, changePassword, sendImage, sendAudio, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, muteUser, getRooms, listenToRooms, listenToAnnouncements, showAnnouncement, listenToUserStatus, processEmotes, extractYouTubeId, checkPrivateRoomAccess, requestPrivateRoomAccess, listenToRoomAccessNotifications, listenToRefreshCommand, database, ref, onValue, set, push, serverTimestamp, db } from './firebase.js';
+import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, currentRoom, updateUserData, changePassword, sendImage, sendAudio, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, muteUser, getRooms, listenToRooms, listenToAnnouncements, showAnnouncement, listenToUserStatus, processEmotes, extractYouTubeId, checkPrivateRoomAccess, requestPrivateRoomAccess, listenToRoomAccessNotifications, listenToRefreshCommand, database, ref, onValue, set, push, serverTimestamp, db, toggleReaction } from './firebase.js';
 import { AudioRecorder, formatTime, blobToBase64 } from './audio-recorder.js';
 import { getUserProfile, findUserByUsername, animateMessageDeletion, initAdminListener } from './core.js';
 import { setupMessageOptions, replyingTo, clearReply } from './message-options.js';
 import { showBanPanel, showUnbanPanel, showMutePanel, showUnmutePanel } from './moderation-panels.js';
 import { showGamesPanel } from './games-panel.js';
 import { NotificationManager } from './notifications.js';
+import { MentionsManager } from './mentions.js';
 
 let notificationManager = new NotificationManager(currentRoom);
 
@@ -111,6 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const recIndicator = document.querySelector('.rec-indicator');
     const audioInput = document.querySelector('.audio-input');
     
+    let mentionsManager = null;
     let audioRecorder = new AudioRecorder();
     let isRecording = false;
     let timerInterval = null;
@@ -807,6 +809,7 @@ document.addEventListener('DOMContentLoaded', function() {
             renderUsers(users);
         });
         
+        if (mentionsManager) mentionsManager.updateUsers(users);
         listenToRoomEvents();
     }
 
@@ -1190,7 +1193,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>` :
                         `<div class="message-content">
                             ${message.type === 'image' ? 
-                                `<img src="${message.imageData}" alt="Imagen" class="message-image" onclick="showImageModal('${message.imageData}')" />` :
+                                `<img src="${message.imageData}" alt="Imagen" class="message-image" onclick="showImageModal('${message.imageData}', '${message.userName || 'Usuario'}', '${time}')" />` :
                                 `${message.text ? '<button class="message-options-btn">⋮</button>' : ''}${replyPreview}${(() => {
                                     const youtubeId = extractYouTubeId(message.text);
                                     if (youtubeId) {
@@ -1201,6 +1204,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                 })()}`
                             }
                         </div>`
+                        }
+                        <div class="reactions-container">
+                            ${renderReactions(message.reactions, message.id)}
+                        </div>
                         }
                     </div>
                 </div>
@@ -1257,6 +1264,18 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
+        // Botón para añadir reacción
+        const reactBtn = createElement('<button class="react-btn">😊</button>');
+        const messageContent = messageEl.querySelector('.message-content');
+        if (messageContent) {
+            messageContent.appendChild(reactBtn);
+
+            reactBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                showReactionPicker(reactBtn, message.id);
+            });
+        }
+
         return messageEl;
     }
     
@@ -1264,6 +1283,76 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentNumericId = 1;
     let guestNumericIds = new Map();
     let currentGuestId = 1000;
+
+    function renderReactions(reactions, messageId) {
+        if (!reactions) return '';
+        
+        return Object.entries(reactions).map(([emoji, users]) => {
+            const userCount = Object.keys(users).length;
+            if (userCount === 0) return '';
+
+            const currentUserId = currentUser.firebaseUid || currentUser.userId;
+            const hasReacted = users[currentUserId];
+
+            return `<button class="reaction-chip ${hasReacted ? 'reacted' : ''}" data-emoji="${emoji}" data-message-id="${messageId}">
+                        ${emoji} ${userCount}
+                    </button>`;
+        }).join('');
+    }
+
+    function showReactionPicker(target, messageId) {
+        // Cerrar otros pickers
+        document.querySelectorAll('.reaction-picker').forEach(p => p.remove());
+
+        const picker = createElement('<div class="reaction-picker"></div>');
+        const commonEmojis = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
+        
+        commonEmojis.forEach(emoji => {
+            const emojiBtn = createElement(`<span>${emoji}</span>`);
+            emojiBtn.addEventListener('click', () => {
+                toggleReaction(messageId, emoji).then(updatedReactions => {
+                    const reactionsContainer = document.querySelector(`[data-message-id="${messageId}"] .reactions-container`);
+                    if (reactionsContainer) reactionsContainer.innerHTML = renderReactions(updatedReactions, messageId);
+                });
+                picker.remove();
+            });
+            picker.appendChild(emojiBtn);
+        });
+
+        document.body.appendChild(picker);
+        const rect = target.getBoundingClientRect();
+        picker.style.top = `${rect.top - picker.offsetHeight - 5}px`;
+        picker.style.left = `${rect.left}px`;
+
+        // Cerrar al hacer clic fuera
+        setTimeout(() => {
+            document.addEventListener('click', function closePicker(e) {
+                if (!picker.contains(e.target)) {
+                    picker.remove();
+                    document.removeEventListener('click', closePicker);
+                }
+            });
+        }, 0);
+    }
+
+    // Event listener para los chips de reacción existentes
+    document.querySelector('.chat-area').addEventListener('click', (e) => {
+        if (e.target.classList.contains('reaction-chip')) {
+            toggleReaction(e.target.dataset.messageId, e.target.dataset.emoji).then(updatedReactions => {
+                const reactionsContainer = e.target.closest('.reactions-container');
+                if (reactionsContainer) reactionsContainer.innerHTML = renderReactions(updatedReactions, e.target.dataset.messageId);
+            });
+        }
+    });
+    
+    // Click en menciones
+    chatArea.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('mention')) {
+            const username = e.target.dataset.username;
+            const user = await findUserByUsername(username);
+            if (user) showUserProfile(user);
+        }
+    });
     
     function createUserElement(user) {
         let displayName = user.name;
@@ -1757,6 +1846,7 @@ document.addEventListener('DOMContentLoaded', function() {
         initAdminListener();
         
         const roomHash = window.location.hash.substring(1) || 'general';
+        mentionsManager = new MentionsManager(messageInput, document.querySelector('.input-container'));
         changeRoom(roomHash, true);
         loadMessages();
         loadUsers();
@@ -2156,7 +2246,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Mostrar imagen en modal
-    window.showImageModal = function(imageSrc) {
+    window.showImageModal = function(imageSrc, username = 'Usuario', time = '') {
         const modal = createElement(`
             <div class="image-modal-overlay active">
                 <div class="image-modal">
@@ -2164,11 +2254,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="image-modal-controls">
                             <button class="modal-control-btn" id="zoomInBtn" title="Acercar"><img src="/images/zoom-in.svg" alt="+"></button>
                             <button class="modal-control-btn" id="zoomOutBtn" title="Alejar"><img src="/images/zoom-out.svg" alt="-"></button>
-                            <button class="modal-control-btn" id="resetZoomBtn" title="Restablecer"><img src="/images/zoom-reset.svg" alt="⟲"></button>
+                            <button class="modal-control-btn" id="resetZoomBtn" title="Restablecer">🔄</button>
                             <button class="modal-control-btn" id="downloadBtn" title="Descargar"><img src="/images/download.svg" alt="↓"></button>
                             <button class="modal-control-btn" id="copyLinkBtn" title="Copiar enlace"><img src="/images/copy.svg" alt="📋"></button>
                         </div>
-                        <button class="close-modal">×</button>
+                        <span class="image-modal-title">Enviada por ${username} a las ${time}</span>
+                        <button class="close-modal" title="Cerrar">❌</button>
                     </div>
                     <div class="image-content-area">
                         <img src="${imageSrc}" alt="Imagen" class="modal-image" />
@@ -2256,6 +2347,21 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.querySelector('.close-modal').addEventListener('click', () => modal.remove());
         modal.addEventListener('click', (e) => {
             if (e.target === modal) modal.remove();
+        });
+
+        // Reemplazar imágenes de botones por emojis si no cargan
+        const buttons = modal.querySelectorAll('.modal-control-btn');
+        buttons.forEach(button => {
+            const img = button.querySelector('img');
+            if (img) {
+                img.onerror = () => {
+                    const emojiMap = { 'zoomInBtn': '➕', 'zoomOutBtn': '➖', 'downloadBtn': '💾', 'copyLinkBtn': '🔗' };
+                    if (emojiMap[button.id]) {
+                        button.innerHTML = emojiMap[button.id];
+                        button.style.fontSize = '18px';
+                    }
+                };
+            }
         });
     };
 

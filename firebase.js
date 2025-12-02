@@ -68,9 +68,18 @@ initializeAuth();
 // Procesar emotes y links en texto
 export function processEmotes(text) {
     // Procesar links
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const processedText = text.replace(urlRegex, '<a href="$1" target="_blank" style="color: #4a9eff; text-decoration: underline;">$1</a>');
-    
+    let processedText = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color: #4a9eff; text-decoration: underline;">$1</a>');
+
+    // Procesar menciones
+    const mentionRegex = /@(\w+)/g;
+    processedText = processedText.replace(mentionRegex, (match, username) => {
+        // No procesar menciones dentro de links
+        if (processedText.match(new RegExp(`<a[^>]*>${match}<\/a>`))) {
+            return match;
+        }
+        return `<span class="mention" data-username="${username}">${match}</span>`;
+    });
+
     return processedText;
 }
 
@@ -297,6 +306,35 @@ export function listenToMessages(callback) {
     });
     
     return currentMessagesListener;
+}
+
+// Añadir/quitar reacción a un mensaje
+export async function toggleReaction(messageId, emoji) {
+    if (!currentUser || !messageId || !emoji) return;
+ 
+    const currentUserId = currentUser.firebaseUid || currentUser.userId;
+    const messageReactionsRef = ref(database, `rooms/${currentRoom}/messages/${messageId}/reactions`);
+    const reactionRef = ref(database, `rooms/${currentRoom}/messages/${messageId}/reactions/${emoji}/${currentUserId}`);
+    
+    const snapshot = await get(messageReactionsRef);
+    const reactions = snapshot.val() || {};
+ 
+    if (reactions[emoji] && reactions[emoji][currentUserId]) {
+        // El usuario ya reaccionó, se elimina la reacción
+        await remove(reactionRef);
+        delete reactions[emoji][currentUserId];
+        if (Object.keys(reactions[emoji]).length === 0) {
+            delete reactions[emoji];
+        }
+    } else {
+        // El usuario no ha reaccionado, se añade
+        await set(reactionRef, true);
+        if (!reactions[emoji]) {
+            reactions[emoji] = {};
+        }
+        reactions[emoji][currentUserId] = true;
+    }
+    return reactions; // Devolver el estado actualizado de las reacciones
 }
 
 // Detectar tipo de dispositivo
@@ -549,36 +587,46 @@ export async function updateUserData(updates) {
 export async function sendImage(file) {
     if (!file) throw new Error('No se seleccionó archivo');
     if (file.size > 5 * 1024 * 1024) throw new Error('La imagen debe ser menor a 5MB');
-    
+
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () => {
-            const img = new Image();
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                let width = img.width;
-                let height = img.height;
-                const maxSize = 800;
-                
-                if (width > height && width > maxSize) {
-                    height = (height * maxSize) / width;
-                    width = maxSize;
-                } else if (height > maxSize) {
-                    width = (width * maxSize) / height;
-                    height = maxSize;
-                }
-                
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-                
-                const compressedImage = canvas.toDataURL('image/jpeg', 0.7);
-                sendMessage('', 'image', compressedImage)
+        reader.onload = (e) => {
+            // Si es un GIF, enviarlo directamente para conservar la animación
+            if (file.type === 'image/gif') {
+                sendMessage('', 'image', e.target.result)
                     .then(resolve)
                     .catch(reject);
-            };
-            img.src = reader.result;
+            } else {
+                // Para otras imágenes, procesar y comprimir
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const maxSize = 800;
+
+                    if (width > height && width > maxSize) {
+                        height = Math.round((height * maxSize) / width);
+                        width = maxSize;
+                    } else if (height > maxSize) {
+                        width = Math.round((width * maxSize) / height);
+                        height = maxSize;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const mimeType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+                    const quality = mimeType === 'image/png' ? 0.9 : 0.7; // Calidad ligeramente mejor para PNG
+                    const compressedImage = canvas.toDataURL(mimeType, quality);
+                    sendMessage('', 'image', compressedImage)
+                        .then(resolve)
+                        .catch(reject);
+                };
+                img.src = e.target.result;
+                }
         };
         reader.onerror = () => reject(new Error('Error al leer el archivo'));
         reader.readAsDataURL(file);
