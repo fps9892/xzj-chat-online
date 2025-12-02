@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Función para simular progreso de carga
     function simulateLoading() {
         const interval = setInterval(() => {
-            loadingProgress += Math.random() * 15 + 5;
+            loadingProgress += Math.random() * 25 + 15;
             
             if (loadingProgress >= 100) {
                 loadingProgress = 100;
@@ -48,26 +48,26 @@ document.addEventListener('DOMContentLoaded', function() {
                     loadingScreen.classList.add('hidden');
                     setTimeout(() => {
                         loadingScreen.style.display = 'none';
-                    }, 500);
-                }, 800);
+                    }, 300);
+                }, 200);
             }
             
             progressBar.style.width = loadingProgress + '%';
-        }, 200);
+        }, 80);
     }
     
-    // Cambiar texto cada 800ms
+    // Cambiar texto cada 300ms
     const textInterval = setInterval(() => {
         updateLoadingText();
         if (currentTextIndex >= loadingTexts.length) {
             clearInterval(textInterval);
         }
-    }, 800);
+    }, 300);
     
     // Iniciar simulación de carga
     setTimeout(() => {
         simulateLoading();
-    }, 1000);
+    }, 200);
     
 
     const messageInput = document.querySelector('.message-input');
@@ -317,18 +317,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Abrir panel de usuario (ahora abre el perfil)
     userInfo.addEventListener('click', async function(e) {
         e.stopPropagation();
+        showUserProfile(currentUser);
         
-        // Mostrar loader
-        const loader = createElement(`
-            <div class="profile-loader-overlay">
-                <div class="loader-spinner"></div>
-            </div>
-        `);
-        document.body.appendChild(loader);
-        
-        const userProfile = await getUserProfile(currentUser.firebaseUid || currentUser.userId, currentUser.isGuest);
-        loader.remove();
-        showUserProfile(userProfile || currentUser);
+        getUserProfile(currentUser.firebaseUid || currentUser.userId, currentUser.isGuest).then(userProfile => {
+            if (userProfile && document.querySelector('.user-profile-overlay')) {
+                const overlay = document.querySelector('.user-profile-overlay');
+                overlay.remove();
+                showUserProfile(userProfile);
+            }
+        });
     });
 
     // Cerrar panel de usuario
@@ -1188,25 +1185,25 @@ document.addEventListener('DOMContentLoaded', function() {
         if (clickableUsername) {
             clickableUsername.addEventListener('click', async () => {
                 const userId = clickableUsername.dataset.userId;
-                const loader = createElement(`<div class="profile-loader-overlay"><div class="loader-spinner"></div></div>`);
-                document.body.appendChild(loader);
-                const userProfile = await getUserProfile(message.firebaseUid || userId, message.isGuest);
-                loader.remove();
-                if (userProfile) {
-                    showUserProfile(userProfile);
-                } else {
-                    const userData = {
-                        id: userId,
-                        username: message.userName,
-                        avatar: message.userAvatar,
-                        role: message.isGuest ? 'Invitado' : 'Usuario',
-                        description: 'Usuario del chat',
-                        textColor: message.textColor,
-                        firebaseUid: message.firebaseUid,
-                        isGuest: message.isGuest
-                    };
-                    showUserProfile(userData);
-                }
+                const userData = {
+                    id: userId,
+                    username: message.userName,
+                    avatar: message.userAvatar,
+                    role: message.isGuest ? 'Invitado' : 'Usuario',
+                    description: 'Cargando...',
+                    textColor: message.textColor,
+                    firebaseUid: message.firebaseUid,
+                    isGuest: message.isGuest
+                };
+                showUserProfile(userData);
+                
+                getUserProfile(message.firebaseUid || userId, message.isGuest).then(userProfile => {
+                    if (userProfile && document.querySelector('.user-profile-overlay')) {
+                        const overlay = document.querySelector('.user-profile-overlay');
+                        overlay.remove();
+                        showUserProfile(userProfile);
+                    }
+                });
             });
         }
         
@@ -1272,11 +1269,15 @@ document.addEventListener('DOMContentLoaded', function() {
         // Click en nombre para ver perfil
         userEl.querySelector('.user-name').addEventListener('click', async (e) => {
             e.stopPropagation();
-            const loader = createElement(`<div class="profile-loader-overlay"><div class="loader-spinner"></div></div>`);
-            document.body.appendChild(loader);
-            const userProfile = await getUserProfile(user.firebaseUid || user.id, user.isGuest);
-            loader.remove();
-            showUserProfile(userProfile || user);
+            showUserProfile(user);
+            
+            getUserProfile(user.firebaseUid || user.id, user.isGuest).then(userProfile => {
+                if (userProfile && document.querySelector('.user-profile-overlay')) {
+                    const overlay = document.querySelector('.user-profile-overlay');
+                    overlay.remove();
+                    showUserProfile(userProfile);
+                }
+            });
         });
         
         // Botones de moderación
@@ -1349,12 +1350,16 @@ document.addEventListener('DOMContentLoaded', function() {
         `);
         
         userEl.addEventListener('click', async () => {
-            const loader = createElement(`<div class="profile-loader-overlay"><div class="loader-spinner"></div></div>`);
-            document.body.appendChild(loader);
-            const userProfile = await getUserProfile(user.firebaseUid || user.id, user.isGuest);
-            loader.remove();
-            showUserProfile(userProfile || user);
+            showUserProfile(user);
             mobileUsersDropdown.classList.remove('active');
+            
+            getUserProfile(user.firebaseUid || user.id, user.isGuest).then(userProfile => {
+                if (userProfile && document.querySelector('.user-profile-overlay')) {
+                    const overlay = document.querySelector('.user-profile-overlay');
+                    overlay.remove();
+                    showUserProfile(userProfile);
+                }
+            });
         });
         return userEl;
     }
@@ -1976,8 +1981,8 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         initializeApp();
         // Cargar salas con un pequeño delay para asegurar que Firebase esté listo
-        setTimeout(loadRooms, 1000);
-    }, 4500);
+        setTimeout(loadRooms, 300);
+    }, 1500);
     
     // Manejar cerrar sesión
     const logoutBtn = document.querySelector('.config-item:nth-last-child(2) button');
