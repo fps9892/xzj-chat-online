@@ -1786,8 +1786,8 @@ export async function processAdminCommand(message) {
                 return { success: true, message: `Usuario ${targetUnbanUser.username} desbaneado` };
                 
             case '!borrarchat':
-                clearRoomMessages();
-                return { success: true, doNotSendSystemMessage: true };
+                await clearRoomMessages();
+                return { success: true, message: 'Historial de chat eliminado' };
                 
             case '!crearjuegos':
                 return { success: false, showGamesPanel: true };
@@ -1999,11 +1999,12 @@ export async function clearRoomMessages() {
             userName: 'Sistema',
             userAvatar: 'images/logo.svg',
             textColor: '#ff9900',
+            timestamp: serverTimestamp(),
             type: 'system',
             isGuest: false,
             role: 'system',
             firebaseUid: null
-        };
+        });
         
         const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
         
@@ -2219,71 +2220,87 @@ export function listenToGlobalRefresh(callback) {
 // Mostrar panel de lista de usuarios con estilo similar al panel de salas
 function showUsersListPanel(message, command) {
     const lines = message.split('\n').filter(line => line.trim());
-    const title = lines[0];
-    const usage = lines[lines.length - 1];
+    const title = lines[0] || '';
+    const usage = lines[lines.length - 1] || '';
     const userLines = lines.slice(1, -1);
-    
+
     const panel = document.createElement('div');
     panel.className = 'rooms-management-panel';
-    panel.innerHTML = `
-        <div class="rooms-management-header">
-            <h3>${title}</h3>
-            <button class="close-rooms-management">×</button>
-        </div>
-        <div class="rooms-management-list">
-            ${userLines.map(line => {
-                const match = line.match(/(\d+)\. (.+)/);
-                if (!match) return '';
-                const [, numId, username] = match;
-                return `
-                    <div class="room-management-item">
-                        <div class="room-info">
-                            <span class="room-type-icon">${numId}</span>
-                            <span class="room-management-name">${username}</span>
-                        </div>
-                    </div>
-                `;
-            }).join('')}
-        </div>
-        <div class="rooms-management-footer">
-            <small>${usage}</small>
-        </div>
-    `;
-    
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'rooms-management-header';
+    const h3 = document.createElement('h3');
+    h3.textContent = title;
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'close-rooms-management';
+    closeBtn.textContent = '×';
+    header.appendChild(h3);
+    header.appendChild(closeBtn);
+    panel.appendChild(header);
+
+    // List
+    const listContainer = document.createElement('div');
+    listContainer.className = 'rooms-management-list';
+    userLines.forEach(line => {
+        const match = line.match(/(\d+)\. (.+)/);
+        if (!match) return;
+        const [, numId, username] = match;
+        const item = document.createElement('div');
+        item.className = 'room-management-item';
+        item.innerHTML = `
+            <div class="room-info">
+                <span class="room-type-icon">${numId}</span>
+                <span class="room-management-name">${username}</span>
+            </div>
+        `;
+        listContainer.appendChild(item);
+    });
+    panel.appendChild(listContainer);
+
+    // Footer
+    const footer = document.createElement('div');
+    footer.className = 'rooms-management-footer';
+    const small = document.createElement('small');
+    small.textContent = usage;
+    footer.appendChild(small);
+    panel.appendChild(footer);
+
     document.body.appendChild(panel);
-    
-    panel.querySelector('.close-rooms-management').addEventListener('click', () => {
+
+    closeBtn.addEventListener('click', () => {
         panel.remove();
     });
-    
+
     // Auto-actualizar lista si es ban o mute
     if (command === 'ban' || command === 'mute') {
         const usersRef = ref(database, `rooms/${currentRoom}/users`);
         const unsubscribe = onValue(usersRef, async () => {
             const users = await getConnectedUsersList();
-            const listContainer = panel.querySelector('.rooms-management-list');
-            if (listContainer && users.length > 0) {
-                listContainer.innerHTML = users.map(u => {
+            listContainer.innerHTML = '';
+            if (users.length > 0) {
+                users.forEach(u => {
                     const guestLabel = u.isGuest ? ' (invitado)' : '';
-                    return `
-                        <div class="room-management-item">
-                            <div class="room-info">
-                                <span class="room-type-icon">${u.numId}</span>
-                                <span class="room-management-name">${u.username}${guestLabel}</span>
-                            </div>
-                            <div class="room-actions">
-                                <div class="room-user-count-container">
-                                    <img src="/images/users-connected.svg" class="room-user-icon" alt="Online" />
-                                </div>
+                    const item = document.createElement('div');
+                    item.className = 'room-management-item';
+                    item.innerHTML = `
+                        <div class="room-info">
+                            <span class="room-type-icon">${u.numId}</span>
+                            <span class="room-management-name">${u.username}${guestLabel}</span>
+                        </div>
+                        <div class="room-actions">
+                            <div class="room-user-count-container">
+                                <img src="/images/users-connected.svg" class="room-user-icon" alt="Online" />
                             </div>
                         </div>
                     `;
-                }).join('');
+                    listContainer.appendChild(item);
+                });
             }
         });
-        
-        const originalClose = panel.querySelector('.close-rooms-management').onclick;
-        panel.querySelector('.close-rooms-management').onclick = () => {
+
+        const originalClose = closeBtn.onclick;
+        closeBtn.onclick = () => {
             unsubscribe();
             if (originalClose) originalClose();
             panel.remove();
