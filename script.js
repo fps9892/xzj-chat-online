@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const sendIcon = document.querySelector('.send-icon');
     const roomsBtn = document.getElementById('roomsBtn');
     const roomsPanelOverlay = document.getElementById('roomsPanelOverlay');
-    const roomsPanel = document.getElementById('roomsPanel');
+    const roomsPanel = document.getElementById('roomsPanel'); // No se usa directamente, pero se mantiene por si acaso
     const closeRoomsPanel = document.querySelector('.close-rooms-panel');
     const roomsTabs = document.querySelectorAll('.rooms-tab');
     const publicRoomsList = document.querySelector('.rooms-list[data-section="public"]');
@@ -83,7 +83,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const mobileUsersIndicator = document.querySelector('.mobile-users-indicator');
     const mobileUsersDropdown = document.querySelector('.mobile-users-dropdown');
     const currentRoomName = document.querySelector('.current-room-name');
-    let roomItems = document.querySelectorAll('.room-item');
     const userInfo = document.querySelector('.user-info');
     let unreadMessages = 0;
     let isPageVisible = true;
@@ -118,8 +117,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let recordedAudioBlob = null;
     let recordingStartTime = null;
     const emoteBtn = document.querySelector('.emote-btn');
-    const emotePanel = document.querySelector('.emote-panel');
-    const emoteItems = document.querySelectorAll('.emote-item');
     const typingIndicator = document.querySelector('.typing-indicator');
     
     // Cooldowns (en milisegundos)
@@ -995,6 +992,36 @@ document.addEventListener('DOMContentLoaded', function() {
                         clearInterval(typeInterval);
                     }
                 }, 80);
+            }
+            
+            // Manejar cuenta regresiva
+            if (message.countdown) {
+                const textEl = systemEl.querySelector('.message-text');
+                let countdown = message.countdown;
+                
+                const updateCountdown = () => {
+                    textEl.textContent = `⚠️ El historial del chat será eliminado en ${countdown} segundos.`;
+                };
+                
+                updateCountdown();
+                
+                const intervalId = setInterval(() => {
+                    countdown--;
+                    if (countdown >= 0) {
+                        updateCountdown();
+                    } else {
+                        clearInterval(intervalId);
+                    }
+                }, 1000);
+
+                // Limpiar el intervalo si el mensaje es eliminado del DOM
+                const observer = new MutationObserver((mutations) => {
+                    if (!document.body.contains(systemEl)) {
+                        clearInterval(intervalId);
+                        observer.disconnect();
+                    }
+                });
+                observer.observe(document.body, { childList: true, subtree: true });
             }
             
             return systemEl;
@@ -2801,6 +2828,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 clearTimeout(safetyTimeout);
                 clearReply();
                 
+                if (result && result.doNotSendSystemMessage) {
+                    unlockSendButton();
+                    return;
+                }
+
                 if (result && result.showDeleteNotification) {
                     showNotification(`⏳ La sala "${result.roomName}" será eliminada`, 'success');
                     unlockSendButton();

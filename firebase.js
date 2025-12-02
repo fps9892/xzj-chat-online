@@ -1786,8 +1786,8 @@ export async function processAdminCommand(message) {
                 return { success: true, message: `Usuario ${targetUnbanUser.username} desbaneado` };
                 
             case '!borrarchat':
-                clearRoomMessages(); // No necesita await aquí
-                return { success: true, message: 'El historial del chat será eliminado en 10 segundos.', privateMessage: true };
+                clearRoomMessages();
+                return { success: true, doNotSendSystemMessage: true };
                 
             case '!crearjuegos':
                 return { success: false, showGamesPanel: true };
@@ -1992,13 +1992,13 @@ export async function clearRoomMessages() {
     
     try {
         // Enviar mensaje de advertencia con temporizador de 10 segundos
-        const warningMessageData = {
+        const warningMessageRef = push(ref(database, `rooms/${currentRoom}/messages`));
+        await set(warningMessageRef, {
             text: '⚠️ El historial del chat será eliminado en 10 segundos.',
             userId: 'system',
             userName: 'Sistema',
             userAvatar: 'images/logo.svg',
             textColor: '#ff9900',
-            timestamp: serverTimestamp(),
             type: 'system',
             isGuest: false,
             role: 'system',
@@ -2006,7 +2006,6 @@ export async function clearRoomMessages() {
         };
         
         const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
-        await push(messagesRef, warningMessageData);
         
         // Esperar 10 segundos
         await new Promise(resolve => setTimeout(resolve, 10000));
