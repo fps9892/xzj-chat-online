@@ -47,7 +47,7 @@ export function setupMessageOptions(messageEl, message, currentUser, sendMessage
             deleteOption.addEventListener('click', async () => {
                 if (confirm('¿Eliminar este mensaje?')) {
                     try {
-                        await deleteMessage(message.id);
+                        await deleteMessage(message.id, message);
                         showNotification('Mensaje eliminado', 'success');
                     } catch (error) {
                         showNotification('Error al eliminar', 'error');
