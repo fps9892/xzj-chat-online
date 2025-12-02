@@ -972,7 +972,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const systemEl = createElement(`
                 <div class="message-container system-message" data-message-id="${message.id}">
                     <div class="message system">
-                        <div class="message-content">
+                        <div class="message-content" style="color: ${message.textColor || '#00ff00'};">
                             <div class="message-text">${message.typewriterEffect ? '' : message.text}</div>
                         </div>
                     </div>
@@ -991,7 +991,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else {
                         clearInterval(typeInterval);
                     }
-                }, 80);
+                }, 50); // Aumentamos la velocidad para una mejor experiencia
             }
             
             // Manejar cuenta regresiva

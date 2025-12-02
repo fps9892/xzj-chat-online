@@ -1787,7 +1787,7 @@ export async function processAdminCommand(message) {
                 
             case '!borrarchat':
                 await clearRoomMessages();
-                return { success: true, message: 'Historial de chat eliminado', typewriter: true };
+                return { success: true, message: 'Historial de chat eliminado', typewriterEffect: true };
                 
             case '!crearjuegos':
                 return { success: false, showGamesPanel: true };
