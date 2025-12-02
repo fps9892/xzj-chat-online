@@ -1786,8 +1786,8 @@ export async function processAdminCommand(message) {
                 return { success: true, message: `Usuario ${targetUnbanUser.username} desbaneado` };
                 
             case '!borrarchat':
-                await clearRoomMessages();
-                return { success: true, message: '' };
+                clearRoomMessages(); // No necesita await aquí
+                return { success: true, message: 'El historial del chat será eliminado en 10 segundos.', privateMessage: true };
                 
             case '!crearjuegos':
                 return { success: false, showGamesPanel: true };
