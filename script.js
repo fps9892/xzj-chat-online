@@ -408,53 +408,59 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else if (configType === 'photo') {
                         const file = inputField.files[0];
                         if (file) {
-                            try {
-                                const img = new Image();
-                                const reader = new FileReader();
-                                reader.onload = async (e) => {
-                                    img.onload = async () => {
-                                        const canvas = document.createElement('canvas');
-                                        let width = img.width;
-                                        let height = img.height;
-                                        const maxSize = 800;
-                                        
-                                        if (width > height && width > maxSize) {
-                                            height = (height * maxSize) / width;
-                                            width = maxSize;
-                                        } else if (height > maxSize) {
-                                            width = (width * maxSize) / height;
-                                            height = maxSize;
-                                        }
-                                        
-                                        canvas.width = width;
-                                        canvas.height = height;
-                                        const ctx = canvas.getContext('2d');
-                                        ctx.drawImage(img, 0, 0, width, height);
-                                        
-                                        const mimeType = file.type || 'image/jpeg';
-                                        const quality = (file.type === 'image/png' || file.type === 'image/gif') ? 1.0 : 0.7;
-                                        updates.avatar = canvas.toDataURL(mimeType, quality);
-                                        const profileImg = document.querySelector('.profile-image');
-                                        if (profileImg) profileImg.src = updates.avatar;
-                                        
-                                        const success = await updateUserData(updates);
-                                        if (success) {
-                                            showNotification('Foto de perfil actualizada correctamente', 'success');
-                                        } else {
-                                            showNotification('Error al actualizar', 'error');
-                                        }
-                                        
-                                        input.classList.remove('active');
-                                        button.style.display = 'block';
-                                    };
-                                    img.src = e.target.result;
-                                };
-                                reader.readAsDataURL(file);
-                                return;
-                            } catch (error) {
-                                showNotification(error.message, 'error');
-                                return;
-                            }
+                            const reader = new FileReader();
+                            reader.onload = async (e) => {
+                                const fileDataUrl = e.target.result;
+
+                                // Si es un GIF, no lo procesamos con canvas para mantener la animación
+                                if (file.type === 'image/gif') {
+                                    updates.avatar = fileDataUrl;
+                                } else {
+                                    // Para otras imágenes, las redimensionamos como antes
+                                    const img = new Image();
+                                    await new Promise(resolve => {
+                                        img.onload = resolve;
+                                        img.src = fileDataUrl;
+                                    });
+
+                                    const canvas = document.createElement('canvas');
+                                    let width = img.width;
+                                    let height = img.height;
+                                    const maxSize = 800;
+
+                                    if (width > height && width > maxSize) {
+                                        height = (height * maxSize) / width;
+                                        width = maxSize;
+                                    } else if (height > maxSize) {
+                                        width = (width * maxSize) / height;
+                                        height = maxSize;
+                                    }
+
+                                    canvas.width = width;
+                                    canvas.height = height;
+                                    const ctx = canvas.getContext('2d');
+                                    ctx.drawImage(img, 0, 0, width, height);
+
+                                    const mimeType = file.type || 'image/jpeg';
+                                    const quality = (file.type === 'image/png') ? 1.0 : 0.7;
+                                    updates.avatar = canvas.toDataURL(mimeType, quality);
+                                }
+
+                                const profileImg = document.querySelector('.profile-image');
+                                if (profileImg) profileImg.src = updates.avatar;
+
+                                const success = await updateUserData(updates);
+                                if (success) {
+                                    showNotification('Foto de perfil actualizada correctamente', 'success');
+                                } else {
+                                    showNotification('Error al actualizar', 'error');
+                                }
+
+                                input.classList.remove('active');
+                                button.style.display = 'block';
+                            };
+                            reader.readAsDataURL(file);
+                            return; // Salimos para que el resto del código no se ejecute dos veces
                         }
                     } else if (configType === 'password') {
                         if (currentUser.isGuest) {

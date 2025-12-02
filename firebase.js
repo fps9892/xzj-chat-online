@@ -216,9 +216,9 @@ export async function sendMessage(text, type = 'text', imageData = null, audioDu
         }
     });
     
-    return push(messagesRef, messageData).then(() => {
-        // Limit messages to 5 per room
-        limitMessages();
+    return push(messagesRef, messageData).then((ref) => {
+        limitMessages(); // Limitar mensajes
+        return ref; // Devolver la referencia del nuevo mensaje
     }).catch(error => {
         console.error('Error enviando mensaje:', error);
         throw error;
