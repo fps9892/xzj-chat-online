@@ -26,6 +26,60 @@
     <link rel="stylesheet" href="/resolutions/desktop.css" />
     <link rel="stylesheet" href="/level-system.css" />
     <link rel="stylesheet" href="/message-options.css" />
+    <style>
+      .image-modal-overlay {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .image-modal {
+        display: flex;
+        flex-direction: column;
+        width: 90vw;
+        height: 90vh;
+        max-width: 1200px;
+        background: rgba(40, 40, 40, 0.9);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .image-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        background: rgba(20, 20, 20, 0.8);
+        flex-shrink: 0;
+      }
+      .image-modal-controls {
+        display: flex;
+        gap: 10px;
+      }
+      .modal-control-btn {
+        background: #444;
+        border: 1px solid #666;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-control-btn img {
+        width: 18px;
+        height: 18px;
+        filter: invert(1);
+      }
+      .image-content-area {
+        flex-grow: 1;
+        overflow: hidden;
+        position: relative;
+      }
+      .modal-image {
+        transform-origin: 0 0;
+      }
+    </style>
     <!-- Verificación de autenticación ANTES de cargar el body -->
     <!-- <script src="/auth-check.js"></script> -->
   </head>

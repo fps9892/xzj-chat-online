@@ -2133,13 +2133,99 @@ document.addEventListener('DOMContentLoaded', function() {
         const modal = createElement(`
             <div class="image-modal-overlay active">
                 <div class="image-modal">
-                    <img src="${imageSrc}" alt="Imagen" class="modal-image" />
-                    <button class="close-modal">×</button>
+                    <div class="image-modal-header">
+                        <div class="image-modal-controls">
+                            <button class="modal-control-btn" id="zoomInBtn" title="Acercar"><img src="/images/zoom-in.svg" alt="+"></button>
+                            <button class="modal-control-btn" id="zoomOutBtn" title="Alejar"><img src="/images/zoom-out.svg" alt="-"></button>
+                            <button class="modal-control-btn" id="resetZoomBtn" title="Restablecer"><img src="/images/zoom-reset.svg" alt="⟲"></button>
+                            <button class="modal-control-btn" id="downloadBtn" title="Descargar"><img src="/images/download.svg" alt="↓"></button>
+                            <button class="modal-control-btn" id="copyLinkBtn" title="Copiar enlace"><img src="/images/copy.svg" alt="📋"></button>
+                        </div>
+                        <button class="close-modal">×</button>
+                    </div>
+                    <div class="image-content-area">
+                        <img src="${imageSrc}" alt="Imagen" class="modal-image" />
+                    </div>
                 </div>
             </div>
         `);
         
         document.body.appendChild(modal);
+
+        const image = modal.querySelector('.modal-image');
+        let scale = 1;
+        let panning = false;
+        let pointX = 0, pointY = 0;
+        let start = { x: 0, y: 0 };
+
+        function setTransform() {
+            image.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
+        }
+
+        image.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            if (scale > 1) {
+                start = { x: e.clientX - pointX, y: e.clientY - pointY };
+                panning = true;
+                image.style.cursor = 'grabbing';
+            }
+        });
+
+        image.addEventListener('mouseup', () => {
+            panning = false;
+            image.style.cursor = 'grab';
+        });
+
+        image.addEventListener('mousemove', (e) => {
+            if (!panning) return;
+            pointX = (e.clientX - start.x);
+            pointY = (e.clientY - start.y);
+            setTransform();
+        });
+
+        modal.querySelector('.image-content-area').addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const xs = (e.clientX - pointX) / scale;
+            const ys = (e.clientY - pointY) / scale;
+            const delta = (e.wheelDelta ? e.wheelDelta : -e.deltaY);
+
+            (delta > 0) ? (scale *= 1.2) : (scale /= 1.2);
+            scale = Math.min(Math.max(1, scale), 10);
+
+            pointX = e.clientX - xs * scale;
+            pointY = e.clientY - ys * scale;
+
+            image.style.cursor = scale > 1 ? 'grab' : 'default';
+            setTransform();
+        });
+
+        modal.querySelector('#zoomInBtn').addEventListener('click', () => {
+            scale = Math.min(scale * 1.2, 10);
+            setTransform();
+        });
+
+        modal.querySelector('#zoomOutBtn').addEventListener('click', () => {
+            scale = Math.max(scale / 1.2, 1);
+            if (scale === 1) { pointX = 0; pointY = 0; }
+            setTransform();
+        });
+
+        modal.querySelector('#resetZoomBtn').addEventListener('click', () => {
+            scale = 1; pointX = 0; pointY = 0;
+            setTransform();
+        });
+
+        modal.querySelector('#downloadBtn').addEventListener('click', () => {
+            const a = document.createElement('a');
+            a.href = imageSrc;
+            a.download = 'imagen_chatup.png';
+            a.click();
+        });
+
+        modal.querySelector('#copyLinkBtn').addEventListener('click', () => {
+            navigator.clipboard.writeText(imageSrc).then(() => showNotification('Enlace copiado', 'success'));
+        });
+
         modal.querySelector('.close-modal').addEventListener('click', () => modal.remove());
         modal.addEventListener('click', (e) => {
             if (e.target === modal) modal.remove();
