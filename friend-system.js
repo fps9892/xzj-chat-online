@@ -375,7 +375,7 @@ class FriendSystem {
             </div>
             ${isOwnProfile ? `<button class="remove-friend-btn" data-friend-id="${friend.id}" title="Eliminar amigo">✕</button>` : ''}
           </div>
-        `).join('')};
+        `).join('')}
       `;
 
       container.querySelectorAll('.friend-item').forEach(item => {
