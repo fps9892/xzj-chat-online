@@ -128,6 +128,8 @@ class FriendSystem {
 
       await deleteDoc(doc(db, 'friendRequests', requestId));
 
+      await this.notifyFriendAccepted(fromUserId, userId, fromUsername);
+
       if (window.notificationPanel) {
         window.notificationPanel.addNotification(
           'friend-accepted',
@@ -135,8 +137,6 @@ class FriendSystem {
           { userId: fromUserId }
         );
       }
-
-      await this.notifyFriendAccepted(fromUserId, userId);
 
       this.showNotification('✓ Solicitud aceptada', 'success');
       this.loadFriendRequests();
@@ -291,24 +291,15 @@ class FriendSystem {
     }
   }
 
-  async notifyFriendAccepted(toUserId, fromUserId) {
+  async notifyFriendAccepted(toUserId, fromUserId, accepterUsername) {
     try {
-      const fromUserDoc = await getDoc(doc(db, 'users', fromUserId));
-      let fromUserData = fromUserDoc.exists() ? fromUserDoc.data() : null;
-      if (!fromUserData) {
-        const guestDoc = await getDoc(doc(db, 'guests', fromUserId));
-        fromUserData = guestDoc.exists() ? guestDoc.data() : {};
+      if (window.notificationPanel) {
+        window.notificationPanel.addNotification(
+          'friend-request-accepted',
+          `${accepterUsername} ha aceptado tu solicitud`,
+          { userId: fromUserId }
+        );
       }
-      const fromUsername = fromUserData.username || fromUserData.name || 'Usuario';
-
-      const notificationId = `notif_${Date.now()}_${toUserId}`;
-      await setDoc(doc(db, 'notifications', notificationId), {
-        to: toUserId,
-        type: 'friend-accepted',
-        message: `${fromUsername} aceptó tu solicitud`,
-        timestamp: serverTimestamp(),
-        read: false
-      });
     } catch (error) {
       console.error('Error notifying friend accepted:', error);
     }
@@ -376,16 +367,27 @@ class FriendSystem {
       container.innerHTML = `
         <div class="friends-count">👥 ${friends.length} amigo${friends.length !== 1 ? 's' : ''}</div>
         ${friends.map(friend => `
-          <div class="friend-item">
+          <div class="friend-item" data-friend-id="${friend.id}">
             <img src="${friend.avatar || '/images/profileuser.svg'}" alt="${friend.username || friend.name}" class="friend-avatar" />
             <div class="friend-info">
               <div class="friend-name">${friend.username || friend.name}</div>
-              <div class="friend-status">${friend.status === 'online' ? '🟢 En línea' : '⚫ Desconectado'}</div>
+              <div class="friend-status">${friend.status === 'online' ? 'En línea' : 'Desconectado'}</div>
             </div>
             ${isOwnProfile ? `<button class="remove-friend-btn" data-friend-id="${friend.id}" title="Eliminar amigo">✕</button>` : ''}
           </div>
         `).join('')};
       `;
+
+      container.querySelectorAll('.friend-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          if (e.target.closest('.remove-friend-btn')) return;
+          const friendId = item.dataset.friendId;
+          const friend = friends.find(f => f.id === friendId);
+          if (friend && window.showUserProfile) {
+            window.showUserProfile(friend);
+          }
+        });
+      });
 
       if (isOwnProfile) {
         container.querySelectorAll('.remove-friend-btn').forEach(btn => {

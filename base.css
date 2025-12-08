@@ -192,38 +192,21 @@ body {
   min-width: 16px;
   text-align: center;
   display: none;
+  animation: pulse-badge 2s infinite;
 }
 
 .notification-badge.active {
   display: block;
 }
 
-.notification-btn::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  width: 8px;
-  height: 8px;
-  background: #ff4444;
-  border-radius: 50%;
-  border: 2px solid #2a1a1a;
-  display: none;
-  animation: pulse-dot 2s infinite;
-}
-
-.notification-btn.has-pending::after {
-  display: block;
-}
-
-@keyframes pulse-dot {
+@keyframes pulse-badge {
   0%, 100% {
     transform: scale(1);
-    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.7);
   }
   50% {
-    transform: scale(1.2);
-    opacity: 0.8;
+    transform: scale(1.05);
+    box-shadow: 0 0 0 4px rgba(255, 68, 68, 0);
   }
 }
 
@@ -2628,127 +2611,201 @@ body {
   position: absolute;
   top: 95px;
   right: 15px;
-  width: 32px;
-  height: 32px;
-  background: rgba(201, 122, 111, 0.2);
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, rgba(201, 122, 111, 0.2), rgba(201, 122, 111, 0.3));
   border: 2px solid #c97a6f;
-  border-radius: 8px;
-  padding: 6px;
+  border-radius: 10px;
+  padding: 7px;
   cursor: pointer;
   transition: all 0.3s;
   z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .add-friend-btn:hover {
-  background: rgba(201, 122, 111, 0.4);
-  transform: scale(1.1);
+  background: linear-gradient(135deg, rgba(201, 122, 111, 0.4), rgba(201, 122, 111, 0.5));
+  transform: scale(1.1) translateY(-2px);
+  box-shadow: 0 4px 12px rgba(201, 122, 111, 0.4);
 }
 
 .add-friend-btn img {
   width: 100%;
   height: 100%;
+  filter: brightness(0) saturate(100%) invert(93%) sepia(8%) saturate(434%) hue-rotate(314deg) brightness(98%) contrast(93%);
 }
 
 .add-friend-btn.pending {
-  background: rgba(255, 170, 0, 0.2);
+  background: linear-gradient(135deg, rgba(255, 170, 0, 0.2), rgba(255, 170, 0, 0.3));
   border-color: #ffaa00;
   cursor: not-allowed;
+  animation: pending-pulse 2s infinite;
+}
+
+.add-friend-btn.pending:hover {
+  transform: scale(1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .add-friend-btn.friends {
-  background: rgba(76, 175, 80, 0.2);
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.2), rgba(76, 175, 80, 0.3));
   border-color: #4caf50;
+  cursor: default;
+}
+
+.add-friend-btn.friends:hover {
+  transform: scale(1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes pending-pulse {
+  0%, 100% {
+    border-color: #ffaa00;
+  }
+  50% {
+    border-color: #ffcc00;
+  }
 }
 
 .friends-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .friend-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: rgba(201, 122, 111, 0.05);
-  border: 1px solid rgba(201, 122, 111, 0.2);
-  border-radius: 8px;
-  transition: all 0.3s;
+  gap: 14px;
+  padding: 14px;
+  background: linear-gradient(135deg, rgba(201, 122, 111, 0.05), rgba(201, 122, 111, 0.08));
+  border: 2px solid rgba(201, 122, 111, 0.2);
+  border-radius: 12px;
+  transition: all 0.3s ease;
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.friend-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(201, 122, 111, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.friend-item:hover::before {
+  left: 100%;
 }
 
 .friend-item:hover {
-  background: rgba(201, 122, 111, 0.15);
-  transform: translateX(3px);
+  background: linear-gradient(135deg, rgba(201, 122, 111, 0.12), rgba(201, 122, 111, 0.15));
+  border-color: #c97a6f;
+  transform: translateX(5px);
+  box-shadow: 0 4px 12px rgba(201, 122, 111, 0.2);
 }
 
 .friend-avatar {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  border: 2px solid #c97a6f;
+  border: 3px solid #c97a6f;
+  box-shadow: 0 2px 8px rgba(201, 122, 111, 0.3);
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.friend-item:hover .friend-avatar {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(201, 122, 111, 0.5);
 }
 
 .friend-info {
   flex: 1;
+  min-width: 0;
 }
 
 .friend-name {
-  font-size: 13px;
+  font-size: 14px;
   color: #f5e6e3;
   font-family: 'Orbitron', monospace;
   font-weight: bold;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .friend-status {
   font-size: 11px;
   color: #888;
   font-family: 'Inter', sans-serif;
-  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.friend-status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
 }
 
 .loading-friends,
 .empty-friends {
   text-align: center;
-  padding: 40px 20px;
+  padding: 50px 20px;
   color: #888;
   font-family: 'Inter', sans-serif;
   font-size: 14px;
+  background: rgba(201, 122, 111, 0.03);
+  border: 2px dashed rgba(201, 122, 111, 0.2);
+  border-radius: 12px;
 }
 
 .friends-count {
   text-align: center;
-  padding: 10px;
-  background: rgba(201, 122, 111, 0.1);
-  border-radius: 8px;
-  margin-bottom: 15px;
-  font-size: 13px;
+  padding: 12px;
+  background: linear-gradient(135deg, rgba(201, 122, 111, 0.15), rgba(201, 122, 111, 0.1));
+  border: 2px solid rgba(201, 122, 111, 0.3);
+  border-radius: 10px;
+  margin-bottom: 18px;
+  font-size: 14px;
   color: #f5e6e3;
   font-family: 'Orbitron', monospace;
   font-weight: bold;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 8px rgba(201, 122, 111, 0.2);
 }
 
 .remove-friend-btn {
   background: rgba(255, 68, 68, 0.2);
-  border: 1px solid #ff4444;
+  border: 2px solid #ff4444;
   color: #ff4444;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
   flex-shrink: 0;
+  font-weight: bold;
 }
 
 .remove-friend-btn:hover {
   background: #ff4444;
   color: white;
-  transform: scale(1.1);
+  transform: scale(1.15) rotate(90deg);
+  box-shadow: 0 4px 12px rgba(255, 68, 68, 0.4);
 }
 
 @media (max-width: 767px) {

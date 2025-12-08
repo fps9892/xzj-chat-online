@@ -79,23 +79,23 @@ service cloud.firestore {
 
     match /friendRequests/{requestId} {
       allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && (resource.data.from == request.auth.uid || resource.data.to == request.auth.uid);
-      allow delete: if request.auth != null && (resource.data.from == request.auth.uid || resource.data.to == request.auth.uid);
+      allow create: if true;
+      allow update: if true;
+      allow delete: if true;
     }
 
     match /friends/{friendId} {
       allow read: if true;
-      allow write: if request.auth != null;
-      allow create: if request.auth != null;
-      allow delete: if request.auth != null;
+      allow write: if true;
+      allow create: if true;
+      allow delete: if true;
     }
 
     match /notifications/{notificationId} {
       allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null;
-      allow delete: if request.auth != null;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if true;
     }
 
     match /settings/global {
