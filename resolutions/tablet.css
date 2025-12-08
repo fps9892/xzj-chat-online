@@ -26,9 +26,6 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
     border: 2px solid #c97a6f;
     border-radius: 8px;
     padding: 6px 10px;

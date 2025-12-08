@@ -1,11 +1,10 @@
-import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, currentRoom, updateUserData, changePassword, sendImage, sendAudio, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, muteUser, getRooms, listenToRooms, listenToAnnouncements, showAnnouncement, listenToUserStatus, processEmotes, extractYouTubeId, checkPrivateRoomAccess, requestPrivateRoomAccess, listenToRoomAccessNotifications, listenToRefreshCommand, database, ref, onValue, set, push, serverTimestamp, db, toggleReaction } from './firebase.js';
+import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, currentRoom, updateUserData, changePassword, sendImage, sendAudio, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, muteUser, getRooms, listenToRooms, listenToAnnouncements, showAnnouncement, listenToUserStatus, processEmotes, extractYouTubeId, checkPrivateRoomAccess, requestPrivateRoomAccess, listenToRoomAccessNotifications, listenToRefreshCommand, database, ref, onValue, set, push, serverTimestamp, db } from './firebase.js';
 import { AudioRecorder, formatTime, blobToBase64 } from './audio-recorder.js';
 import { getUserProfile, findUserByUsername, animateMessageDeletion, initAdminListener } from './core.js';
 import { setupMessageOptions, replyingTo, clearReply } from './message-options.js';
 import { showBanPanel, showUnbanPanel, showMutePanel, showUnmutePanel } from './moderation-panels.js';
 import { showGamesPanel } from './games-panel.js';
 import { NotificationManager } from './notifications.js';
-import { MentionsManager } from './mentions.js';
 
 let notificationManager = new NotificationManager(currentRoom);
 
@@ -112,7 +111,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const recIndicator = document.querySelector('.rec-indicator');
     const audioInput = document.querySelector('.audio-input');
     
-    let mentionsManager = null;
     let audioRecorder = new AudioRecorder();
     let isRecording = false;
     let timerInterval = null;
@@ -408,59 +406,53 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else if (configType === 'photo') {
                         const file = inputField.files[0];
                         if (file) {
-                            const reader = new FileReader();
-                            reader.onload = async (e) => {
-                                const fileDataUrl = e.target.result;
-
-                                // Si es un GIF, no lo procesamos con canvas para mantener la animación
-                                if (file.type === 'image/gif') {
-                                    updates.avatar = fileDataUrl;
-                                } else {
-                                    // Para otras imágenes, las redimensionamos como antes
-                                    const img = new Image();
-                                    await new Promise(resolve => {
-                                        img.onload = resolve;
-                                        img.src = fileDataUrl;
-                                    });
-
-                                    const canvas = document.createElement('canvas');
-                                    let width = img.width;
-                                    let height = img.height;
-                                    const maxSize = 800;
-
-                                    if (width > height && width > maxSize) {
-                                        height = (height * maxSize) / width;
-                                        width = maxSize;
-                                    } else if (height > maxSize) {
-                                        width = (width * maxSize) / height;
-                                        height = maxSize;
-                                    }
-
-                                    canvas.width = width;
-                                    canvas.height = height;
-                                    const ctx = canvas.getContext('2d');
-                                    ctx.drawImage(img, 0, 0, width, height);
-
-                                    const mimeType = file.type || 'image/jpeg';
-                                    const quality = (file.type === 'image/png') ? 1.0 : 0.7;
-                                    updates.avatar = canvas.toDataURL(mimeType, quality);
-                                }
-
-                                const profileImg = document.querySelector('.profile-image');
-                                if (profileImg) profileImg.src = updates.avatar;
-
-                                const success = await updateUserData(updates);
-                                if (success) {
-                                    showNotification('Foto de perfil actualizada correctamente', 'success');
-                                } else {
-                                    showNotification('Error al actualizar', 'error');
-                                }
-
-                                input.classList.remove('active');
-                                button.style.display = 'block';
-                            };
-                            reader.readAsDataURL(file);
-                            return; // Salimos para que el resto del código no se ejecute dos veces
+                            try {
+                                const img = new Image();
+                                const reader = new FileReader();
+                                reader.onload = async (e) => {
+                                    img.onload = async () => {
+                                        const canvas = document.createElement('canvas');
+                                        let width = img.width;
+                                        let height = img.height;
+                                        const maxSize = 800;
+                                        
+                                        if (width > height && width > maxSize) {
+                                            height = (height * maxSize) / width;
+                                            width = maxSize;
+                                        } else if (height > maxSize) {
+                                            width = (width * maxSize) / height;
+                                            height = maxSize;
+                                        }
+                                        
+                                        canvas.width = width;
+                                        canvas.height = height;
+                                        const ctx = canvas.getContext('2d');
+                                        ctx.drawImage(img, 0, 0, width, height);
+                                        
+                                        const mimeType = file.type || 'image/jpeg';
+                                        const quality = (file.type === 'image/png' || file.type === 'image/gif') ? 1.0 : 0.7;
+                                        updates.avatar = canvas.toDataURL(mimeType, quality);
+                                        const profileImg = document.querySelector('.profile-image');
+                                        if (profileImg) profileImg.src = updates.avatar;
+                                        
+                                        const success = await updateUserData(updates);
+                                        if (success) {
+                                            showNotification('Foto de perfil actualizada correctamente', 'success');
+                                        } else {
+                                            showNotification('Error al actualizar', 'error');
+                                        }
+                                        
+                                        input.classList.remove('active');
+                                        button.style.display = 'block';
+                                    };
+                                    img.src = e.target.result;
+                                };
+                                reader.readAsDataURL(file);
+                                return;
+                            } catch (error) {
+                                showNotification(error.message, 'error');
+                                return;
+                            }
                         }
                     } else if (configType === 'password') {
                         if (currentUser.isGuest) {
@@ -815,7 +807,6 @@ document.addEventListener('DOMContentLoaded', function() {
             renderUsers(users);
         });
         
-        if (mentionsManager) mentionsManager.updateUsers(users);
         listenToRoomEvents();
     }
 
@@ -1199,7 +1190,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>` :
                         `<div class="message-content">
                             ${message.type === 'image' ? 
-                                `<img src="${message.imageData}" alt="Imagen" class="message-image" onclick="showImageModal('${message.imageData}', '${message.userName || 'Usuario'}', '${time}')" />` :
+                                `<img src="${message.imageData}" alt="Imagen" class="message-image" onclick="showImageModal('${message.imageData}')" />` :
                                 `${message.text ? '<button class="message-options-btn">⋮</button>' : ''}${replyPreview}${(() => {
                                     const youtubeId = extractYouTubeId(message.text);
                                     if (youtubeId) {
@@ -1211,9 +1202,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                         </div>`
                         }
-                        <div class="reactions-container">
-                            ${renderReactions(message.reactions, message.id)}
-                        </div>
                     </div>
                 </div>
             `);
@@ -1269,18 +1257,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // Botón para añadir reacción
-        const reactBtn = createElement('<button class="react-btn">😊</button>');
-        const messageContent = messageEl.querySelector('.message-content');
-        if (messageContent) {
-            messageContent.appendChild(reactBtn);
-
-            reactBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                showReactionPicker(reactBtn, message.id);
-            });
-        }
-
         return messageEl;
     }
     
@@ -1288,76 +1264,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentNumericId = 1;
     let guestNumericIds = new Map();
     let currentGuestId = 1000;
-
-    function renderReactions(reactions, messageId) {
-        if (!reactions) return '';
-        
-        return Object.entries(reactions).map(([emoji, users]) => {
-            const userCount = Object.keys(users).length;
-            if (userCount === 0) return '';
-
-            const currentUserId = currentUser.firebaseUid || currentUser.userId;
-            const hasReacted = users[currentUserId];
-
-            return `<button class="reaction-chip ${hasReacted ? 'reacted' : ''}" data-emoji="${emoji}" data-message-id="${messageId}">
-                        ${emoji} ${userCount}
-                    </button>`;
-        }).join('');
-    }
-
-    function showReactionPicker(target, messageId) {
-        // Cerrar otros pickers
-        document.querySelectorAll('.reaction-picker').forEach(p => p.remove());
-
-        const picker = createElement('<div class="reaction-picker"></div>');
-        const commonEmojis = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
-        
-        commonEmojis.forEach(emoji => {
-            const emojiBtn = createElement(`<span>${emoji}</span>`);
-            emojiBtn.addEventListener('click', () => {
-                toggleReaction(messageId, emoji).then(updatedReactions => {
-                    const reactionsContainer = document.querySelector(`[data-message-id="${messageId}"] .reactions-container`);
-                    if (reactionsContainer) reactionsContainer.innerHTML = renderReactions(updatedReactions, messageId);
-                });
-                picker.remove();
-            });
-            picker.appendChild(emojiBtn);
-        });
-
-        document.body.appendChild(picker);
-        const rect = target.getBoundingClientRect();
-        picker.style.top = `${rect.top - picker.offsetHeight - 5}px`;
-        picker.style.left = `${rect.left}px`;
-
-        // Cerrar al hacer clic fuera
-        setTimeout(() => {
-            document.addEventListener('click', function closePicker(e) {
-                if (!picker.contains(e.target)) {
-                    picker.remove();
-                    document.removeEventListener('click', closePicker);
-                }
-            });
-        }, 0);
-    }
-
-    // Event listener para los chips de reacción existentes
-    document.querySelector('.chat-area').addEventListener('click', (e) => {
-        if (e.target.classList.contains('reaction-chip')) {
-            toggleReaction(e.target.dataset.messageId, e.target.dataset.emoji).then(updatedReactions => {
-                const reactionsContainer = e.target.closest('.reactions-container');
-                if (reactionsContainer) reactionsContainer.innerHTML = renderReactions(updatedReactions, e.target.dataset.messageId);
-            });
-        }
-    });
-    
-    // Click en menciones
-    chatArea.addEventListener('click', async (e) => {
-        if (e.target.classList.contains('mention')) {
-            const username = e.target.dataset.username;
-            const user = await findUserByUsername(username);
-            if (user) showUserProfile(user);
-        }
-    });
     
     function createUserElement(user) {
         let displayName = user.name;
@@ -1515,7 +1421,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="user-profile-overlay active">
                 <div class="user-profile-panel">
                     <div class="user-profile-header">
-                        ${isOwnProfile ? '<button class="config-panel-btn" id="openConfigPanel"><img src="/images/config.svg" alt="Config" /></button>' : ''}
+                        ${isOwnProfile ? '<button class="config-panel-btn" id="openConfigPanel"><img src="/images/config.svg" alt="Config" /></button>' : '<button class="add-friend-btn" id="addFriendBtn" data-user-id="' + (user.firebaseUid || user.id) + '"><img src="/images/profileuser.svg" alt="Add Friend" /></button>'}
                         <img src="images/close.svg" alt="Close" class="close-profile">
                     </div>
                     <div class="user-profile-content">
@@ -1851,7 +1757,6 @@ document.addEventListener('DOMContentLoaded', function() {
         initAdminListener();
         
         const roomHash = window.location.hash.substring(1) || 'general';
-        mentionsManager = new MentionsManager(messageInput, document.querySelector('.input-container'));
         changeRoom(roomHash, true);
         loadMessages();
         loadUsers();
@@ -2251,20 +2156,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Mostrar imagen en modal
-    window.showImageModal = function(imageSrc, username = 'Usuario', time = '') {
+    window.showImageModal = function(imageSrc) {
         const modal = createElement(`
             <div class="image-modal-overlay active">
                 <div class="image-modal">
                     <div class="image-modal-header">
                         <div class="image-modal-controls">
-                            <button class="modal-control-btn" id="zoomInBtn" title="Acercar">➕</button>
-                            <button class="modal-control-btn" id="zoomOutBtn" title="Alejar">➖</button>
-                            <button class="modal-control-btn" id="resetZoomBtn" title="Restablecer">🔄</button>
-                            <button class="modal-control-btn" id="downloadBtn" title="Descargar">💾</button>
-                            <button class="modal-control-btn" id="copyLinkBtn" title="Copiar enlace">🔗</button>
+                            <button class="modal-control-btn" id="zoomInBtn" title="Acercar"><img src="/images/zoom-in.svg" alt="+"></button>
+                            <button class="modal-control-btn" id="zoomOutBtn" title="Alejar"><img src="/images/zoom-out.svg" alt="-"></button>
+                            <button class="modal-control-btn" id="resetZoomBtn" title="Restablecer"><img src="/images/zoom-reset.svg" alt="⟲"></button>
+                            <button class="modal-control-btn" id="downloadBtn" title="Descargar"><img src="/images/download.svg" alt="↓"></button>
+                            <button class="modal-control-btn" id="copyLinkBtn" title="Copiar enlace"><img src="/images/copy.svg" alt="📋"></button>
                         </div>
-                        <span class="image-modal-title">Enviada por ${username} a las ${time}</span>
-                        <button class="close-modal" title="Cerrar">❌</button>
+                        <button class="close-modal">×</button>
                     </div>
                     <div class="image-content-area">
                         <img src="${imageSrc}" alt="Imagen" class="modal-image" />

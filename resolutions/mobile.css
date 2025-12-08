@@ -348,20 +348,24 @@
     transform: translate(-50%, -50%);
   }
 
-  .room-selector {
+  .header-actions {
     position: absolute;
     right: 10px;
     top: 50%;
     transform: translateY(-50%);
+    gap: 8px;
   }
 
-  .rooms-btn {
-    padding: 6px 10px;
-    border-radius: 17%;
+  .notification-btn {
+    width: 28px;
+    height: 28px;
+    padding: 5px;
   }
 
-  .rooms-btn span {
-    display: none;
+  .notifications-panel {
+    right: 10px;
+    width: calc(100% - 20px);
+    max-width: 350px;
   }
 }
 
@@ -389,7 +393,7 @@
     transform: translate(-50%, -50%);
   }
 
-  .room-selector {
+  .header-actions {
     position: absolute;
     right: 10px;
     top: 50%;
