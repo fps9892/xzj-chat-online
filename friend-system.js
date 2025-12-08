@@ -341,11 +341,11 @@ class FriendSystem {
         if (data.user1 === userId) {
           const friendDoc = await getDoc(doc(db, 'users', data.user2));
           if (friendDoc.exists()) {
-            friends.push({ id: data.user2, ...friendDoc.data() });
+            friends.push({ id: data.user2, friendsSince: data.timestamp, ...friendDoc.data() });
           } else {
             const guestDoc = await getDoc(doc(db, 'guests', data.user2));
             if (guestDoc.exists()) {
-              friends.push({ id: data.user2, ...guestDoc.data() });
+              friends.push({ id: data.user2, friendsSince: data.timestamp, ...guestDoc.data() });
             }
           }
         }
@@ -356,6 +356,22 @@ class FriendSystem {
       console.error('Error loading friends:', error);
       return [];
     }
+  }
+
+  formatFriendsSince(timestamp) {
+    if (!timestamp) return 'Hace tiempo';
+    
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const now = new Date();
+    const diff = now - date;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const months = Math.floor(days / 30);
+    const years = Math.floor(days / 365);
+
+    if (years > 0) return `Amigos hace ${years} año${years !== 1 ? 's' : ''}`;
+    if (months > 0) return `Amigos hace ${months} mes${months !== 1 ? 'es' : ''}`;
+    if (days > 0) return `Amigos hace ${days} día${days !== 1 ? 's' : ''}`;
+    return 'Amigos desde hoy';
   }
 
   renderFriendsList(container, friends, currentUserId) {
@@ -371,7 +387,7 @@ class FriendSystem {
             <img src="${friend.avatar || '/images/profileuser.svg'}" alt="${friend.username || friend.name}" class="friend-avatar" />
             <div class="friend-info">
               <div class="friend-name">${friend.username || friend.name}</div>
-              <div class="friend-status">${friend.status === 'online' ? 'En línea' : 'Desconectado'}</div>
+              <div class="friend-status">${this.formatFriendsSince(friend.friendsSince)}</div>
             </div>
             ${isOwnProfile ? `<button class="remove-friend-btn" data-friend-id="${friend.id}" title="Eliminar amigo">✕</button>` : ''}
           </div>
