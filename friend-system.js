@@ -249,7 +249,7 @@ class FriendSystem {
     } else {
       btn.title = 'Enviar solicitud de amistad';
       btn.style.cursor = 'pointer';
-      if (img) img.src = '/images/profileuser.svg';
+      if (img) img.src = '/images/profileuseradd.svg';
     }
   }
 
