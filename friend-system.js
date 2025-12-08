@@ -118,15 +118,25 @@ class FriendSystem {
         timestamp: serverTimestamp()
       });
 
+      const fromUserDoc = await getDoc(doc(db, 'users', fromUserId));
+      let fromUserData = fromUserDoc.exists() ? fromUserDoc.data() : null;
+      if (!fromUserData) {
+        const guestDoc = await getDoc(doc(db, 'guests', fromUserId));
+        fromUserData = guestDoc.exists() ? guestDoc.data() : {};
+      }
+      const fromUsername = fromUserData.username || fromUserData.name || 'Usuario';
+
       await deleteDoc(doc(db, 'friendRequests', requestId));
 
       if (window.notificationPanel) {
         window.notificationPanel.addNotification(
           'friend-accepted',
-          `Ahora son amigos`,
+          `Ahora eres amigo de ${fromUsername}`,
           { userId: fromUserId }
         );
       }
+
+      await this.notifyFriendAccepted(fromUserId, userId);
 
       this.showNotification('✓ Solicitud aceptada', 'success');
       this.loadFriendRequests();
@@ -261,6 +271,8 @@ class FriendSystem {
     });
 
     const badge = document.getElementById('notificationBadge');
+    const notifBtn = document.getElementById('notificationBtn');
+    
     if (badge) {
       badge.textContent = count;
       if (count > 0) {
@@ -268,6 +280,62 @@ class FriendSystem {
       } else {
         badge.classList.remove('active');
       }
+    }
+
+    if (notifBtn) {
+      if (count > 0) {
+        notifBtn.classList.add('has-pending');
+      } else {
+        notifBtn.classList.remove('has-pending');
+      }
+    }
+  }
+
+  async notifyFriendAccepted(toUserId, fromUserId) {
+    try {
+      const fromUserDoc = await getDoc(doc(db, 'users', fromUserId));
+      let fromUserData = fromUserDoc.exists() ? fromUserDoc.data() : null;
+      if (!fromUserData) {
+        const guestDoc = await getDoc(doc(db, 'guests', fromUserId));
+        fromUserData = guestDoc.exists() ? guestDoc.data() : {};
+      }
+      const fromUsername = fromUserData.username || fromUserData.name || 'Usuario';
+
+      const notificationId = `notif_${Date.now()}_${toUserId}`;
+      await setDoc(doc(db, 'notifications', notificationId), {
+        to: toUserId,
+        type: 'friend-accepted',
+        message: `${fromUsername} aceptó tu solicitud`,
+        timestamp: serverTimestamp(),
+        read: false
+      });
+    } catch (error) {
+      console.error('Error notifying friend accepted:', error);
+    }
+  }
+
+  async removeFriend(friendId) {
+    if (!currentUser) return;
+
+    try {
+      const userId = currentUser.firebaseUid || currentUser.userId || currentUser.uid;
+      const friendId1 = `${userId}_${friendId}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+      const friendId2 = `${friendId}_${userId}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+
+      await deleteDoc(doc(db, 'friends', friendId1));
+      await deleteDoc(doc(db, 'friends', friendId2));
+
+      this.showNotification('Amigo eliminado', 'info');
+      
+      const friendsList = document.querySelector(`#friendsList-${userId}`);
+      if (friendsList) {
+        this.loadFriends(userId).then(friends => {
+          this.renderFriendsList(friendsList, friends, userId);
+        });
+      }
+    } catch (error) {
+      console.error('Error removing friend:', error);
+      this.showNotification('Error al eliminar amigo', 'error');
     }
   }
 
@@ -296,6 +364,40 @@ class FriendSystem {
     } catch (error) {
       console.error('Error loading friends:', error);
       return [];
+    }
+  }
+
+  renderFriendsList(container, friends, currentUserId) {
+    const isOwnProfile = currentUserId === (currentUser.firebaseUid || currentUser.userId || currentUser.uid);
+    
+    if (friends.length === 0) {
+      container.innerHTML = '<div class="empty-friends">No tiene amigos aún</div>';
+    } else {
+      container.innerHTML = `
+        <div class="friends-count">👥 ${friends.length} amigo${friends.length !== 1 ? 's' : ''}</div>
+        ${friends.map(friend => `
+          <div class="friend-item">
+            <img src="${friend.avatar || '/images/profileuser.svg'}" alt="${friend.username || friend.name}" class="friend-avatar" />
+            <div class="friend-info">
+              <div class="friend-name">${friend.username || friend.name}</div>
+              <div class="friend-status">${friend.status === 'online' ? '🟢 En línea' : '⚫ Desconectado'}</div>
+            </div>
+            ${isOwnProfile ? `<button class="remove-friend-btn" data-friend-id="${friend.id}" title="Eliminar amigo">✕</button>` : ''}
+          </div>
+        `).join('')};
+      `;
+
+      if (isOwnProfile) {
+        container.querySelectorAll('.remove-friend-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const friendId = btn.dataset.friendId;
+            if (confirm('¿Eliminar a este amigo?')) {
+              this.removeFriend(friendId);
+            }
+          });
+        });
+      }
     }
   }
 

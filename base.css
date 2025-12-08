@@ -198,6 +198,35 @@ body {
   display: block;
 }
 
+.notification-btn::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  background: #ff4444;
+  border-radius: 50%;
+  border: 2px solid #2a1a1a;
+  display: none;
+  animation: pulse-dot 2s infinite;
+}
+
+.notification-btn.has-pending::after {
+  display: block;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+}
+
 .notifications-panel {
   position: fixed;
   top: 70px;
@@ -2686,6 +2715,40 @@ body {
   color: #888;
   font-family: 'Inter', sans-serif;
   font-size: 14px;
+}
+
+.friends-count {
+  text-align: center;
+  padding: 10px;
+  background: rgba(201, 122, 111, 0.1);
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 13px;
+  color: #f5e6e3;
+  font-family: 'Orbitron', monospace;
+  font-weight: bold;
+}
+
+.remove-friend-btn {
+  background: rgba(255, 68, 68, 0.2);
+  border: 1px solid #ff4444;
+  color: #ff4444;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.remove-friend-btn:hover {
+  background: #ff4444;
+  color: white;
+  transform: scale(1.1);
 }
 
 @media (max-width: 767px) {

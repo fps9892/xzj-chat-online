@@ -91,6 +91,13 @@ service cloud.firestore {
       allow delete: if request.auth != null;
     }
 
+    match /notifications/{notificationId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null;
+    }
+
     match /settings/global {
       allow read: if true;
       allow write: if request.auth != null && isDeveloper();
