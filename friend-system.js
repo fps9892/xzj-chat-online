@@ -2,6 +2,7 @@ import { db, doc, setDoc, getDoc, deleteDoc, collection, getDocs, serverTimestam
 
 class FriendSystem {
   constructor() {
+    this.friendsCache = new Map();
     this.init();
   }
 
@@ -10,9 +11,33 @@ class FriendSystem {
       if (e.target.closest('#addFriendBtn')) {
         const btn = e.target.closest('#addFriendBtn');
         const targetUserId = btn.dataset.userId;
+        const status = await this.checkFriendshipStatus(targetUserId);
+        
+        if (status === 'friends' || status === 'pending') {
+          this.showNotification(status === 'friends' ? 'Ya son amigos' : 'Solicitud pendiente', 'info');
+          return;
+        }
+        
         await this.sendFriendRequest(targetUserId);
       }
     });
+  }
+
+  async checkFriendshipStatus(targetUserId) {
+    if (!currentUser || !targetUserId) return 'none';
+    
+    const userId = currentUser.firebaseUid || currentUser.userId || currentUser.uid;
+    if (!userId) return 'none';
+
+    const friendId = `${userId}_${targetUserId}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const friendDoc = await getDoc(doc(db, 'friends', friendId));
+    if (friendDoc.exists()) return 'friends';
+
+    const requestId = `${userId}_${targetUserId}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const requestDoc = await getDoc(doc(db, 'friendRequests', requestId));
+    if (requestDoc.exists()) return 'pending';
+
+    return 'none';
   }
 
   async sendFriendRequest(targetUserId) {
@@ -59,13 +84,14 @@ class FriendSystem {
       if (window.notificationPanel) {
         window.notificationPanel.addNotification(
           'friend-request-sent',
-          `Solicitud de amistad enviada`,
+          `Solicitud enviada`,
           { userId: targetUserId }
         );
       }
 
-      this.showNotification('Solicitud de amistad enviada', 'success');
+      this.showNotification('✓ Solicitud enviada', 'success');
       this.updateButtonState(targetUserId, 'pending');
+      this.updateNotificationBadge();
     } catch (error) {
       console.error('Error sending friend request:', error);
       this.showNotification('Error al enviar solicitud', 'error');
@@ -77,8 +103,8 @@ class FriendSystem {
 
     try {
       const userId = currentUser.firebaseUid || currentUser.userId || currentUser.uid;
-      const friendId1 = `${userId}_${fromUserId}`;
-      const friendId2 = `${fromUserId}_${userId}`;
+      const friendId1 = `${userId}_${fromUserId}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+      const friendId2 = `${fromUserId}_${userId}`.replace(/[^a-zA-Z0-9_-]/g, '_');
 
       await setDoc(doc(db, 'friends', friendId1), {
         user1: userId,
@@ -94,8 +120,17 @@ class FriendSystem {
 
       await deleteDoc(doc(db, 'friendRequests', requestId));
 
-      this.showNotification('Solicitud aceptada', 'success');
+      if (window.notificationPanel) {
+        window.notificationPanel.addNotification(
+          'friend-accepted',
+          `Ahora son amigos`,
+          { userId: fromUserId }
+        );
+      }
+
+      this.showNotification('✓ Solicitud aceptada', 'success');
       this.loadFriendRequests();
+      this.updateNotificationBadge();
     } catch (error) {
       console.error('Error accepting friend request:', error);
       this.showNotification('Error al aceptar solicitud', 'error');
@@ -107,6 +142,7 @@ class FriendSystem {
       await deleteDoc(doc(db, 'friendRequests', requestId));
       this.showNotification('Solicitud rechazada', 'info');
       this.loadFriendRequests();
+      this.updateNotificationBadge();
     } catch (error) {
       console.error('Error rejecting friend request:', error);
     }
@@ -118,6 +154,7 @@ class FriendSystem {
     try {
       const userId = currentUser.firebaseUid || currentUser.userId || currentUser.uid;
       if (!userId) return;
+
       const requestsRef = collection(db, 'friendRequests');
       const snapshot = await getDocs(requestsRef);
       const requests = [];
@@ -182,17 +219,83 @@ class FriendSystem {
     });
   }
 
-  updateButtonState(userId, state) {
+  async updateButtonState(userId, state) {
     const btn = document.querySelector(`#addFriendBtn[data-user-id="${userId}"]`);
     if (!btn) return;
 
     btn.classList.remove('pending', 'friends');
+    const img = btn.querySelector('img');
+    
     if (state === 'pending') {
       btn.classList.add('pending');
       btn.title = 'Solicitud pendiente';
+      btn.style.cursor = 'not-allowed';
+      if (img) img.src = '/images/time.svg';
     } else if (state === 'friends') {
       btn.classList.add('friends');
       btn.title = 'Ya son amigos';
+      btn.style.cursor = 'default';
+      if (img) img.src = '/images/id.svg';
+    } else {
+      btn.title = 'Enviar solicitud de amistad';
+      btn.style.cursor = 'pointer';
+      if (img) img.src = '/images/profileuser.svg';
+    }
+  }
+
+  async updateNotificationBadge() {
+    if (!currentUser) return;
+    
+    const userId = currentUser.firebaseUid || currentUser.userId || currentUser.uid;
+    if (!userId) return;
+
+    const requestsRef = collection(db, 'friendRequests');
+    const snapshot = await getDocs(requestsRef);
+    let count = 0;
+
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      if (data.to === userId && data.status === 'pending') {
+        count++;
+      }
+    });
+
+    const badge = document.getElementById('notificationBadge');
+    if (badge) {
+      badge.textContent = count;
+      if (count > 0) {
+        badge.classList.add('active');
+      } else {
+        badge.classList.remove('active');
+      }
+    }
+  }
+
+  async loadFriends(userId) {
+    try {
+      const friendsRef = collection(db, 'friends');
+      const snapshot = await getDocs(friendsRef);
+      const friends = [];
+
+      for (const docSnap of snapshot.docs) {
+        const data = docSnap.data();
+        if (data.user1 === userId) {
+          const friendDoc = await getDoc(doc(db, 'users', data.user2));
+          if (friendDoc.exists()) {
+            friends.push({ id: data.user2, ...friendDoc.data() });
+          } else {
+            const guestDoc = await getDoc(doc(db, 'guests', data.user2));
+            if (guestDoc.exists()) {
+              friends.push({ id: data.user2, ...guestDoc.data() });
+            }
+          }
+        }
+      }
+
+      return friends;
+    } catch (error) {
+      console.error('Error loading friends:', error);
+      return [];
     }
   }
 
@@ -214,7 +317,10 @@ const friendSystem = new FriendSystem();
 setInterval(() => {
   if (currentUser) {
     friendSystem.loadFriendRequests();
+    friendSystem.updateNotificationBadge();
   }
 }, 5000);
+
+window.friendSystem = friendSystem;
 
 export default friendSystem;

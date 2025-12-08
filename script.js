@@ -1440,6 +1440,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="profile-tabs">
                             <button class="profile-tab active" data-section="info">Info</button>
                             <button class="profile-tab" data-section="stats">Stats</button>
+                            <button class="profile-tab" data-section="friends">Amigos</button>
                         </div>
                         
                         <div class="profile-sections">
@@ -1493,11 +1494,48 @@ document.addEventListener('DOMContentLoaded', function() {
                                     </div>
                                 </div>
                             </div>
+                            <div class="profile-section" data-section="friends">
+                                <div class="friends-list" id="friendsList-${user.firebaseUid || user.id}">
+                                    <div class="loading-friends">Cargando amigos...</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         `);
+        
+        // Cargar amigos
+        if (window.friendSystem) {
+            const friendsList = modal.querySelector(`#friendsList-${user.firebaseUid || user.id}`);
+            window.friendSystem.loadFriends(user.firebaseUid || user.id).then(friends => {
+                if (friendsList) {
+                    if (friends.length === 0) {
+                        friendsList.innerHTML = '<div class="empty-friends">No tiene amigos aún</div>';
+                    } else {
+                        friendsList.innerHTML = friends.map(friend => `
+                            <div class="friend-item">
+                                <img src="${friend.avatar || '/images/profileuser.svg'}" alt="${friend.username || friend.name}" class="friend-avatar" />
+                                <div class="friend-info">
+                                    <div class="friend-name">${friend.username || friend.name}</div>
+                                    <div class="friend-status">${friend.status === 'online' ? '🟢 En línea' : '⚫ Desconectado'}</div>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                }
+            });
+        }
+        
+        // Verificar estado de amistad
+        if (window.friendSystem && !isOwnProfile) {
+            const btn = modal.querySelector('#addFriendBtn');
+            if (btn) {
+                window.friendSystem.checkFriendshipStatus(user.firebaseUid || user.id).then(status => {
+                    window.friendSystem.updateButtonState(user.firebaseUid || user.id, status);
+                });
+            }
+        }
         
         document.body.appendChild(modal);
         

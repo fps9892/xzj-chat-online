@@ -2631,6 +2631,63 @@ body {
   border-color: #4caf50;
 }
 
+.friends-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.friend-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(201, 122, 111, 0.05);
+  border: 1px solid rgba(201, 122, 111, 0.2);
+  border-radius: 8px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.friend-item:hover {
+  background: rgba(201, 122, 111, 0.15);
+  transform: translateX(3px);
+}
+
+.friend-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #c97a6f;
+}
+
+.friend-info {
+  flex: 1;
+}
+
+.friend-name {
+  font-size: 13px;
+  color: #f5e6e3;
+  font-family: 'Orbitron', monospace;
+  font-weight: bold;
+}
+
+.friend-status {
+  font-size: 11px;
+  color: #888;
+  font-family: 'Inter', sans-serif;
+  margin-top: 2px;
+}
+
+.loading-friends,
+.empty-friends {
+  text-align: center;
+  padding: 40px 20px;
+  color: #888;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+}
+
 @media (max-width: 767px) {
   .user-profile-panel {
     width: 95%;
