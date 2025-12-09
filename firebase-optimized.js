@@ -1,5 +1,6 @@
 // ============================================
 // OPTIMIZACIONES CRÍTICAS PARA VELOCIDAD
+// PRIORIDAD: MENSAJES EN TIEMPO REAL
 // ============================================
 
 // 1. CACHÉ DE USUARIOS Y PERFILES
@@ -10,9 +11,14 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
 // 2. CACHÉ DE ROLES (evita múltiples consultas a Firestore)
 const roleCache = new Map();
 
-// 3. BATCH DE CONSULTAS
+// 3. BATCH DE CONSULTAS (optimizado para mensajes)
 let pendingUserQueries = [];
 let queryTimeout = null;
+const BATCH_DELAY = 20; // 20ms para mensajes rápidos
+
+// 4. PRIORIDAD DE MENSAJES
+const messageQueue = [];
+let processingMessages = false;
 
 // Función para obtener usuario con caché
 export async function getCachedUser(userId) {
@@ -32,37 +38,45 @@ export async function getCachedUser(userId) {
                 queryTimeout = null;
                 
                 // Ejecutar todas las consultas en paralelo
-                const results = await Promise.all(
-                    queries.map(async ({ userId }) => {
-                        try {
-                            const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-                            const { db } = await import('./firebase.js');
-                            
-                            const userDoc = await getDoc(doc(db, 'users', userId));
-                            if (userDoc.exists()) {
-                                const data = userDoc.data();
-                                userCache.set(userId, { data, timestamp: Date.now() });
-                                return data;
+                // Ejecutar consultas en paralelo con límite de concurrencia
+                const BATCH_SIZE = 10;
+                const results = [];
+                
+                for (let i = 0; i < queries.length; i += BATCH_SIZE) {
+                    const batch = queries.slice(i, i + BATCH_SIZE);
+                    const batchResults = await Promise.all(
+                        batch.map(async ({ userId }) => {
+                            try {
+                                const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                                const { db } = await import('./firebase.js');
+                                
+                                const userDoc = await getDoc(doc(db, 'users', userId));
+                                if (userDoc.exists()) {
+                                    const data = userDoc.data();
+                                    userCache.set(userId, { data, timestamp: Date.now() });
+                                    return data;
+                                }
+                                
+                                const guestDoc = await getDoc(doc(db, 'guests', userId));
+                                if (guestDoc.exists()) {
+                                    const data = guestDoc.data();
+                                    userCache.set(userId, { data, timestamp: Date.now() });
+                                    return data;
+                                }
+                                
+                                return null;
+                            } catch (error) {
+                                return null;
                             }
-                            
-                            const guestDoc = await getDoc(doc(db, 'guests', userId));
-                            if (guestDoc.exists()) {
-                                const data = guestDoc.data();
-                                userCache.set(userId, { data, timestamp: Date.now() });
-                                return data;
-                            }
-                            
-                            return null;
-                        } catch (error) {
-                            return null;
-                        }
-                    })
-                );
+                        })
+                    );
+                    results.push(...batchResults);
+                }
                 
                 queries.forEach(({ resolve }, index) => {
                     resolve(results[index]);
                 });
-            }, 50); // Esperar 50ms para agrupar consultas
+            }, BATCH_DELAY); // Esperar 20ms para mensajes rápidos
         }
     });
 }
@@ -120,6 +134,33 @@ export async function preloadRoomUsers(roomId) {
         }
     } catch (error) {
         console.error('Error preloading users:', error);
+    }
+}
+
+// Procesar mensajes con prioridad
+export async function processMessageWithPriority(messageData, callback) {
+    messageQueue.push({ messageData, callback });
+    
+    if (!processingMessages) {
+        processingMessages = true;
+        
+        while (messageQueue.length > 0) {
+            const { messageData, callback } = messageQueue.shift();
+            
+            // Pre-cargar usuario del mensaje si no está en caché
+            if (messageData.firebaseUid && !userCache.has(messageData.firebaseUid)) {
+                getCachedUser(messageData.firebaseUid).catch(() => {});
+            }
+            
+            callback(messageData);
+            
+            // Pequeña pausa para no bloquear UI
+            if (messageQueue.length > 0) {
+                await new Promise(resolve => setTimeout(resolve, 0));
+            }
+        }
+        
+        processingMessages = false;
     }
 }
 

@@ -231,10 +231,13 @@ export async function sendMessage(text, type = 'text', imageData = null, audioDu
         }
     });
     
-    return push(messagesRef, messageData).then(() => {
-        // Limit messages to 5 per room
-        limitMessages();
-    }).catch(error => {
+    // Enviar mensaje con prioridad (no esperar a limitMessages)
+    const messagePromise = push(messagesRef, messageData);
+    
+    // Ejecutar limitMessages en segundo plano sin bloquear
+    limitMessages().catch(err => console.warn('Error limiting messages:', err));
+    
+    return messagePromise.catch(error => {
         console.error('Error enviando mensaje:', error);
         throw error;
     });
@@ -498,19 +501,36 @@ function showFloatingNotification(message, type = 'info') {
 export async function changeRoom(roomName, isInitialJoin = false) {
     const sanitizedUserId = sanitizeUserId(currentUser.userId);
     
+    // Pre-cargar usuarios de la nueva sala en paralelo
+    const preloadPromise = (async () => {
+        try {
+            const usersRef = ref(database, `rooms/${roomName}/users`);
+            const snapshot = await get(usersRef);
+            if (snapshot.exists()) {
+                const userIds = [];
+                snapshot.forEach((child) => {
+                    const userData = child.val();
+                    if (userData.firebaseUid) userIds.push(userData.firebaseUid);
+                });
+                // Pre-cargar en batch
+                await Promise.all(userIds.slice(0, 10).map(id => 
+                    import('./firebase-optimized.js').then(m => m.getCachedUser(id)).catch(() => {})
+                ));
+            }
+        } catch (e) {}
+    })();
+    
     // Registrar evento ANTES de cambiar
     if (currentRoom && currentRoom !== roomName) {
         const roomEventRef = ref(database, 'roomEvents');
-        await push(roomEventRef, {
+        push(roomEventRef, {
             userId: currentUser.userId,
             username: currentUser.username,
             fromRoom: currentRoom,
             toRoom: roomName,
             timestamp: serverTimestamp(),
             type: 'room-change'
-        });
-        
-        await new Promise(resolve => setTimeout(resolve, 100));
+        }).catch(() => {});
         
         const oldUserRef = ref(database, `rooms/${currentRoom}/users/${sanitizedUserId}`);
         if (currentUser.isGuest) {
@@ -520,13 +540,13 @@ export async function changeRoom(roomName, isInitialJoin = false) {
         }
     } else if (isInitialJoin) {
         const roomEventRef = ref(database, 'roomEvents');
-        await push(roomEventRef, {
+        push(roomEventRef, {
             userId: currentUser.userId,
             username: currentUser.username,
             toRoom: roomName,
             timestamp: serverTimestamp(),
             type: 'join'
-        });
+        }).catch(() => {});
     }
     
     currentRoom = roomName;
@@ -539,7 +559,7 @@ export async function changeRoom(roomName, isInitialJoin = false) {
         }
     });
     
-    await setUserOnline();
+    await Promise.all([setUserOnline(), preloadPromise]);
 }
 
 // Actualizar datos de usuario en Firestore
@@ -589,8 +609,14 @@ export async function updateUserData(updates) {
         Object.assign(currentUser, cleanUpdates);
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
         
-        // Actualizar estado en tiempo real
-        setUserOnline();
+        // Invalidar caché
+        try {
+            const { invalidateUserCache } = await import('./firebase-optimized.js');
+            invalidateUserCache(currentUser.firebaseUid || currentUser.userId);
+        } catch (e) {}
+        
+        // Actualizar estado en tiempo real (sin esperar)
+        setUserOnline().catch(() => {});
         
         return true;
     } catch (error) {
