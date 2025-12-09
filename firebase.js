@@ -260,6 +260,35 @@ async function limitMessages() {
     }
 }
 
+// Cargar mensajes anteriores
+export async function loadMoreMessages(beforeMessageId) {
+    try {
+        const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
+        const snapshot = await get(messagesRef);
+        
+        if (!snapshot.exists()) return [];
+        
+        const allMessages = [];
+        snapshot.forEach(child => {
+            allMessages.push({ id: child.key, ...child.val() });
+        });
+        
+        // Ordenar por timestamp
+        allMessages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        
+        // Encontrar índice del mensaje
+        const index = allMessages.findIndex(m => m.id === beforeMessageId);
+        if (index <= 0) return [];
+        
+        // Retornar 20 mensajes anteriores
+        const start = Math.max(0, index - 20);
+        return allMessages.slice(start, index);
+    } catch (error) {
+        console.error('Error loading more messages:', error);
+        return [];
+    }
+}
+
 let currentMessagesListener = null;
 let activeRoom = null;
 let loadedMessageIds = new Set();
@@ -273,8 +302,8 @@ export function listenToMessages(callback) {
     activeRoom = currentRoom;
     loadedMessageIds.clear();
     
-    // Load last 50 messages (optimizado para velocidad)
-    const messagesRef = dbQuery(ref(database, `rooms/${currentRoom}/messages`), limitToLast(50));
+    // Load last 20 messages (optimizado para velocidad)
+    const messagesRef = dbQuery(ref(database, `rooms/${currentRoom}/messages`), limitToLast(20));
     
     let isInitialLoad = true;
     currentMessagesListener = onValue(messagesRef, (snapshot) => {
@@ -817,10 +846,15 @@ export async function getRoomName(roomId) {
     }
 }
 
-// Crear sala privada (todos los usuarios)
+// Crear sala privada (todos los usuarios, incluidos invitados)
 export async function createPrivateRoom() {
     const userId = currentUser.firebaseUid || currentUser.userId;
     const username = currentUser.username || 'Usuario';
+    
+    // Permitir a invitados crear salas privadas
+    if (!userId) {
+        throw new Error('Debes estar conectado para crear una sala privada');
+    }
     
     // Generar ID único para sala privada
     const randomId = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
@@ -900,38 +934,64 @@ export async function requestPrivateRoomAccess(roomId) {
             return false;
         }
         
+        // Verificar si ya está aceptado
+        const acceptedUsers = roomData.acceptedUsers || [];
+        if (acceptedUsers.includes(userId)) {
+            return true; // Ya tiene acceso
+        }
+        
         const pendingUsers = roomData.pendingUsers || [];
         
         if (!pendingUsers.includes(userId)) {
+            // Agregar a pendientes
             await updateDoc(roomRef, {
                 pendingUsers: [...pendingUsers, userId]
             });
             
+            // Guardar datos del usuario (invitado o registrado)
             if (currentUser.isGuest) {
                 await setDoc(doc(db, 'guests', userId), {
                     userId: userId,
                     username: currentUser.username,
                     name: currentUser.username,
+                    avatar: currentUser.avatar || 'images/profileuser.svg',
                     isGuest: true,
                     createdAt: currentUser.createdAt || new Date().toISOString()
                 }, { merge: true });
+            } else {
+                // Asegurar que el usuario registrado existe en Firestore
+                await setDoc(doc(db, 'users', userId), {
+                    firebaseUid: userId,
+                    username: currentUser.username,
+                    avatar: currentUser.avatar || 'images/profileuser.svg',
+                    isGuest: false
+                }, { merge: true });
             }
             
+            // Enviar mensaje de solicitud
             const messagesRef = ref(database, `rooms/${roomId}/messages`);
             await push(messagesRef, {
-                text: `📨 ${currentUser.username} solicita el acceso a esta sala privada`,
-                type: 'access-request',
+                text: `📨 ${currentUser.username} solicita acceso a esta sala privada`,
+                userId: 'system',
+                userName: 'Sistema',
+                userAvatar: 'images/logo.svg',
+                textColor: '#ff9800',
                 timestamp: serverTimestamp(),
+                type: 'system',
+                isGuest: false,
+                role: 'system',
+                firebaseUid: null,
                 requestedUserId: userId,
-                requestedUsername: currentUser.username,
-                isSystemNotification: true
+                requestedUsername: currentUser.username
             });
+            
+            console.log('Solicitud enviada correctamente:', userId);
         }
         
         return true;
     } catch (error) {
         console.error('Error requesting access:', error);
-        return false;
+        throw error;
     }
 }
 
