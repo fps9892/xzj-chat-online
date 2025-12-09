@@ -1,0 +1,188 @@
+/* Panel de Gestión de Rangos */
+.rank-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #1a0f0f;
+  border: 2px solid #00d4ff;
+  border-radius: 16px;
+  width: 500px;
+  max-width: 90%;
+  max-height: 80vh;
+  z-index: 110000;
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.rank-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  border-bottom: 2px solid #00d4ff;
+  background: rgba(0, 212, 255, 0.05);
+}
+
+.rank-panel-title {
+  font-family: "Orbitron", monospace;
+  font-size: 16px;
+  color: #00d4ff;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rank-panel-icon {
+  width: 24px;
+  height: 24px;
+  filter: invert(1) sepia(1) saturate(5) hue-rotate(175deg);
+}
+
+.close-rank-panel {
+  background: none;
+  border: none;
+  color: #00d4ff;
+  font-size: 28px;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s;
+}
+
+.close-rank-panel:hover {
+  transform: rotate(90deg);
+}
+
+.rank-list {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.rank-user-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: rgba(0, 212, 255, 0.05);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  transition: all 0.3s;
+}
+
+.rank-user-item:hover {
+  background: rgba(0, 212, 255, 0.1);
+  border-color: #00d4ff;
+}
+
+.rank-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.rank-user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 212, 255, 0.3);
+}
+
+.rank-user-name {
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  color: #f5e6e3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rank-select {
+  background: rgba(0, 212, 255, 0.1);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  color: #00d4ff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s;
+  min-width: 120px;
+}
+
+.rank-select:hover {
+  background: rgba(0, 212, 255, 0.2);
+  border-color: #00d4ff;
+}
+
+.rank-select:focus {
+  outline: none;
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+.rank-action-btn {
+  background: rgba(0, 212, 255, 0.2);
+  border: 1px solid #00d4ff;
+  color: #00d4ff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 10px;
+}
+
+.rank-action-btn:hover {
+  background: rgba(0, 212, 255, 0.3);
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+}
+
+.rank-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.empty-rank-list {
+  text-align: center;
+  padding: 40px 20px;
+  color: #888;
+  font-family: "Inter", sans-serif;
+}
+
+@media (max-width: 767px) {
+  .rank-panel {
+    width: 95%;
+  }
+
+  .rank-user-item {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .rank-user-info {
+    width: 100%;
+  }
+
+  .rank-select {
+    width: 100%;
+  }
+
+  .rank-action-btn {
+    width: 100%;
+    justify-content: center;
+    margin-left: 0;
+  }
+}

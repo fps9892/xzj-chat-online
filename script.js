@@ -5,6 +5,7 @@ import { setupMessageOptions, replyingTo, clearReply } from './message-options.j
 import { showBanPanel, showUnbanPanel, showMutePanel, showUnmutePanel } from './moderation-panels.js';
 import { showGamesPanel } from './games-panel.js';
 import { NotificationManager } from './notifications.js';
+import { showGiveRankPanel, showRemoveRankPanel } from './rank-management.js';
 
 let notificationManager = new NotificationManager(currentRoom);
 
@@ -2810,6 +2811,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         if (lowerMessage === '!developer' && currentUser.isDeveloper) {
             showDeveloperPanel();
+            messageInput.value = '';
+            return;
+        }
+        if (lowerMessage === '!dar rango' && currentUser.isDeveloper) {
+            showGiveRankPanel(showNotification);
+            messageInput.value = '';
+            return;
+        }
+        if (lowerMessage === '!quitar rango' && currentUser.isDeveloper) {
+            showRemoveRankPanel(showNotification);
             messageInput.value = '';
             return;
         }
