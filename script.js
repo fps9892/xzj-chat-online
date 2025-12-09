@@ -2011,7 +2011,21 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 1000);
     });
     
-    // Escuchar notificaciones de cambio de rango
+    // Escuchar cambios de rol en tiempo real para TODOS los usuarios
+    const usersInRoomRef = ref(database, `rooms/${currentRoom}/users`);
+    onValue(usersInRoomRef, (snapshot) => {
+        if (snapshot.exists()) {
+            snapshot.forEach(userSnapshot => {
+                const userData = userSnapshot.val();
+                const userKey = userSnapshot.key;
+                
+                // Actualizar tags en el chat para este usuario
+                updateUserTagsInChatByUserId(userKey, userData.role, userData.isAdmin, userData.isModerator, userData.isDeveloper);
+            });
+        }
+    });
+    
+    // Escuchar notificaciones de cambio de rango PROPIO
     if (currentUser && !currentUser.isGuest && currentUser.firebaseUid) {
         const rankNotificationRef = ref(database, `rankNotifications/${currentUser.firebaseUid}`);
         onValue(rankNotificationRef, (snapshot) => {
@@ -2037,30 +2051,31 @@ document.addEventListener('DOMContentLoaded', function() {
                         currentUser.role = 'Usuario';
                     }
                     localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                    updateUserTagsInChat();
+                    updateAdminUI();
                 }
             }
         });
     }
     
-    // Función para actualizar tags en el chat
-    function updateUserTagsInChat() {
+    // Función para actualizar tags en el chat de CUALQUIER usuario
+    function updateUserTagsInChatByUserId(userId, role, isAdmin, isModerator, isDeveloper) {
+        // Actualizar mensajes
         const messages = document.querySelectorAll('.message-container');
         messages.forEach(msg => {
             const usernameEl = msg.querySelector('.clickable-username');
-            if (usernameEl && usernameEl.dataset.userId === currentUser.userId) {
+            if (usernameEl && usernameEl.dataset.userId === userId) {
                 const header = msg.querySelector('.message-header');
                 if (header) {
                     // Remover tags existentes
                     header.querySelectorAll('.admin-tag, .mod-tag, .dev-tag').forEach(tag => tag.remove());
                     
-                    // Agregar nuevo tag si corresponde
+                    // Agregar nuevo tag según el rol
                     let newTag = '';
-                    if (currentUser.isDeveloper) {
+                    if (isDeveloper) {
                         newTag = '<span class="dev-tag">DEV</span>';
-                    } else if (currentUser.isAdmin) {
+                    } else if (isAdmin || role === 'Administrador') {
                         newTag = '<span class="admin-tag">ADMIN</span>';
-                    } else if (currentUser.isModerator) {
+                    } else if (isModerator || role === 'Moderador') {
                         newTag = '<span class="mod-tag">MOD</span>';
                     }
                     
@@ -2077,17 +2092,17 @@ document.addEventListener('DOMContentLoaded', function() {
         // Actualizar en la lista de usuarios
         const userItems = document.querySelectorAll('.user-item');
         userItems.forEach(item => {
-            if (item.dataset.userId === currentUser.userId) {
+            if (item.dataset.userId === userId) {
                 const userName = item.querySelector('.user-name');
                 if (userName) {
                     userName.querySelectorAll('.admin-tag, .mod-tag, .dev-tag').forEach(tag => tag.remove());
                     
                     let newTag = '';
-                    if (currentUser.isDeveloper) {
+                    if (isDeveloper) {
                         newTag = '<span class="dev-tag">DEV</span>';
-                    } else if (currentUser.isAdmin) {
+                    } else if (isAdmin || role === 'Administrador') {
                         newTag = '<span class="admin-tag">ADMIN</span>';
-                    } else if (currentUser.isModerator) {
+                    } else if (isModerator || role === 'Moderador') {
                         newTag = '<span class="mod-tag">MOD</span>';
                     }
                     
@@ -2923,6 +2938,11 @@ document.addEventListener('DOMContentLoaded', function() {
             messageInput.value = '';
             return;
         }
+        if (lowerMessage === '!resetpass' && currentUser.isDeveloper) {
+            showResetPasswordPanel();
+            messageInput.value = '';
+            return;
+        }
         if (lowerMessage === '!aceptar') {
             // Manejar comando !aceptar localmente
             (async () => {
@@ -3545,6 +3565,109 @@ function showAcceptPanel(pendingUsers) {
             } catch (error) {
                 showNotification(error.message, 'error');
                 btn.innerHTML = '<span>✓</span>Aceptar';
+                btn.disabled = false;
+            }
+        });
+    });
+}
+
+// Panel de Reset Password
+async function showResetPasswordPanel() {
+    const existingPanel = document.querySelector('.moderation-panel');
+    if (existingPanel) existingPanel.remove();
+    
+    const { getFirestore, collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+    const { getAuth, updatePassword } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+    const db = getFirestore();
+    const auth = getAuth();
+    
+    const usersSnapshot = await getDocs(collection(db, 'users'));
+    const users = [];
+    usersSnapshot.forEach(doc => {
+        const data = doc.data();
+        users.push({
+            firebaseUid: doc.id,
+            username: data.username,
+            email: data.email
+        });
+    });
+    
+    const panel = document.createElement('div');
+    panel.className = 'moderation-panel resetpass-panel';
+    panel.innerHTML = `
+        <div class="moderation-panel-header">
+            <img src="/images/config.svg" class="moderation-panel-icon" alt="Reset" />
+            <span class="moderation-panel-title">🔑 Restablecer Contraseña</span>
+            <button class="close-moderation-panel">×</button>
+        </div>
+        <div class="moderation-list">
+            ${users.map((user, index) => `
+                <div class="moderation-user-item">
+                    <div class="moderation-user-info">
+                        <span class="moderation-user-name">#${index + 1} ${user.username}</span>
+                        <small style="color:#888;font-size:11px;">${user.email.includes('@fyzar.temp') ? 'Sin email' : user.email}</small>
+                    </div>
+                    <button class="moderation-action-btn resetpass-action-btn" data-user-id="${user.firebaseUid}" data-username="${user.username}" data-email="${user.email}">
+                        <img src="/images/config.svg" alt="Reset" />
+                        Cambiar
+                    </button>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    
+    document.body.appendChild(panel);
+    
+    panel.querySelector('.close-moderation-panel').addEventListener('click', () => panel.remove());
+    
+    panel.querySelectorAll('.resetpass-action-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const userId = btn.dataset.userId;
+            const username = btn.dataset.username;
+            const email = btn.dataset.email;
+            
+            const newPassword = prompt(`Nueva contraseña para ${username} (mín. 6 caracteres):`);
+            if (!newPassword) return;
+            
+            if (newPassword.length < 6) {
+                showNotification('La contraseña debe tener al menos 6 caracteres', 'error');
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span>⏳</span>';
+            
+            try {
+                const { getFirestore, doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                const { getFunctions, httpsCallable } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js');
+                
+                // Intentar usar Cloud Function si está disponible
+                try {
+                    const functions = getFunctions();
+                    const updateUserPassword = httpsCallable(functions, 'updateUserPassword');
+                    await updateUserPassword({ uid: userId, newPassword });
+                } catch (error) {
+                    // Si no hay Cloud Functions, mostrar mensaje
+                    showNotification('⚠️ Requiere Cloud Functions. Envía email de recuperación en su lugar', 'warning');
+                    
+                    if (!email.includes('@fyzar.temp')) {
+                        const { sendPasswordResetEmail } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+                        await sendPasswordResetEmail(auth, email);
+                        showNotification(`Email de recuperación enviado a ${username}`, 'success');
+                    } else {
+                        showNotification(`${username} no tiene email. No se puede recuperar`, 'error');
+                    }
+                    btn.innerHTML = '<img src="/images/config.svg" alt="Reset" />Cambiar';
+                    btn.disabled = false;
+                    return;
+                }
+                
+                showNotification(`Contraseña de ${username} actualizada`, 'success');
+                btn.innerHTML = '<span>✓</span>';
+                setTimeout(() => panel.remove(), 1500);
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+                btn.innerHTML = '<img src="/images/config.svg" alt="Reset" />Cambiar';
                 btn.disabled = false;
             }
         });

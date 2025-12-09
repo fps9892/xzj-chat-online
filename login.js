@@ -310,8 +310,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Register
     document.getElementById('register-submit').addEventListener('click', async function() {
         const username = document.getElementById('reg-username').value.trim();
-        const emailInput = document.getElementById('reg-email').value.trim();
-        const email = emailInput || `${generateUserId()}@fyzar.temp`;
+        const email = document.getElementById('reg-email').value.trim();
+        
+        if (!email) {
+            showNotification('El email es obligatorio', 'error');
+            return;
+        }
         const password = document.getElementById('reg-password').value;
         const confirmPassword = document.getElementById('reg-confirm').value;
         const description = document.getElementById('reg-description').value.trim();
