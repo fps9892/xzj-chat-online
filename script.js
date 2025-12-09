@@ -2929,11 +2929,11 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         if (lowerMessage === '!limpiar tags' && currentUser.isDeveloper) {
-            showNotification('🔄 Verificando y corrigiendo rangos...', 'warning');
+            showNotification('🔄 Sincronizando roles desde Firestore...', 'warning');
             cleanAllRankTags().then(() => {
-                showNotification('✅ Rangos verificados y corregidos permanentemente', 'success');
+                showNotification('✅ Roles sincronizados. Recargando página...', 'success');
             }).catch(error => {
-                showNotification('Error al limpiar tags: ' + error.message, 'error');
+                showNotification('❌ Error al limpiar tags: ' + error.message, 'error');
             });
             messageInput.value = '';
             return;
