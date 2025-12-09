@@ -6,6 +6,7 @@ import { showBanPanel, showUnbanPanel, showMutePanel, showUnmutePanel } from './
 import { showGamesPanel } from './games-panel.js';
 import { NotificationManager } from './notifications.js';
 import { showGiveRankPanel, showRemoveRankPanel } from './rank-management.js';
+import { cleanAllRankTags } from './clean-tags.js';
 
 let notificationManager = new NotificationManager(currentRoom);
 
@@ -2036,6 +2037,63 @@ document.addEventListener('DOMContentLoaded', function() {
                         currentUser.role = 'Usuario';
                     }
                     localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    updateUserTagsInChat();
+                }
+            }
+        });
+    }
+    
+    // Función para actualizar tags en el chat
+    function updateUserTagsInChat() {
+        const messages = document.querySelectorAll('.message-container');
+        messages.forEach(msg => {
+            const usernameEl = msg.querySelector('.clickable-username');
+            if (usernameEl && usernameEl.dataset.userId === currentUser.userId) {
+                const header = msg.querySelector('.message-header');
+                if (header) {
+                    // Remover tags existentes
+                    header.querySelectorAll('.admin-tag, .mod-tag, .dev-tag').forEach(tag => tag.remove());
+                    
+                    // Agregar nuevo tag si corresponde
+                    let newTag = '';
+                    if (currentUser.isDeveloper) {
+                        newTag = '<span class="dev-tag">DEV</span>';
+                    } else if (currentUser.isAdmin) {
+                        newTag = '<span class="admin-tag">ADMIN</span>';
+                    } else if (currentUser.isModerator) {
+                        newTag = '<span class="mod-tag">MOD</span>';
+                    }
+                    
+                    if (newTag) {
+                        const timeEl = header.querySelector('.message-time');
+                        if (timeEl) {
+                            timeEl.insertAdjacentHTML('beforebegin', newTag);
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Actualizar en la lista de usuarios
+        const userItems = document.querySelectorAll('.user-item');
+        userItems.forEach(item => {
+            if (item.dataset.userId === currentUser.userId) {
+                const userName = item.querySelector('.user-name');
+                if (userName) {
+                    userName.querySelectorAll('.admin-tag, .mod-tag, .dev-tag').forEach(tag => tag.remove());
+                    
+                    let newTag = '';
+                    if (currentUser.isDeveloper) {
+                        newTag = '<span class="dev-tag">DEV</span>';
+                    } else if (currentUser.isAdmin) {
+                        newTag = '<span class="admin-tag">ADMIN</span>';
+                    } else if (currentUser.isModerator) {
+                        newTag = '<span class="mod-tag">MOD</span>';
+                    }
+                    
+                    if (newTag) {
+                        userName.insertAdjacentHTML('beforeend', newTag);
+                    }
                 }
             }
         });
@@ -2852,6 +2910,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         if (lowerMessage === '!quitar rango' && currentUser.isDeveloper) {
             showRemoveRankPanel(showNotification);
+            messageInput.value = '';
+            return;
+        }
+        if (lowerMessage === '!limpiar tags' && currentUser.isDeveloper) {
+            cleanAllRankTags();
+            showNotification('Tags de rango limpiados en el chat', 'success');
             messageInput.value = '';
             return;
         }
