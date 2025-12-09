@@ -2914,8 +2914,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         if (lowerMessage === '!limpiar tags' && currentUser.isDeveloper) {
-            cleanAllRankTags();
-            showNotification('Tags de rango limpiados en el chat', 'success');
+            showNotification('🔄 Verificando y corrigiendo rangos...', 'warning');
+            cleanAllRankTags().then(() => {
+                showNotification('✅ Rangos verificados y corregidos permanentemente', 'success');
+            }).catch(error => {
+                showNotification('Error al limpiar tags: ' + error.message, 'error');
+            });
             messageInput.value = '';
             return;
         }
