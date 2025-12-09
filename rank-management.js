@@ -270,4 +270,16 @@ async function updateUserRoleInRealtime(userId, newRole) {
             await update(ref(database), updates);
         }
     }
+    
+    // Enviar notificación al usuario
+    await sendRankNotification(userId, newRole);
+}
+
+// Enviar notificación de cambio de rango
+async function sendRankNotification(userId, newRole) {
+    const notificationRef = ref(database, `rankNotifications/${userId}`);
+    await update(notificationRef, {
+        role: newRole,
+        timestamp: Date.now()
+    });
 }

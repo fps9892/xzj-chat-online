@@ -2010,6 +2010,37 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 1000);
     });
     
+    // Escuchar notificaciones de cambio de rango
+    if (currentUser && !currentUser.isGuest && currentUser.firebaseUid) {
+        const rankNotificationRef = ref(database, `rankNotifications/${currentUser.firebaseUid}`);
+        onValue(rankNotificationRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                const role = data.role;
+                const timestamp = data.timestamp;
+                
+                // Solo mostrar si es reciente (últimos 5 segundos)
+                if (Date.now() - timestamp < 5000) {
+                    if (role === 'Administrador') {
+                        showNotification('🎉 ¡Felicidades! Ahora eres Administrador', 'success');
+                        currentUser.isAdmin = true;
+                        currentUser.role = 'Administrador';
+                    } else if (role === 'Moderador') {
+                        showNotification('🎉 ¡Felicidades! Ahora eres Moderador', 'success');
+                        currentUser.isModerator = true;
+                        currentUser.role = 'Moderador';
+                    } else {
+                        showNotification('Tu rango ha sido removido', 'warning');
+                        currentUser.isAdmin = false;
+                        currentUser.isModerator = false;
+                        currentUser.role = 'Usuario';
+                    }
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                }
+            }
+        });
+    }
+    
     // Escuchar cuando una sala es borrada
     let roomDeletedListener = null;
     let countdownInterval = null;

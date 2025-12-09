@@ -1,0 +1,343 @@
+/* Resolución para dispositivos muy pequeños (< 375px) */
+@media (max-width: 374px) {
+  /* Header fijo y compacto */
+  .header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    padding: 8px 10px;
+    height: 50px;
+  }
+
+  .user-info {
+    gap: 6px;
+  }
+
+  .profile-image {
+    width: 32px;
+    height: 32px;
+  }
+
+  .header-actions {
+    gap: 8px;
+  }
+
+  .notification-btn,
+  .rooms-btn {
+    width: 36px;
+    height: 36px;
+    padding: 6px;
+  }
+
+  .notification-icon-img,
+  .rooms-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .notification-badge {
+    width: 16px;
+    height: 16px;
+    font-size: 9px;
+    top: -4px;
+    right: -4px;
+  }
+
+  /* Main content con espacio para header fijo */
+  .main-content {
+    margin-top: 50px;
+    height: calc(100vh - 50px - 60px);
+  }
+
+  /* Room header compacto */
+  .room-header {
+    padding: 6px 10px;
+    height: 36px;
+  }
+
+  .current-room-name {
+    font-size: 12px;
+  }
+
+  .room-user-count {
+    font-size: 10px;
+  }
+
+  .refresh-btn {
+    width: 28px;
+    height: 28px;
+    padding: 4px;
+  }
+
+  /* Chat area */
+  .chat-area {
+    padding: 8px;
+    height: calc(100% - 36px);
+  }
+
+  /* Mensajes más compactos */
+  .message-container {
+    margin-bottom: 10px;
+  }
+
+  .message {
+    padding: 8px;
+    max-width: 85%;
+  }
+
+  .message-header {
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+
+  .message-avatar {
+    width: 28px;
+    height: 28px;
+  }
+
+  .message-username {
+    font-size: 11px;
+  }
+
+  .message-time {
+    font-size: 9px;
+  }
+
+  .message-text {
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  /* Tags de rol más pequeños */
+  .admin-tag,
+  .mod-tag,
+  .dev-tag {
+    font-size: 8px;
+    padding: 2px 4px;
+  }
+
+  /* Input area fijo */
+  .input-area {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 8px 10px;
+    height: 60px;
+  }
+
+  .input-container {
+    height: 44px;
+  }
+
+  .message-input {
+    font-size: 13px;
+    padding: 10px 70px 10px 10px;
+  }
+
+  .char-counter {
+    font-size: 9px;
+    right: 38px;
+  }
+
+  .send-icon {
+    width: 20px;
+    height: 20px;
+    right: 10px;
+  }
+
+  /* Chat controls compactos */
+  .chat-controls {
+    bottom: 70px;
+    right: 8px;
+    gap: 8px;
+  }
+
+  .image-btn,
+  .polls-btn,
+  .mic-btn,
+  .emote-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* Mobile users indicator */
+  .mobile-users-indicator {
+    gap: 4px;
+    padding: 4px 8px;
+  }
+
+  .users-connected-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .mobile-user-count {
+    font-size: 11px;
+  }
+
+  /* Typing indicator */
+  .typing-indicator {
+    font-size: 11px;
+    padding: 6px 10px;
+    bottom: 62px;
+  }
+
+  /* Paneles modales */
+  .rank-panel,
+  .moderation-panel,
+  .developer-panel {
+    width: 96%;
+    max-height: 85vh;
+  }
+
+  .rank-panel-header,
+  .moderation-panel-header,
+  .developer-panel-header {
+    padding: 12px 15px;
+  }
+
+  .rank-panel-title,
+  .moderation-panel-title {
+    font-size: 13px;
+  }
+
+  .rank-list,
+  .moderation-list {
+    padding: 12px;
+  }
+
+  .rank-user-item,
+  .moderation-user-item {
+    padding: 10px;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .rank-user-avatar,
+  .moderation-user-avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .rank-user-name,
+  .moderation-user-name {
+    font-size: 12px;
+  }
+
+  .rank-select {
+    width: 100%;
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+
+  .rank-action-btn,
+  .moderation-action-btn {
+    width: 100%;
+    font-size: 12px;
+    padding: 8px 12px;
+    margin-left: 0;
+  }
+
+  /* Notificaciones */
+  .notifications-panel {
+    width: 96%;
+    max-height: 70vh;
+  }
+
+  .notifications-header {
+    padding: 10px;
+  }
+
+  .notifications-tab {
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+
+  .clear-notifications-btn {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  /* Join notifications */
+  .join-leave-notifications {
+    top: 46px;
+  }
+
+  .join-notification,
+  .leave-notification {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  /* Sistema de niveles */
+  .level-circle {
+    width: 40px;
+    height: 40px;
+  }
+
+  .level-circle svg {
+    width: 40px;
+    height: 40px;
+  }
+
+  .level-number {
+    font-size: 11px;
+  }
+
+  /* Emote panel */
+  .emote-panel {
+    width: 280px;
+    max-height: 300px;
+    bottom: 120px;
+    right: 8px;
+  }
+
+  .emote-item {
+    width: 50px;
+    height: 50px;
+  }
+
+  /* Audio panel */
+  .audio-panel {
+    width: 96%;
+    padding: 15px;
+  }
+
+  /* Rooms panel */
+  .rooms-panel {
+    width: 96%;
+  }
+
+  .room-item-panel {
+    padding: 10px;
+    font-size: 12px;
+  }
+
+  /* User profile */
+  .user-profile-panel {
+    width: 96%;
+    max-height: 85vh;
+  }
+
+  .profile-avatar img {
+    width: 80px;
+    height: 80px;
+  }
+
+  .profile-username {
+    font-size: 18px;
+  }
+
+  /* Loading screen */
+  .loading-logo-svg {
+    width: 60px;
+    height: 60px;
+  }
+
+  .loading-text {
+    font-size: 20px;
+  }
+}
