@@ -3510,32 +3510,98 @@ function showRefreshPanel(users) {
 }
 
 // Panel de Aceptar usuarios en sala privada
-function showAcceptPanel(pendingUsers) {
+async function showAcceptPanel(pendingUsers) {
     const existingPanel = document.querySelector('.moderation-panel');
     if (existingPanel) existingPanel.remove();
+    
+    // Obtener usuarios aceptados y activos en la sala
+    const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+    const { db, ref, get, database } = await import('./firebase.js');
+    
+    const roomDoc = await getDoc(doc(db, 'rooms', currentRoom));
+    const acceptedUserIds = roomDoc.exists() ? (roomDoc.data().acceptedUsers || []) : [];
+    
+    // Obtener usuarios activos en la sala
+    const usersRef = ref(database, `rooms/${currentRoom}/users`);
+    const usersSnapshot = await get(usersRef);
+    const activeUserIds = new Set();
+    
+    if (usersSnapshot.exists()) {
+        usersSnapshot.forEach(child => {
+            const userData = child.val();
+            if (userData.status === 'online') {
+                activeUserIds.add(userData.firebaseUid || child.key);
+            }
+        });
+    }
+    
+    // Filtrar usuarios pendientes que están activos
+    const activePendingUsers = pendingUsers.filter(u => activeUserIds.has(u.userId));
+    
+    // Obtener usuarios aceptados activos
+    const acceptedActiveUsers = [];
+    for (const userId of acceptedUserIds) {
+        if (activeUserIds.has(userId)) {
+            try {
+                const userDoc = await getDoc(doc(db, 'users', userId));
+                if (userDoc.exists()) {
+                    acceptedActiveUsers.push({
+                        userId,
+                        username: userDoc.data().username || 'Usuario'
+                    });
+                } else {
+                    const guestDoc = await getDoc(doc(db, 'guests', userId));
+                    if (guestDoc.exists()) {
+                        acceptedActiveUsers.push({
+                            userId,
+                            username: guestDoc.data().username || 'Invitado'
+                        });
+                    }
+                }
+            } catch (e) {}
+        }
+    }
     
     const panel = document.createElement('div');
     panel.className = 'moderation-panel accept-panel';
     panel.innerHTML = `
         <div class="moderation-panel-header">
             <img src="/images/users-connected.svg" class="moderation-panel-icon" alt="Accept" />
-            <span class="moderation-panel-title">📬 Solicitudes de Acceso</span>
+            <span class="moderation-panel-title">📬 Gestión de Acceso</span>
             <button class="close-moderation-panel">×</button>
         </div>
         <div class="moderation-list">
-            ${pendingUsers.map(user => {
-                return `
-                    <div class="moderation-user-item">
-                        <div class="moderation-user-info">
-                            <span class="moderation-user-name">${user.username}</span>
+            ${activePendingUsers.length > 0 ? `
+                <div class="accept-section-header">⏳ Pendientes (${activePendingUsers.length})</div>
+                <div class="pending-users-list">
+                    ${activePendingUsers.map(user => `
+                        <div class="moderation-user-item pending-item" data-user-id="${user.userId}">
+                            <div class="moderation-user-info">
+                                <span class="moderation-user-name">${user.username}</span>
+                                <small style="color:#ff9800;font-size:10px;">● Activo</small>
+                            </div>
+                            <button class="moderation-action-btn accept-action-btn" data-user-id="${user.userId}" data-username="${user.username}">
+                                <span>✓</span>
+                                Aceptar
+                            </button>
                         </div>
-                        <button class="moderation-action-btn accept-action-btn" data-user-id="${user.userId}" data-username="${user.username}">
-                            <span>✓</span>
-                            Aceptar
-                        </button>
-                    </div>
-                `;
-            }).join('')}
+                    `).join('')}
+                </div>
+            ` : '<div class="empty-section">No hay usuarios pendientes activos</div>'}
+            
+            ${acceptedActiveUsers.length > 0 ? `
+                <div class="accept-section-header" style="margin-top:15px;">✓ Aceptados (${acceptedActiveUsers.length})</div>
+                <div class="accepted-users-list">
+                    ${acceptedActiveUsers.map(user => `
+                        <div class="moderation-user-item accepted-item">
+                            <div class="moderation-user-info">
+                                <span class="moderation-user-name">${user.username}</span>
+                                <small style="color:#4caf50;font-size:10px;">✓ Aceptado</small>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
         </div>
     `;
     
@@ -3554,17 +3620,63 @@ function showAcceptPanel(pendingUsers) {
             try {
                 const { acceptUserToPrivateRoom } = await import('./firebase.js');
                 await acceptUserToPrivateRoom(currentRoom, userId);
-                btn.innerHTML = '<span class="accept-success">✓</span>';
-                showNotification(`${username} aceptado en la sala`, 'success');
-                setTimeout(() => {
-                    btn.closest('.moderation-user-item').style.animation = 'fadeOut 0.3s ease';
+                
+                // Mover a lista de aceptados
+                const pendingItem = panel.querySelector(`.pending-item[data-user-id="${userId}"]`);
+                if (pendingItem) {
+                    pendingItem.style.animation = 'fadeOut 0.3s ease';
                     setTimeout(() => {
-                        btn.closest('.moderation-user-item').remove();
-                        if (panel.querySelectorAll('.moderation-user-item').length === 0) {
-                            panel.remove();
+                        pendingItem.remove();
+                        
+                        // Agregar a lista de aceptados
+                        let acceptedList = panel.querySelector('.accepted-users-list');
+                        if (!acceptedList) {
+                            const modList = panel.querySelector('.moderation-list');
+                            const header = document.createElement('div');
+                            header.className = 'accept-section-header';
+                            header.style.marginTop = '15px';
+                            header.textContent = '✓ Aceptados (1)';
+                            modList.appendChild(header);
+                            
+                            acceptedList = document.createElement('div');
+                            acceptedList.className = 'accepted-users-list';
+                            modList.appendChild(acceptedList);
+                        }
+                        
+                        const acceptedItem = document.createElement('div');
+                        acceptedItem.className = 'moderation-user-item accepted-item';
+                        acceptedItem.innerHTML = `
+                            <div class="moderation-user-info">
+                                <span class="moderation-user-name">${username}</span>
+                                <small style="color:#4caf50;font-size:10px;">✓ Aceptado</small>
+                            </div>
+                        `;
+                        acceptedItem.style.animation = 'fadeIn 0.3s ease';
+                        acceptedList.appendChild(acceptedItem);
+                        
+                        // Actualizar contador
+                        const pendingHeader = panel.querySelector('.accept-section-header');
+                        const pendingCount = panel.querySelectorAll('.pending-item').length;
+                        if (pendingHeader) {
+                            pendingHeader.textContent = `⏳ Pendientes (${pendingCount})`;
+                        }
+                        
+                        const acceptedHeader = panel.querySelectorAll('.accept-section-header')[1];
+                        const acceptedCount = panel.querySelectorAll('.accepted-item').length;
+                        if (acceptedHeader) {
+                            acceptedHeader.textContent = `✓ Aceptados (${acceptedCount})`;
+                        }
+                        
+                        if (pendingCount === 0) {
+                            const pendingList = panel.querySelector('.pending-users-list');
+                            if (pendingList) {
+                                pendingList.innerHTML = '<div class="empty-section">No hay usuarios pendientes activos</div>';
+                            }
                         }
                     }, 300);
-                }, 500);
+                }
+                
+                showNotification(`${username} aceptado en la sala`, 'success');
             } catch (error) {
                 showNotification(error.message, 'error');
                 btn.innerHTML = '<span>✓</span>Aceptar';
