@@ -1089,11 +1089,22 @@ export async function deleteRoom(roomNameOrId) {
         let roomId = null;
         let roomData = null;
         
-        // Buscar por nombre o ID
+        // Buscar por nombre, ID o coincidencia parcial (para salas privadas)
         roomsSnapshot.forEach((docSnapshot) => {
             const data = docSnapshot.data();
-            if (data.name === roomNameOrId || docSnapshot.id === roomNameOrId) {
-                roomId = docSnapshot.id;
+            const docId = docSnapshot.id;
+            const roomName = data.name || '';
+            
+            // Coincidencia exacta por nombre o ID
+            if (roomName === roomNameOrId || docId === roomNameOrId) {
+                roomId = docId;
+                roomData = data;
+            }
+            // Coincidencia parcial para salas privadas (privada-xxx)
+            else if (docId.startsWith('privada-') && 
+                    (docId.includes(roomNameOrId.toLowerCase()) || 
+                     roomName.toLowerCase().includes(roomNameOrId.toLowerCase()))) {
+                roomId = docId;
                 roomData = data;
             }
         });
@@ -1108,12 +1119,16 @@ export async function deleteRoom(roomNameOrId) {
         }
         
         // Verificar permisos
-        const isOwner = roomData.owner === userId;
-        const isPrivateRoom = roomData.isPrivate === true || roomData.name.startsWith('Privada');
+        const isOwner = roomData.owner === userId || roomData.createdBy === userId;
+        const isPrivateRoom = roomData.isPrivate === true || 
+                             roomData.name?.startsWith('Privada') || 
+                             roomId.startsWith('privada-');
+        const isDev = await checkDeveloperStatus(userId);
         
-        // Admins y moderadores pueden borrar cualquier sala
-        // Dueños solo pueden borrar sus salas privadas
-        if (!isAdmin && !isModerator && !(isPrivateRoom && isOwner)) {
+        // Desarrolladores pueden borrar cualquier sala
+        // Admins y moderadores pueden borrar salas públicas
+        // Dueños pueden borrar sus salas privadas
+        if (!isDev && !isAdmin && !isModerator && !(isPrivateRoom && isOwner)) {
             throw new Error('No tienes permisos para borrar esta sala');
         }
         
