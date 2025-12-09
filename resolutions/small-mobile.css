@@ -48,7 +48,7 @@
   /* Main content con espacio para header fijo */
   .main-content {
     margin-top: 50px;
-    height: calc(100vh - 50px - 60px);
+    height: calc(100dvh - 50px - 60px);
   }
 
   /* Room header compacto */
@@ -190,7 +190,7 @@
   .moderation-panel,
   .developer-panel {
     width: 96%;
-    max-height: 85vh;
+    max-height: 85dvh;
   }
 
   .rank-panel-header,
@@ -244,7 +244,7 @@
   /* Notificaciones */
   .notifications-panel {
     width: 96%;
-    max-height: 70vh;
+    max-height: 70dvh;
   }
 
   .notifications-header {
@@ -319,7 +319,7 @@
   /* User profile */
   .user-profile-panel {
     width: 96%;
-    max-height: 85vh;
+    max-height: 85dvh;
   }
 
   .profile-avatar img {

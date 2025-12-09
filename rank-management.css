@@ -9,7 +9,7 @@
   border-radius: 16px;
   width: 500px;
   max-width: 90%;
-  max-height: 80vh;
+  max-height: 80dvh;
   z-index: 110000;
   box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
   display: flex;

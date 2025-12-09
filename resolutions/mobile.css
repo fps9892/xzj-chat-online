@@ -2,12 +2,12 @@
 @media (max-width: 767px) {
   body {
     width: 100%;
-    min-height: 100vh;
+    min-height: 100dvh;
     overflow-x: hidden;
   }
 
   .main-content {
-    height: calc(100vh - 140px);
+    height: calc(100dvh - 140px);
     overflow: hidden;
     margin-bottom: 60px;
   }
@@ -307,7 +307,7 @@
 
   .image-modal {
     max-width: 95vw;
-    max-height: 85vh;
+    max-height: 85dvh;
   }
 
   .close-modal {
@@ -532,6 +532,7 @@
 @media (max-width: 767px) {
   .moderation-panel {
     width: 95%;
+    max-height: 80dvh;
     bottom: 110px;
     padding: 15px;
   }

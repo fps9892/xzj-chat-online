@@ -8,7 +8,7 @@ body {
   background: linear-gradient(135deg, #000 0%, #0a0a0a 50%, #000 100%);
   color: #fff;
   font-family: "Inter", Arial, sans-serif;
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -779,7 +779,7 @@ body {
   .login-container {
     padding: 15px;
     max-width: 100%;
-    min-height: 100vh;
+    min-height: 100dvh;
   }
 
   .login-panel {
