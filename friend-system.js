@@ -178,6 +178,10 @@ class FriendSystem {
 
       this.renderFriendRequests(requests);
     } catch (error) {
+      if (error.code === 'permission-denied') {
+        console.warn('Friend requests disabled: Firestore permissions not configured');
+        return;
+      }
       console.error('Error loading friend requests:', error);
     }
   }
@@ -259,35 +263,42 @@ class FriendSystem {
     const userId = currentUser.firebaseUid || currentUser.userId || currentUser.uid;
     if (!userId) return;
 
-    const requestsRef = collection(db, 'friendRequests');
-    const snapshot = await getDocs(requestsRef);
-    let count = 0;
+    try {
+      const requestsRef = collection(db, 'friendRequests');
+      const snapshot = await getDocs(requestsRef);
+      let count = 0;
 
-    snapshot.forEach((docSnap) => {
-      const data = docSnap.data();
-      if (data.to === userId && data.status === 'pending') {
-        count++;
-      }
-    });
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        if (data.to === userId && data.status === 'pending') {
+          count++;
+        }
+      });
 
-    const badge = document.getElementById('notificationBadge');
-    const notifBtn = document.getElementById('notificationBtn');
-    
-    if (badge) {
-      badge.textContent = count;
-      if (count > 0) {
-        badge.classList.add('active');
-      } else {
-        badge.classList.remove('active');
+      const badge = document.getElementById('notificationBadge');
+      const notifBtn = document.getElementById('notificationBtn');
+      
+      if (badge) {
+        badge.textContent = count;
+        if (count > 0) {
+          badge.classList.add('active');
+        } else {
+          badge.classList.remove('active');
+        }
       }
-    }
 
-    if (notifBtn) {
-      if (count > 0) {
-        notifBtn.classList.add('has-pending');
-      } else {
-        notifBtn.classList.remove('has-pending');
+      if (notifBtn) {
+        if (count > 0) {
+          notifBtn.classList.add('has-pending');
+        } else {
+          notifBtn.classList.remove('has-pending');
+        }
       }
+    } catch (error) {
+      if (error.code === 'permission-denied') {
+        return;
+      }
+      console.error('Error updating notification badge:', error);
     }
   }
 

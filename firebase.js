@@ -216,16 +216,16 @@ export async function sendMessage(text, type = 'text', imageData = null, audioDu
     });
 }
 
-// Limit messages to 30 per room para mejor rendimiento
+// Limit messages to 100 per room
 async function limitMessages() {
     const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
     const snapshot = await get(messagesRef);
     
     if (snapshot.exists()) {
         const messages = Object.keys(snapshot.val());
-        if (messages.length > 30) {
-            // Remove oldest messages
-            const messagesToRemove = messages.slice(0, messages.length - 30);
+        if (messages.length > 100) {
+            // Remove oldest messages to keep only 100
+            const messagesToRemove = messages.slice(0, messages.length - 100);
             messagesToRemove.forEach(messageId => {
                 remove(ref(database, `rooms/${currentRoom}/messages/${messageId}`));
             });
@@ -246,7 +246,8 @@ export function listenToMessages(callback) {
     activeRoom = currentRoom;
     loadedMessageIds.clear();
     
-    const messagesRef = dbQuery(ref(database, `rooms/${currentRoom}/messages`), limitToLast(30));
+    // Load only last 2 messages initially
+    const messagesRef = dbQuery(ref(database, `rooms/${currentRoom}/messages`), limitToLast(2));
     
     let isInitialLoad = true;
     currentMessagesListener = onValue(messagesRef, (snapshot) => {
@@ -297,6 +298,22 @@ export function listenToMessages(callback) {
     });
     
     return currentMessagesListener;
+}
+
+// Load history (up to 100 messages)
+export async function loadMessageHistory() {
+    const messagesRef = dbQuery(ref(database, `rooms/${currentRoom}/messages`), limitToLast(100));
+    const snapshot = await get(messagesRef);
+    const messages = [];
+    
+    snapshot.forEach((childSnapshot) => {
+        const data = childSnapshot.val();
+        if (data && data.timestamp) {
+            messages.push({ id: childSnapshot.key, ...data });
+        }
+    });
+    
+    return messages;
 }
 
 // Detectar tipo de dispositivo

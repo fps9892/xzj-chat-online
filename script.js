@@ -891,6 +891,57 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (isInitialLoad) {
             chatArea.innerHTML = '';
+            
+            // Add "Load History" button if there are only 2 messages
+            if (messages.length === 2) {
+                const historyBtn = createElement(`
+                    <div class="load-history-container">
+                        <button class="load-history-btn" id="loadHistoryBtn">
+                            <img src="/images/time.svg" alt="History" style="width:16px;height:16px;margin-right:8px;" />
+                            Ver Historial
+                        </button>
+                    </div>
+                `);
+                chatArea.appendChild(historyBtn);
+                
+                document.getElementById('loadHistoryBtn').addEventListener('click', async () => {
+                    historyBtn.remove();
+                    const loader = createElement('<div class="chat-loader"></div>');
+                    chatArea.insertBefore(loader, chatArea.firstChild);
+                    
+                    try {
+                        const { loadMessageHistory } = await import('./firebase.js');
+                        const allMessages = await loadMessageHistory();
+                        loader.remove();
+                        
+                        // Remove current messages
+                        chatArea.innerHTML = '';
+                        
+                        // Sort messages by timestamp
+                        const sortedMessages = allMessages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+                        
+                        // Render all history in order
+                        sortedMessages.forEach(message => {
+                            const messageEl = createMessageElement(message);
+                            chatArea.appendChild(messageEl);
+                            
+                            if (message.type === 'audio') {
+                                const audioElement = document.getElementById(`audio-${message.id}`);
+                                if (audioElement) audioElement.playbackRate = 1;
+                            }
+                        });
+                        
+                        // Scroll to bottom
+                        requestAnimationFrame(() => {
+                            chatArea.scrollTop = chatArea.scrollHeight;
+                        });
+                    } catch (error) {
+                        loader.remove();
+                        showNotification('Error al cargar historial', 'error');
+                    }
+                });
+            }
+            
             lastMessageCount = messages.length;
             
             const sortedMessages = messages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));

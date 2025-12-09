@@ -1,0 +1,31 @@
+.load-history-container {
+    display: flex;
+    justify-content: center;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+.load-history-btn {
+    background: linear-gradient(135deg, #c97a6f, #a85a52);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+    font-family: 'Orbitron', monospace;
+    box-shadow: 0 4px 15px rgba(201, 122, 111, 0.3);
+}
+
+.load-history-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(201, 122, 111, 0.5);
+}
+
+.load-history-btn:active {
+    transform: translateY(0);
+}
