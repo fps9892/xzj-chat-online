@@ -556,8 +556,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            await sendPasswordResetEmail(auth, email);
-            showNotification(`Email de recuperación enviado a ${email}`, 'success');
+            const actionCodeSettings = {
+                url: window.location.origin + '/login.html',
+                handleCodeInApp: false
+            };
+            
+            await sendPasswordResetEmail(auth, email, actionCodeSettings);
+            showNotification(`Email de recuperación enviado a ${email.replace(/(.{3}).*(@.*)/, '$1***$2')}`, 'success');
         } catch (error) {
             showNotification('Error al enviar email: ' + error.message, 'error');
         }
