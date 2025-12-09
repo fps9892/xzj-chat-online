@@ -1,5 +1,5 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 const firebaseConfig = {
@@ -310,7 +310,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Register
     document.getElementById('register-submit').addEventListener('click', async function() {
         const username = document.getElementById('reg-username').value.trim();
-        const email = document.getElementById('reg-email').value.trim() || `${generateUserId()}@fyzar.temp`;
+        const emailInput = document.getElementById('reg-email').value.trim();
+        const email = emailInput || `${generateUserId()}@fyzar.temp`;
         const password = document.getElementById('reg-password').value;
         const confirmPassword = document.getElementById('reg-confirm').value;
         const description = document.getElementById('reg-description').value.trim();
@@ -528,6 +529,37 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = 'index.html#general';
         } catch (error) {
             showNotification('Error con Google: ' + error.message, 'error');
+        }
+    });
+
+    // Forgot Password
+    document.getElementById('forgot-password').addEventListener('click', async function(e) {
+        e.preventDefault();
+        
+        const username = prompt('¿Cuál es tu nombre de usuario?');
+        if (!username) return;
+        
+        try {
+            const q = query(collection(db, 'users'), where('username', '==', username.trim()));
+            const querySnapshot = await getDocs(q);
+            
+            if (querySnapshot.empty) {
+                showNotification('Usuario no encontrado', 'error');
+                return;
+            }
+            
+            const userData = querySnapshot.docs[0].data();
+            const email = userData.email;
+            
+            if (email.includes('@fyzar.temp')) {
+                showNotification('Tu cuenta no tiene email. Contacta a un administrador', 'error');
+                return;
+            }
+            
+            await sendPasswordResetEmail(auth, email);
+            showNotification(`Email de recuperación enviado a ${email}`, 'success');
+        } catch (error) {
+            showNotification('Error al enviar email: ' + error.message, 'error');
         }
     });
 
