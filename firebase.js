@@ -162,30 +162,6 @@ export async function sendMessage(text, type = 'text', imageData = null, audioDu
     
     const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
     
-    // Obtener roles en tiempo real desde Firestore (fuente de verdad)
-    let isDeveloper = false;
-    let isAdmin = false;
-    let isModerator = false;
-    let role = 'Usuario';
-    
-    if (currentUser.firebaseUid && !currentUser.isGuest) {
-        isDeveloper = await checkDeveloperStatus(currentUser.firebaseUid);
-        if (!isDeveloper) {
-            isAdmin = await checkAdminStatus(currentUser.firebaseUid);
-        }
-        if (!isDeveloper && !isAdmin) {
-            isModerator = await checkModeratorStatus(currentUser.firebaseUid);
-        }
-        
-        if (isDeveloper) {
-            role = 'Desarrollador';
-        } else if (isAdmin) {
-            role = 'Administrador';
-        } else if (isModerator) {
-            role = 'Moderador';
-        }
-    }
-    
     // Validar datos antes de enviar
     const messageData = {
         text: text || '',
@@ -196,10 +172,10 @@ export async function sendMessage(text, type = 'text', imageData = null, audioDu
         timestamp: serverTimestamp(),
         type: type,
         isGuest: currentUser.isGuest || false,
-        role: role,
-        isDeveloper: isDeveloper,
-        isAdmin: isAdmin,
-        isModerator: isModerator,
+        role: currentUser.role || 'Usuario',
+        isDeveloper: currentUser.isDeveloper || false,
+        isAdmin: currentUser.isAdmin || false,
+        isModerator: currentUser.isModerator || false,
         firebaseUid: currentUser.firebaseUid || null,
         replyTo: replyTo || null
     };
@@ -231,61 +207,29 @@ export async function sendMessage(text, type = 'text', imageData = null, audioDu
         }
     });
     
-    // Enviar mensaje con prioridad (no esperar a limitMessages)
-    const messagePromise = push(messagesRef, messageData);
-    
-    // Ejecutar limitMessages en segundo plano sin bloquear
-    limitMessages().catch(err => console.warn('Error limiting messages:', err));
-    
-    return messagePromise.catch(error => {
+    return push(messagesRef, messageData).then(() => {
+        // Limit messages to 5 per room
+        limitMessages();
+    }).catch(error => {
         console.error('Error enviando mensaje:', error);
         throw error;
     });
 }
 
-// Limit messages to 100 per room (optimizado)
+// Limit messages to 30 per room para mejor rendimiento
 async function limitMessages() {
     const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
     const snapshot = await get(messagesRef);
     
     if (snapshot.exists()) {
         const messages = Object.keys(snapshot.val());
-        if (messages.length > 100) {
-            // Remove oldest messages to keep only 100
-            const messagesToRemove = messages.slice(0, messages.length - 100);
+        if (messages.length > 30) {
+            // Remove oldest messages
+            const messagesToRemove = messages.slice(0, messages.length - 30);
             messagesToRemove.forEach(messageId => {
                 remove(ref(database, `rooms/${currentRoom}/messages/${messageId}`));
             });
         }
-    }
-}
-
-// Cargar mensajes anteriores
-export async function loadMoreMessages(beforeMessageId) {
-    try {
-        const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
-        const snapshot = await get(messagesRef);
-        
-        if (!snapshot.exists()) return [];
-        
-        const allMessages = [];
-        snapshot.forEach(child => {
-            allMessages.push({ id: child.key, ...child.val() });
-        });
-        
-        // Ordenar por timestamp
-        allMessages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-        
-        // Encontrar índice del mensaje
-        const index = allMessages.findIndex(m => m.id === beforeMessageId);
-        if (index <= 0) return [];
-        
-        // Retornar 20 mensajes anteriores
-        const start = Math.max(0, index - 20);
-        return allMessages.slice(start, index);
-    } catch (error) {
-        console.error('Error loading more messages:', error);
-        return [];
     }
 }
 
@@ -302,8 +246,7 @@ export function listenToMessages(callback) {
     activeRoom = currentRoom;
     loadedMessageIds.clear();
     
-    // Load last 20 messages (optimizado para velocidad)
-    const messagesRef = dbQuery(ref(database, `rooms/${currentRoom}/messages`), limitToLast(20));
+    const messagesRef = dbQuery(ref(database, `rooms/${currentRoom}/messages`), limitToLast(30));
     
     let isInitialLoad = true;
     currentMessagesListener = onValue(messagesRef, (snapshot) => {
@@ -356,8 +299,6 @@ export function listenToMessages(callback) {
     return currentMessagesListener;
 }
 
-
-
 // Detectar tipo de dispositivo
 function getDeviceType() {
     const userAgent = navigator.userAgent.toLowerCase();
@@ -367,35 +308,11 @@ function getDeviceType() {
 }
 
 // Funciones para usuarios conectados
-export async function setUserOnline() {
+export function setUserOnline() {
     const sanitizedUserId = sanitizeUserId(currentUser.userId);
     const userRef = ref(database, `rooms/${currentRoom}/users/${sanitizedUserId}`);
     const userStatusRef = ref(database, `rooms/${currentRoom}/users/${sanitizedUserId}/status`);
     const deviceType = getDeviceType();
-    
-    // Obtener roles desde Firestore (fuente de verdad)
-    let isDeveloper = false;
-    let isAdmin = false;
-    let isModerator = false;
-    let role = 'Usuario';
-    
-    if (currentUser.firebaseUid && !currentUser.isGuest) {
-        isDeveloper = await checkDeveloperStatus(currentUser.firebaseUid);
-        if (!isDeveloper) {
-            isAdmin = await checkAdminStatus(currentUser.firebaseUid);
-        }
-        if (!isDeveloper && !isAdmin) {
-            isModerator = await checkModeratorStatus(currentUser.firebaseUid);
-        }
-        
-        if (isDeveloper) {
-            role = 'Desarrollador';
-        } else if (isAdmin) {
-            role = 'Administrador';
-        } else if (isModerator) {
-            role = 'Moderador';
-        }
-    }
     
     // Asegurar que todos los campos requeridos tengan valores válidos
     const userData = {
@@ -403,10 +320,7 @@ export async function setUserOnline() {
         avatar: currentUser.avatar || 'images/profileuser.svg',
         status: 'online',
         lastSeen: serverTimestamp(),
-        role: role,
-        isDeveloper: isDeveloper,
-        isAdmin: isAdmin,
-        isModerator: isModerator,
+        role: currentUser.role || 'user',
         textColor: currentUser.textColor || '#ffffff',
         description: currentUser.description || 'Sin descripción',
         isGuest: currentUser.isGuest || false,
@@ -530,36 +444,19 @@ function showFloatingNotification(message, type = 'info') {
 export async function changeRoom(roomName, isInitialJoin = false) {
     const sanitizedUserId = sanitizeUserId(currentUser.userId);
     
-    // Pre-cargar usuarios de la nueva sala en paralelo
-    const preloadPromise = (async () => {
-        try {
-            const usersRef = ref(database, `rooms/${roomName}/users`);
-            const snapshot = await get(usersRef);
-            if (snapshot.exists()) {
-                const userIds = [];
-                snapshot.forEach((child) => {
-                    const userData = child.val();
-                    if (userData.firebaseUid) userIds.push(userData.firebaseUid);
-                });
-                // Pre-cargar en batch
-                await Promise.all(userIds.slice(0, 10).map(id => 
-                    import('./firebase-optimized.js').then(m => m.getCachedUser(id)).catch(() => {})
-                ));
-            }
-        } catch (e) {}
-    })();
-    
     // Registrar evento ANTES de cambiar
     if (currentRoom && currentRoom !== roomName) {
         const roomEventRef = ref(database, 'roomEvents');
-        push(roomEventRef, {
+        await push(roomEventRef, {
             userId: currentUser.userId,
             username: currentUser.username,
             fromRoom: currentRoom,
             toRoom: roomName,
             timestamp: serverTimestamp(),
             type: 'room-change'
-        }).catch(() => {});
+        });
+        
+        await new Promise(resolve => setTimeout(resolve, 100));
         
         const oldUserRef = ref(database, `rooms/${currentRoom}/users/${sanitizedUserId}`);
         if (currentUser.isGuest) {
@@ -569,13 +466,13 @@ export async function changeRoom(roomName, isInitialJoin = false) {
         }
     } else if (isInitialJoin) {
         const roomEventRef = ref(database, 'roomEvents');
-        push(roomEventRef, {
+        await push(roomEventRef, {
             userId: currentUser.userId,
             username: currentUser.username,
             toRoom: roomName,
             timestamp: serverTimestamp(),
             type: 'join'
-        }).catch(() => {});
+        });
     }
     
     currentRoom = roomName;
@@ -588,7 +485,7 @@ export async function changeRoom(roomName, isInitialJoin = false) {
         }
     });
     
-    await Promise.all([setUserOnline(), preloadPromise]);
+    setUserOnline();
 }
 
 // Actualizar datos de usuario en Firestore
@@ -638,14 +535,8 @@ export async function updateUserData(updates) {
         Object.assign(currentUser, cleanUpdates);
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
         
-        // Invalidar caché
-        try {
-            const { invalidateUserCache } = await import('./firebase-optimized.js');
-            invalidateUserCache(currentUser.firebaseUid || currentUser.userId);
-        } catch (e) {}
-        
-        // Actualizar estado en tiempo real (sin esperar)
-        setUserOnline().catch(() => {});
+        // Actualizar estado en tiempo real
+        setUserOnline();
         
         return true;
     } catch (error) {
@@ -846,15 +737,10 @@ export async function getRoomName(roomId) {
     }
 }
 
-// Crear sala privada (todos los usuarios, incluidos invitados)
+// Crear sala privada (todos los usuarios)
 export async function createPrivateRoom() {
     const userId = currentUser.firebaseUid || currentUser.userId;
     const username = currentUser.username || 'Usuario';
-    
-    // Permitir a invitados crear salas privadas
-    if (!userId) {
-        throw new Error('Debes estar conectado para crear una sala privada');
-    }
     
     // Generar ID único para sala privada
     const randomId = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
@@ -934,64 +820,38 @@ export async function requestPrivateRoomAccess(roomId) {
             return false;
         }
         
-        // Verificar si ya está aceptado
-        const acceptedUsers = roomData.acceptedUsers || [];
-        if (acceptedUsers.includes(userId)) {
-            return true; // Ya tiene acceso
-        }
-        
         const pendingUsers = roomData.pendingUsers || [];
         
         if (!pendingUsers.includes(userId)) {
-            // Agregar a pendientes
             await updateDoc(roomRef, {
                 pendingUsers: [...pendingUsers, userId]
             });
             
-            // Guardar datos del usuario (invitado o registrado)
             if (currentUser.isGuest) {
                 await setDoc(doc(db, 'guests', userId), {
                     userId: userId,
                     username: currentUser.username,
                     name: currentUser.username,
-                    avatar: currentUser.avatar || 'images/profileuser.svg',
                     isGuest: true,
                     createdAt: currentUser.createdAt || new Date().toISOString()
                 }, { merge: true });
-            } else {
-                // Asegurar que el usuario registrado existe en Firestore
-                await setDoc(doc(db, 'users', userId), {
-                    firebaseUid: userId,
-                    username: currentUser.username,
-                    avatar: currentUser.avatar || 'images/profileuser.svg',
-                    isGuest: false
-                }, { merge: true });
             }
             
-            // Enviar mensaje de solicitud
             const messagesRef = ref(database, `rooms/${roomId}/messages`);
             await push(messagesRef, {
-                text: `📨 ${currentUser.username} solicita acceso a esta sala privada`,
-                userId: 'system',
-                userName: 'Sistema',
-                userAvatar: 'images/logo.svg',
-                textColor: '#ff9800',
+                text: `📨 ${currentUser.username} solicita el acceso a esta sala privada`,
+                type: 'access-request',
                 timestamp: serverTimestamp(),
-                type: 'system',
-                isGuest: false,
-                role: 'system',
-                firebaseUid: null,
                 requestedUserId: userId,
-                requestedUsername: currentUser.username
+                requestedUsername: currentUser.username,
+                isSystemNotification: true
             });
-            
-            console.log('Solicitud enviada correctamente:', userId);
         }
         
         return true;
     } catch (error) {
         console.error('Error requesting access:', error);
-        throw error;
+        return false;
     }
 }
 
@@ -1149,22 +1009,11 @@ export async function deleteRoom(roomNameOrId) {
         let roomId = null;
         let roomData = null;
         
-        // Buscar por nombre, ID o coincidencia parcial (para salas privadas)
+        // Buscar por nombre o ID
         roomsSnapshot.forEach((docSnapshot) => {
             const data = docSnapshot.data();
-            const docId = docSnapshot.id;
-            const roomName = data.name || '';
-            
-            // Coincidencia exacta por nombre o ID
-            if (roomName === roomNameOrId || docId === roomNameOrId) {
-                roomId = docId;
-                roomData = data;
-            }
-            // Coincidencia parcial para salas privadas (privada-xxx)
-            else if (docId.startsWith('privada-') && 
-                    (docId.includes(roomNameOrId.toLowerCase()) || 
-                     roomName.toLowerCase().includes(roomNameOrId.toLowerCase()))) {
-                roomId = docId;
+            if (data.name === roomNameOrId || docSnapshot.id === roomNameOrId) {
+                roomId = docSnapshot.id;
                 roomData = data;
             }
         });
@@ -1179,16 +1028,12 @@ export async function deleteRoom(roomNameOrId) {
         }
         
         // Verificar permisos
-        const isOwner = roomData.owner === userId || roomData.createdBy === userId;
-        const isPrivateRoom = roomData.isPrivate === true || 
-                             roomData.name?.startsWith('Privada') || 
-                             roomId.startsWith('privada-');
-        const isDev = await checkDeveloperStatus(userId);
+        const isOwner = roomData.owner === userId;
+        const isPrivateRoom = roomData.isPrivate === true || roomData.name.startsWith('Privada');
         
-        // Desarrolladores pueden borrar cualquier sala
-        // Admins y moderadores pueden borrar salas públicas
-        // Dueños pueden borrar sus salas privadas
-        if (!isDev && !isAdmin && !isModerator && !(isPrivateRoom && isOwner)) {
+        // Admins y moderadores pueden borrar cualquier sala
+        // Dueños solo pueden borrar sus salas privadas
+        if (!isAdmin && !isModerator && !(isPrivateRoom && isOwner)) {
             throw new Error('No tienes permisos para borrar esta sala');
         }
         
@@ -2073,9 +1918,10 @@ export async function checkDeveloperStatus(userId) {
     }
 }
 
-// Actualizar rol del usuario desde Firestore (SOLO al iniciar sesión)
+// Actualizar rol del usuario y obtener datos de Firestore
 export async function updateUserRole() {
     if (currentUser.isGuest) {
+        // Para invitados, asegurar que tengan rol de guest
         currentUser.role = 'guest';
         currentUser.isAdmin = false;
         currentUser.isModerator = false;
@@ -2088,14 +1934,9 @@ export async function updateUserRole() {
     if (currentUser.firebaseUid) {
         try {
             const isDeveloper = await checkDeveloperStatus(currentUser.firebaseUid);
-            const isAdmin = !isDeveloper && await checkAdminStatus(currentUser.firebaseUid);
-            const isModerator = !isDeveloper && !isAdmin && await checkModeratorStatus(currentUser.firebaseUid);
+            const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
+            const isModerator = await checkModeratorStatus(currentUser.firebaseUid);
             const isBanned = await checkBannedStatus(currentUser.firebaseUid);
-            
-            // Limpiar roles anteriores
-            currentUser.isDeveloper = false;
-            currentUser.isAdmin = false;
-            currentUser.isModerator = false;
             
             if (isBanned) {
                 currentUser.role = 'banned';

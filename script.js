@@ -1,13 +1,10 @@
 import { sendMessage, listenToMessages, listenToUsers, setUserOnline, changeRoom, currentUser, currentRoom, updateUserData, changePassword, sendImage, sendAudio, setTypingStatus, listenToTyping, deleteMessage, updateUserRole, checkAdminStatus, checkModeratorStatus, grantModeratorRole, revokeModerator, pinMessage, unpinMessage, getPinnedMessages, banUser as banUserFirebase, muteUser, getRooms, listenToRooms, listenToAnnouncements, showAnnouncement, listenToUserStatus, processEmotes, extractYouTubeId, checkPrivateRoomAccess, requestPrivateRoomAccess, listenToRoomAccessNotifications, listenToRefreshCommand, database, ref, onValue, set, push, serverTimestamp, db } from './firebase.js';
-import { getCachedUser, getCachedRole, preloadRoomUsers, invalidateUserCache } from './firebase-optimized.js';
 import { AudioRecorder, formatTime, blobToBase64 } from './audio-recorder.js';
 import { getUserProfile, findUserByUsername, animateMessageDeletion, initAdminListener } from './core.js';
 import { setupMessageOptions, replyingTo, clearReply } from './message-options.js';
 import { showBanPanel, showUnbanPanel, showMutePanel, showUnmutePanel } from './moderation-panels.js';
 import { showGamesPanel } from './games-panel.js';
 import { NotificationManager } from './notifications.js';
-import { showGiveRankPanel, showRemoveRankPanel } from './rank-management.js';
-import { cleanAllRankTags } from './clean-tags.js';
 
 let notificationManager = new NotificationManager(currentRoom);
 
@@ -1112,17 +1109,17 @@ document.addEventListener('DOMContentLoaded', function() {
             return resultEl;
         }
         
-        // Mostrar rol del usuario (SOLO desde message.role - fuente de verdad)
+        // Mostrar rol del usuario
         let displayName = message.userName;
         let roleTag = '';
         
         if (message.isGuest) {
             displayName += ' (invitado)';
-        } else if (message.role === 'Desarrollador') {
+        } else if (message.isDeveloper || message.role === 'Desarrollador') {
             roleTag = '<span class="dev-tag">DEV</span>';
-        } else if (message.role === 'Administrador') {
+        } else if (message.isAdmin || message.role === 'Administrador') {
             roleTag = '<span class="admin-tag">ADMIN</span>';
-        } else if (message.role === 'Moderador') {
+        } else if (message.isModerator || message.role === 'Moderador') {
             roleTag = '<span class="mod-tag">MOD</span>';
         }
         
@@ -1273,12 +1270,11 @@ document.addEventListener('DOMContentLoaded', function() {
         let userNumId = '';
         let roleTag = '';
         
-        // SOLO usar user.role (fuente de verdad desde Firestore)
-        if (user.role === 'Desarrollador') {
+        if (user.isDeveloper || user.role === 'Desarrollador') {
             roleTag = '<span class="dev-tag">DEV</span>';
-        } else if (user.role === 'Administrador') {
+        } else if (user.isAdmin || user.role === 'Administrador') {
             roleTag = '<span class="admin-tag">ADMIN</span>';
-        } else if (user.role === 'Moderador') {
+        } else if (user.isModerator || user.role === 'Moderador') {
             roleTag = '<span class="mod-tag">MOD</span>';
         }
         
@@ -1383,12 +1379,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function createMobileUserElement(user) {
         let roleTag = '';
-        // SOLO usar user.role (fuente de verdad desde Firestore)
-        if (user.role === 'Desarrollador') {
+        if (user.isDeveloper || user.role === 'Desarrollador') {
             roleTag = '<span class="dev-tag">DEV</span>';
-        } else if (user.role === 'Administrador') {
+        } else if (user.isAdmin || user.role === 'Administrador') {
             roleTag = '<span class="admin-tag">ADMIN</span>';
-        } else if (user.role === 'Moderador') {
+        } else if (user.isModerator || user.role === 'Moderador') {
             roleTag = '<span class="mod-tag">MOD</span>';
         }
         
@@ -1426,7 +1421,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="user-profile-overlay active">
                 <div class="user-profile-panel">
                     <div class="user-profile-header">
-                        ${isOwnProfile ? '<button class="config-panel-btn" id="openConfigPanel"><img src="/images/config.svg" alt="Config" /></button>' : '<button class="add-friend-btn" id="addFriendBtn" data-user-id="' + (user.firebaseUid || user.id) + '"><img src="/images/profileuser.svg" alt="Add Friend" /></button>'}
+                        ${isOwnProfile ? '<button class="config-panel-btn" id="openConfigPanel"><img src="/images/config.svg" alt="Config" /></button>' : ''}
                         <img src="images/close.svg" alt="Close" class="close-profile">
                     </div>
                     <div class="user-profile-content">
@@ -1445,7 +1440,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="profile-tabs">
                             <button class="profile-tab active" data-section="info">Info</button>
                             <button class="profile-tab" data-section="stats">Stats</button>
-                            <button class="profile-tab" data-section="friends">Amigos</button>
                         </div>
                         
                         <div class="profile-sections">
@@ -1499,36 +1493,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                     </div>
                                 </div>
                             </div>
-                            <div class="profile-section" data-section="friends">
-                                <div class="friends-list" id="friendsList-${user.firebaseUid || user.id}">
-                                    <div class="loading-friends">Cargando amigos...</div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         `);
-        
-        // Cargar amigos
-        if (window.friendSystem) {
-            const friendsList = modal.querySelector(`#friendsList-${user.firebaseUid || user.id}`);
-            window.friendSystem.loadFriends(user.firebaseUid || user.id).then(friends => {
-                if (friendsList) {
-                    window.friendSystem.renderFriendsList(friendsList, friends, user.firebaseUid || user.id);
-                }
-            });
-        }
-        
-        // Verificar estado de amistad
-        if (window.friendSystem && !isOwnProfile) {
-            const btn = modal.querySelector('#addFriendBtn');
-            if (btn) {
-                window.friendSystem.checkFriendshipStatus(user.firebaseUid || user.id).then(status => {
-                    window.friendSystem.updateButtonState(user.firebaseUid || user.id, status);
-                });
-            }
-        }
         
         document.body.appendChild(modal);
         
@@ -2013,109 +1982,6 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = '/index.html';
         }, 1000);
     });
-    
-    // Escuchar cambios de rol en tiempo real para TODOS los usuarios
-    const usersInRoomRef = ref(database, `rooms/${currentRoom}/users`);
-    onValue(usersInRoomRef, (snapshot) => {
-        if (snapshot.exists()) {
-            snapshot.forEach(userSnapshot => {
-                const userData = userSnapshot.val();
-                const userKey = userSnapshot.key;
-                
-                // Actualizar tags en el chat para este usuario
-                updateUserTagsInChatByUserId(userKey, userData.role, userData.isAdmin, userData.isModerator, userData.isDeveloper);
-            });
-        }
-    });
-    
-    // Escuchar notificaciones de cambio de rango PROPIO
-    if (currentUser && !currentUser.isGuest && currentUser.firebaseUid) {
-        const rankNotificationRef = ref(database, `rankNotifications/${currentUser.firebaseUid}`);
-        onValue(rankNotificationRef, (snapshot) => {
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                const role = data.role;
-                const timestamp = data.timestamp;
-                
-                // Solo mostrar si es reciente (últimos 5 segundos)
-                if (Date.now() - timestamp < 5000) {
-                    if (role === 'Administrador') {
-                        showNotification('🎉 ¡Felicidades! Ahora eres Administrador', 'success');
-                        currentUser.isAdmin = true;
-                        currentUser.role = 'Administrador';
-                    } else if (role === 'Moderador') {
-                        showNotification('🎉 ¡Felicidades! Ahora eres Moderador', 'success');
-                        currentUser.isModerator = true;
-                        currentUser.role = 'Moderador';
-                    } else {
-                        showNotification('Tu rango ha sido removido', 'warning');
-                        currentUser.isAdmin = false;
-                        currentUser.isModerator = false;
-                        currentUser.role = 'Usuario';
-                    }
-                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                    updateAdminUI();
-                }
-            }
-        });
-    }
-    
-    // Función para actualizar tags en el chat de CUALQUIER usuario
-    function updateUserTagsInChatByUserId(userId, role, isAdmin, isModerator, isDeveloper) {
-        // Actualizar mensajes
-        const messages = document.querySelectorAll('.message-container');
-        messages.forEach(msg => {
-            const usernameEl = msg.querySelector('.clickable-username');
-            if (usernameEl && usernameEl.dataset.userId === userId) {
-                const header = msg.querySelector('.message-header');
-                if (header) {
-                    // Remover tags existentes
-                    header.querySelectorAll('.admin-tag, .mod-tag, .dev-tag').forEach(tag => tag.remove());
-                    
-                    // Agregar nuevo tag según el rol
-                    let newTag = '';
-                    if (isDeveloper) {
-                        newTag = '<span class="dev-tag">DEV</span>';
-                    } else if (isAdmin || role === 'Administrador') {
-                        newTag = '<span class="admin-tag">ADMIN</span>';
-                    } else if (isModerator || role === 'Moderador') {
-                        newTag = '<span class="mod-tag">MOD</span>';
-                    }
-                    
-                    if (newTag) {
-                        const timeEl = header.querySelector('.message-time');
-                        if (timeEl) {
-                            timeEl.insertAdjacentHTML('beforebegin', newTag);
-                        }
-                    }
-                }
-            }
-        });
-        
-        // Actualizar en la lista de usuarios
-        const userItems = document.querySelectorAll('.user-item');
-        userItems.forEach(item => {
-            if (item.dataset.userId === userId) {
-                const userName = item.querySelector('.user-name');
-                if (userName) {
-                    userName.querySelectorAll('.admin-tag, .mod-tag, .dev-tag').forEach(tag => tag.remove());
-                    
-                    let newTag = '';
-                    if (isDeveloper) {
-                        newTag = '<span class="dev-tag">DEV</span>';
-                    } else if (isAdmin || role === 'Administrador') {
-                        newTag = '<span class="admin-tag">ADMIN</span>';
-                    } else if (isModerator || role === 'Moderador') {
-                        newTag = '<span class="mod-tag">MOD</span>';
-                    }
-                    
-                    if (newTag) {
-                        userName.insertAdjacentHTML('beforeend', newTag);
-                    }
-                }
-            }
-        });
-    }
     
     // Escuchar cuando una sala es borrada
     let roomDeletedListener = null;
@@ -2921,31 +2787,6 @@ document.addEventListener('DOMContentLoaded', function() {
             messageInput.value = '';
             return;
         }
-        if (lowerMessage === '!dar rango' && currentUser.isDeveloper) {
-            showGiveRankPanel(showNotification);
-            messageInput.value = '';
-            return;
-        }
-        if (lowerMessage === '!quitar rango' && currentUser.isDeveloper) {
-            showRemoveRankPanel(showNotification);
-            messageInput.value = '';
-            return;
-        }
-        if (lowerMessage === '!limpiar tags' && currentUser.isDeveloper) {
-            showNotification('🔄 Sincronizando roles desde Firestore...', 'warning');
-            cleanAllRankTags().then(() => {
-                showNotification('✅ Roles sincronizados. Recargando página...', 'success');
-            }).catch(error => {
-                showNotification('❌ Error al limpiar tags: ' + error.message, 'error');
-            });
-            messageInput.value = '';
-            return;
-        }
-        if (lowerMessage === '!resetpass' && currentUser.isDeveloper) {
-            showResetPasswordPanel();
-            messageInput.value = '';
-            return;
-        }
         if (lowerMessage === '!aceptar') {
             // Manejar comando !aceptar localmente
             (async () => {
@@ -3510,98 +3351,32 @@ function showRefreshPanel(users) {
 }
 
 // Panel de Aceptar usuarios en sala privada
-async function showAcceptPanel(pendingUsers) {
+function showAcceptPanel(pendingUsers) {
     const existingPanel = document.querySelector('.moderation-panel');
     if (existingPanel) existingPanel.remove();
-    
-    // Obtener usuarios aceptados y activos en la sala
-    const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-    const { db, ref, get, database } = await import('./firebase.js');
-    
-    const roomDoc = await getDoc(doc(db, 'rooms', currentRoom));
-    const acceptedUserIds = roomDoc.exists() ? (roomDoc.data().acceptedUsers || []) : [];
-    
-    // Obtener usuarios activos en la sala
-    const usersRef = ref(database, `rooms/${currentRoom}/users`);
-    const usersSnapshot = await get(usersRef);
-    const activeUserIds = new Set();
-    
-    if (usersSnapshot.exists()) {
-        usersSnapshot.forEach(child => {
-            const userData = child.val();
-            if (userData.status === 'online') {
-                activeUserIds.add(userData.firebaseUid || child.key);
-            }
-        });
-    }
-    
-    // Filtrar usuarios pendientes que están activos
-    const activePendingUsers = pendingUsers.filter(u => activeUserIds.has(u.userId));
-    
-    // Obtener usuarios aceptados activos
-    const acceptedActiveUsers = [];
-    for (const userId of acceptedUserIds) {
-        if (activeUserIds.has(userId)) {
-            try {
-                const userDoc = await getDoc(doc(db, 'users', userId));
-                if (userDoc.exists()) {
-                    acceptedActiveUsers.push({
-                        userId,
-                        username: userDoc.data().username || 'Usuario'
-                    });
-                } else {
-                    const guestDoc = await getDoc(doc(db, 'guests', userId));
-                    if (guestDoc.exists()) {
-                        acceptedActiveUsers.push({
-                            userId,
-                            username: guestDoc.data().username || 'Invitado'
-                        });
-                    }
-                }
-            } catch (e) {}
-        }
-    }
     
     const panel = document.createElement('div');
     panel.className = 'moderation-panel accept-panel';
     panel.innerHTML = `
         <div class="moderation-panel-header">
             <img src="/images/users-connected.svg" class="moderation-panel-icon" alt="Accept" />
-            <span class="moderation-panel-title">📬 Gestión de Acceso</span>
+            <span class="moderation-panel-title">📬 Solicitudes de Acceso</span>
             <button class="close-moderation-panel">×</button>
         </div>
         <div class="moderation-list">
-            ${activePendingUsers.length > 0 ? `
-                <div class="accept-section-header">⏳ Pendientes (${activePendingUsers.length})</div>
-                <div class="pending-users-list">
-                    ${activePendingUsers.map(user => `
-                        <div class="moderation-user-item pending-item" data-user-id="${user.userId}">
-                            <div class="moderation-user-info">
-                                <span class="moderation-user-name">${user.username}</span>
-                                <small style="color:#ff9800;font-size:10px;">● Activo</small>
-                            </div>
-                            <button class="moderation-action-btn accept-action-btn" data-user-id="${user.userId}" data-username="${user.username}">
-                                <span>✓</span>
-                                Aceptar
-                            </button>
+            ${pendingUsers.map(user => {
+                return `
+                    <div class="moderation-user-item">
+                        <div class="moderation-user-info">
+                            <span class="moderation-user-name">${user.username}</span>
                         </div>
-                    `).join('')}
-                </div>
-            ` : '<div class="empty-section">No hay usuarios pendientes activos</div>'}
-            
-            ${acceptedActiveUsers.length > 0 ? `
-                <div class="accept-section-header" style="margin-top:15px;">✓ Aceptados (${acceptedActiveUsers.length})</div>
-                <div class="accepted-users-list">
-                    ${acceptedActiveUsers.map(user => `
-                        <div class="moderation-user-item accepted-item">
-                            <div class="moderation-user-info">
-                                <span class="moderation-user-name">${user.username}</span>
-                                <small style="color:#4caf50;font-size:10px;">✓ Aceptado</small>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            ` : ''}
+                        <button class="moderation-action-btn accept-action-btn" data-user-id="${user.userId}" data-username="${user.username}">
+                            <span>✓</span>
+                            Aceptar
+                        </button>
+                    </div>
+                `;
+            }).join('')}
         </div>
     `;
     
@@ -3620,169 +3395,20 @@ async function showAcceptPanel(pendingUsers) {
             try {
                 const { acceptUserToPrivateRoom } = await import('./firebase.js');
                 await acceptUserToPrivateRoom(currentRoom, userId);
-                
-                // Mover a lista de aceptados
-                const pendingItem = panel.querySelector(`.pending-item[data-user-id="${userId}"]`);
-                if (pendingItem) {
-                    pendingItem.style.animation = 'fadeOut 0.3s ease';
+                btn.innerHTML = '<span class="accept-success">✓</span>';
+                showNotification(`${username} aceptado en la sala`, 'success');
+                setTimeout(() => {
+                    btn.closest('.moderation-user-item').style.animation = 'fadeOut 0.3s ease';
                     setTimeout(() => {
-                        pendingItem.remove();
-                        
-                        // Agregar a lista de aceptados
-                        let acceptedList = panel.querySelector('.accepted-users-list');
-                        if (!acceptedList) {
-                            const modList = panel.querySelector('.moderation-list');
-                            const header = document.createElement('div');
-                            header.className = 'accept-section-header';
-                            header.style.marginTop = '15px';
-                            header.textContent = '✓ Aceptados (1)';
-                            modList.appendChild(header);
-                            
-                            acceptedList = document.createElement('div');
-                            acceptedList.className = 'accepted-users-list';
-                            modList.appendChild(acceptedList);
-                        }
-                        
-                        const acceptedItem = document.createElement('div');
-                        acceptedItem.className = 'moderation-user-item accepted-item';
-                        acceptedItem.innerHTML = `
-                            <div class="moderation-user-info">
-                                <span class="moderation-user-name">${username}</span>
-                                <small style="color:#4caf50;font-size:10px;">✓ Aceptado</small>
-                            </div>
-                        `;
-                        acceptedItem.style.animation = 'fadeIn 0.3s ease';
-                        acceptedList.appendChild(acceptedItem);
-                        
-                        // Actualizar contador
-                        const pendingHeader = panel.querySelector('.accept-section-header');
-                        const pendingCount = panel.querySelectorAll('.pending-item').length;
-                        if (pendingHeader) {
-                            pendingHeader.textContent = `⏳ Pendientes (${pendingCount})`;
-                        }
-                        
-                        const acceptedHeader = panel.querySelectorAll('.accept-section-header')[1];
-                        const acceptedCount = panel.querySelectorAll('.accepted-item').length;
-                        if (acceptedHeader) {
-                            acceptedHeader.textContent = `✓ Aceptados (${acceptedCount})`;
-                        }
-                        
-                        if (pendingCount === 0) {
-                            const pendingList = panel.querySelector('.pending-users-list');
-                            if (pendingList) {
-                                pendingList.innerHTML = '<div class="empty-section">No hay usuarios pendientes activos</div>';
-                            }
+                        btn.closest('.moderation-user-item').remove();
+                        if (panel.querySelectorAll('.moderation-user-item').length === 0) {
+                            panel.remove();
                         }
                     }, 300);
-                }
-                
-                showNotification(`${username} aceptado en la sala`, 'success');
+                }, 500);
             } catch (error) {
                 showNotification(error.message, 'error');
                 btn.innerHTML = '<span>✓</span>Aceptar';
-                btn.disabled = false;
-            }
-        });
-    });
-}
-
-// Panel de Reset Password
-async function showResetPasswordPanel() {
-    const existingPanel = document.querySelector('.moderation-panel');
-    if (existingPanel) existingPanel.remove();
-    
-    const { getFirestore, collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-    const { getAuth, updatePassword } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-    const db = getFirestore();
-    const auth = getAuth();
-    
-    const usersSnapshot = await getDocs(collection(db, 'users'));
-    const users = [];
-    usersSnapshot.forEach(doc => {
-        const data = doc.data();
-        users.push({
-            firebaseUid: doc.id,
-            username: data.username,
-            email: data.email
-        });
-    });
-    
-    const panel = document.createElement('div');
-    panel.className = 'moderation-panel resetpass-panel';
-    panel.innerHTML = `
-        <div class="moderation-panel-header">
-            <img src="/images/config.svg" class="moderation-panel-icon" alt="Reset" />
-            <span class="moderation-panel-title">🔑 Restablecer Contraseña</span>
-            <button class="close-moderation-panel">×</button>
-        </div>
-        <div class="moderation-list">
-            ${users.map((user, index) => `
-                <div class="moderation-user-item">
-                    <div class="moderation-user-info">
-                        <span class="moderation-user-name">#${index + 1} ${user.username}</span>
-                        <small style="color:#888;font-size:11px;">${user.email.includes('@fyzar.temp') ? 'Sin email' : user.email}</small>
-                    </div>
-                    <button class="moderation-action-btn resetpass-action-btn" data-user-id="${user.firebaseUid}" data-username="${user.username}" data-email="${user.email}">
-                        <img src="/images/config.svg" alt="Reset" />
-                        Cambiar
-                    </button>
-                </div>
-            `).join('')}
-        </div>
-    `;
-    
-    document.body.appendChild(panel);
-    
-    panel.querySelector('.close-moderation-panel').addEventListener('click', () => panel.remove());
-    
-    panel.querySelectorAll('.resetpass-action-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const userId = btn.dataset.userId;
-            const username = btn.dataset.username;
-            const email = btn.dataset.email;
-            
-            const newPassword = prompt(`Nueva contraseña para ${username} (mín. 6 caracteres):`);
-            if (!newPassword) return;
-            
-            if (newPassword.length < 6) {
-                showNotification('La contraseña debe tener al menos 6 caracteres', 'error');
-                return;
-            }
-            
-            btn.disabled = true;
-            btn.innerHTML = '<span>⏳</span>';
-            
-            try {
-                const { getFirestore, doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-                const { getFunctions, httpsCallable } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js');
-                
-                // Intentar usar Cloud Function si está disponible
-                try {
-                    const functions = getFunctions();
-                    const updateUserPassword = httpsCallable(functions, 'updateUserPassword');
-                    await updateUserPassword({ uid: userId, newPassword });
-                } catch (error) {
-                    // Si no hay Cloud Functions, mostrar mensaje
-                    showNotification('⚠️ Requiere Cloud Functions. Envía email de recuperación en su lugar', 'warning');
-                    
-                    if (!email.includes('@fyzar.temp')) {
-                        const { sendPasswordResetEmail } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-                        await sendPasswordResetEmail(auth, email);
-                        showNotification(`Email de recuperación enviado a ${username}`, 'success');
-                    } else {
-                        showNotification(`${username} no tiene email. No se puede recuperar`, 'error');
-                    }
-                    btn.innerHTML = '<img src="/images/config.svg" alt="Reset" />Cambiar';
-                    btn.disabled = false;
-                    return;
-                }
-                
-                showNotification(`Contraseña de ${username} actualizada`, 'success');
-                btn.innerHTML = '<span>✓</span>';
-                setTimeout(() => panel.remove(), 1500);
-            } catch (error) {
-                showNotification('Error: ' + error.message, 'error');
-                btn.innerHTML = '<img src="/images/config.svg" alt="Reset" />Cambiar';
                 btn.disabled = false;
             }
         });

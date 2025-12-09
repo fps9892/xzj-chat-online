@@ -2,12 +2,12 @@
 @media (max-width: 767px) {
   body {
     width: 100%;
-    min-height: 100dvh;
+    min-height: 100vh;
     overflow-x: hidden;
   }
 
   .main-content {
-    height: calc(100dvh - 140px);
+    height: calc(100vh - 140px);
     overflow: hidden;
     margin-bottom: 60px;
   }
@@ -307,7 +307,7 @@
 
   .image-modal {
     max-width: 95vw;
-    max-height: 85dvh;
+    max-height: 85vh;
   }
 
   .close-modal {
@@ -348,24 +348,20 @@
     transform: translate(-50%, -50%);
   }
 
-  .header-actions {
+  .room-selector {
     position: absolute;
     right: 10px;
     top: 50%;
     transform: translateY(-50%);
-    gap: 8px;
   }
 
-  .notification-btn {
-    width: 28px;
-    height: 28px;
-    padding: 5px;
+  .rooms-btn {
+    padding: 6px 10px;
+    border-radius: 17%;
   }
 
-  .notifications-panel {
-    right: 10px;
-    width: calc(100% - 20px);
-    max-width: 350px;
+  .rooms-btn span {
+    display: none;
   }
 }
 
@@ -393,7 +389,7 @@
     transform: translate(-50%, -50%);
   }
 
-  .header-actions {
+  .room-selector {
     position: absolute;
     right: 10px;
     top: 50%;
@@ -532,7 +528,6 @@
 @media (max-width: 767px) {
   .moderation-panel {
     width: 95%;
-    max-height: 80dvh;
     bottom: 110px;
     padding: 15px;
   }

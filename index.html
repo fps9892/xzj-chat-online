@@ -24,13 +24,8 @@
     <link rel="stylesheet" href="/resolutions/mobile.css" />
     <link rel="stylesheet" href="/resolutions/tablet.css" />
     <link rel="stylesheet" href="/resolutions/desktop.css" />
-    <link rel="stylesheet" href="/resolutions/small-mobile.css" />
     <link rel="stylesheet" href="/level-system.css" />
     <link rel="stylesheet" href="/message-options.css" />
-    <link rel="stylesheet" href="/rank-management.css" />
-    <link rel="stylesheet" href="/history-button.css" />
-    <link rel="stylesheet" href="/accept-panel.css" />
-    <link rel="stylesheet" href="/load-more-messages.css" />
     <style>
       .image-modal-overlay {
         display: flex;
@@ -126,15 +121,7 @@
         <span class="username desktop-only">username</span>
       </div>
 
-      <div class="header-actions">
-        <button class="notification-btn" id="notificationBtn">
-          <img
-            src="/images/notification.svg"
-            alt="Notifications"
-            class="notification-icon-img"
-          />
-          <span class="notification-badge" id="notificationBadge">0</span>
-        </button>
+      <div class="room-selector">
         <button class="rooms-btn" id="roomsBtn">
           <img
             src="/images/rooms-public-icon.svg"
@@ -143,39 +130,6 @@
           />
           <span class="desktop-only">Salas</span>
         </button>
-      </div>
-
-      <!-- Panel de Notificaciones -->
-      <div class="notifications-panel" id="notificationsPanel">
-        <div class="notifications-header">
-          <div class="notifications-tabs">
-            <button class="notifications-tab active" data-tab="notifications">
-              Notificaciones
-            </button>
-            <button class="notifications-tab" data-tab="requests">
-              Solicitudes
-            </button>
-          </div>
-          <button class="clear-notifications-btn" id="clearNotificationsBtn">
-            Limpiar
-          </button>
-        </div>
-        <div class="notifications-content">
-          <div
-            class="notifications-list active"
-            id="notificationsList"
-            data-section="notifications"
-          >
-            <div class="empty-notifications">No hay notificaciones</div>
-          </div>
-          <div
-            class="notifications-list"
-            id="requestsList"
-            data-section="requests"
-          >
-            <div class="empty-notifications">No hay solicitudes</div>
-          </div>
-        </div>
       </div>
 
       <div class="mobile-users-indicator">
@@ -413,8 +367,6 @@
     <script type="module" src="/emote-manager.js"></script>
     <script type="module" src="/polls.js"></script>
     <script type="module" src="/notifications.js"></script>
-    <script type="module" src="/notification-panel.js"></script>
-    <script type="module" src="/friend-system.js"></script>
     <!-- Panel de Salas -->
     <div class="rooms-panel-overlay" id="roomsPanelOverlay">
       <div class="rooms-panel" id="roomsPanel">

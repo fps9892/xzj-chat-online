@@ -27,12 +27,6 @@
   .mobile-users-indicator {
     display: none;
   }
-
-  .header-actions {
-    position: relative;
-    right: auto;
-  }
-
   .main-content {
     display: flex;
     flex-direction: row;
