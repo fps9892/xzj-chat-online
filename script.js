@@ -1111,17 +1111,17 @@ document.addEventListener('DOMContentLoaded', function() {
             return resultEl;
         }
         
-        // Mostrar rol del usuario
+        // Mostrar rol del usuario (SOLO desde message.role - fuente de verdad)
         let displayName = message.userName;
         let roleTag = '';
         
         if (message.isGuest) {
             displayName += ' (invitado)';
-        } else if (message.isDeveloper || message.role === 'Desarrollador') {
+        } else if (message.role === 'Desarrollador') {
             roleTag = '<span class="dev-tag">DEV</span>';
-        } else if (message.isAdmin || message.role === 'Administrador') {
+        } else if (message.role === 'Administrador') {
             roleTag = '<span class="admin-tag">ADMIN</span>';
-        } else if (message.isModerator || message.role === 'Moderador') {
+        } else if (message.role === 'Moderador') {
             roleTag = '<span class="mod-tag">MOD</span>';
         }
         
@@ -1272,11 +1272,12 @@ document.addEventListener('DOMContentLoaded', function() {
         let userNumId = '';
         let roleTag = '';
         
-        if (user.isDeveloper || user.role === 'Desarrollador') {
+        // SOLO usar user.role (fuente de verdad desde Firestore)
+        if (user.role === 'Desarrollador') {
             roleTag = '<span class="dev-tag">DEV</span>';
-        } else if (user.isAdmin || user.role === 'Administrador') {
+        } else if (user.role === 'Administrador') {
             roleTag = '<span class="admin-tag">ADMIN</span>';
-        } else if (user.isModerator || user.role === 'Moderador') {
+        } else if (user.role === 'Moderador') {
             roleTag = '<span class="mod-tag">MOD</span>';
         }
         
@@ -1381,11 +1382,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function createMobileUserElement(user) {
         let roleTag = '';
-        if (user.isDeveloper || user.role === 'Desarrollador') {
+        // SOLO usar user.role (fuente de verdad desde Firestore)
+        if (user.role === 'Desarrollador') {
             roleTag = '<span class="dev-tag">DEV</span>';
-        } else if (user.isAdmin || user.role === 'Administrador') {
+        } else if (user.role === 'Administrador') {
             roleTag = '<span class="admin-tag">ADMIN</span>';
-        } else if (user.isModerator || user.role === 'Moderador') {
+        } else if (user.role === 'Moderador') {
             roleTag = '<span class="mod-tag">MOD</span>';
         }
         

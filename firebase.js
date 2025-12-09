@@ -162,6 +162,30 @@ export async function sendMessage(text, type = 'text', imageData = null, audioDu
     
     const messagesRef = ref(database, `rooms/${currentRoom}/messages`);
     
+    // Obtener roles en tiempo real desde Firestore (fuente de verdad)
+    let isDeveloper = false;
+    let isAdmin = false;
+    let isModerator = false;
+    let role = 'Usuario';
+    
+    if (currentUser.firebaseUid && !currentUser.isGuest) {
+        isDeveloper = await checkDeveloperStatus(currentUser.firebaseUid);
+        if (!isDeveloper) {
+            isAdmin = await checkAdminStatus(currentUser.firebaseUid);
+        }
+        if (!isDeveloper && !isAdmin) {
+            isModerator = await checkModeratorStatus(currentUser.firebaseUid);
+        }
+        
+        if (isDeveloper) {
+            role = 'Desarrollador';
+        } else if (isAdmin) {
+            role = 'Administrador';
+        } else if (isModerator) {
+            role = 'Moderador';
+        }
+    }
+    
     // Validar datos antes de enviar
     const messageData = {
         text: text || '',
@@ -172,10 +196,10 @@ export async function sendMessage(text, type = 'text', imageData = null, audioDu
         timestamp: serverTimestamp(),
         type: type,
         isGuest: currentUser.isGuest || false,
-        role: currentUser.role || 'Usuario',
-        isDeveloper: currentUser.isDeveloper || false,
-        isAdmin: currentUser.isAdmin || false,
-        isModerator: currentUser.isModerator || false,
+        role: role,
+        isDeveloper: isDeveloper,
+        isAdmin: isAdmin,
+        isModerator: isModerator,
         firebaseUid: currentUser.firebaseUid || null,
         replyTo: replyTo || null
     };
@@ -311,11 +335,35 @@ function getDeviceType() {
 }
 
 // Funciones para usuarios conectados
-export function setUserOnline() {
+export async function setUserOnline() {
     const sanitizedUserId = sanitizeUserId(currentUser.userId);
     const userRef = ref(database, `rooms/${currentRoom}/users/${sanitizedUserId}`);
     const userStatusRef = ref(database, `rooms/${currentRoom}/users/${sanitizedUserId}/status`);
     const deviceType = getDeviceType();
+    
+    // Obtener roles desde Firestore (fuente de verdad)
+    let isDeveloper = false;
+    let isAdmin = false;
+    let isModerator = false;
+    let role = 'Usuario';
+    
+    if (currentUser.firebaseUid && !currentUser.isGuest) {
+        isDeveloper = await checkDeveloperStatus(currentUser.firebaseUid);
+        if (!isDeveloper) {
+            isAdmin = await checkAdminStatus(currentUser.firebaseUid);
+        }
+        if (!isDeveloper && !isAdmin) {
+            isModerator = await checkModeratorStatus(currentUser.firebaseUid);
+        }
+        
+        if (isDeveloper) {
+            role = 'Desarrollador';
+        } else if (isAdmin) {
+            role = 'Administrador';
+        } else if (isModerator) {
+            role = 'Moderador';
+        }
+    }
     
     // Asegurar que todos los campos requeridos tengan valores válidos
     const userData = {
@@ -323,7 +371,10 @@ export function setUserOnline() {
         avatar: currentUser.avatar || 'images/profileuser.svg',
         status: 'online',
         lastSeen: serverTimestamp(),
-        role: currentUser.role || 'user',
+        role: role,
+        isDeveloper: isDeveloper,
+        isAdmin: isAdmin,
+        isModerator: isModerator,
         textColor: currentUser.textColor || '#ffffff',
         description: currentUser.description || 'Sin descripción',
         isGuest: currentUser.isGuest || false,
@@ -488,7 +539,7 @@ export async function changeRoom(roomName, isInitialJoin = false) {
         }
     });
     
-    setUserOnline();
+    await setUserOnline();
 }
 
 // Actualizar datos de usuario en Firestore
@@ -1921,10 +1972,9 @@ export async function checkDeveloperStatus(userId) {
     }
 }
 
-// Actualizar rol del usuario y obtener datos de Firestore
+// Actualizar rol del usuario desde Firestore (SOLO al iniciar sesión)
 export async function updateUserRole() {
     if (currentUser.isGuest) {
-        // Para invitados, asegurar que tengan rol de guest
         currentUser.role = 'guest';
         currentUser.isAdmin = false;
         currentUser.isModerator = false;
@@ -1937,9 +1987,14 @@ export async function updateUserRole() {
     if (currentUser.firebaseUid) {
         try {
             const isDeveloper = await checkDeveloperStatus(currentUser.firebaseUid);
-            const isAdmin = await checkAdminStatus(currentUser.firebaseUid);
-            const isModerator = await checkModeratorStatus(currentUser.firebaseUid);
+            const isAdmin = !isDeveloper && await checkAdminStatus(currentUser.firebaseUid);
+            const isModerator = !isDeveloper && !isAdmin && await checkModeratorStatus(currentUser.firebaseUid);
             const isBanned = await checkBannedStatus(currentUser.firebaseUid);
+            
+            // Limpiar roles anteriores
+            currentUser.isDeveloper = false;
+            currentUser.isAdmin = false;
+            currentUser.isModerator = false;
             
             if (isBanned) {
                 currentUser.role = 'banned';
